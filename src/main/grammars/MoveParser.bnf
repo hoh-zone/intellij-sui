@@ -1,0 +1,1820 @@
+{
+    parserClass="org.sui.lang.MoveParser"
+    psiClassPrefix="Mv"
+    psiImplClassSuffix="Impl"
+
+    implements="org.sui.lang.core.psi.MvElement"
+    extends="org.sui.lang.core.psi.MvElementImpl"
+
+    psiPackage="org.sui.lang.core.psi"
+    psiImplPackage="org.sui.lang.core.psi.impl"
+    parserUtilClass="org.sui.lang.core.MoveParserUtil"
+
+    elementTypeHolderClass="org.sui.lang.MvElementTypes"
+
+    elementTypeClass="org.sui.lang.core.MvElementType"
+    tokenTypeClass="org.sui.lang.core.MvTokenType"
+
+    extends(".*Expr")=Expr
+    extends("Pat(Struct|Binding|Tuple|Wild|Const)")=Pat
+    extends("(Lambda|Ref|Path|Tuple|Unit|Parens|Wild|Macro)Type")=Type
+
+    elementType(".+BinExpr")=BinaryExpr
+    elementType(".+BinOp")=BinaryOp
+
+    name(".+BinOp")="operator"
+    name(".*Expr")="expression"
+    name("Pat*")="pattern"
+
+    extraRoot(".*CodeFragmentElement")=true
+
+    extends(".*Stmt")=Stmt
+
+    consumeTokenMethod("((?!.*_with_recover).*_recover)|(.*_first)|(.*Expr)") = "consumeTokenFast"
+
+    generateTokenAccessors=true
+
+    parserImports=[
+      'static org.sui.lang.core.MoveParserUtil.PathParsingMode.*'
+    ]
+
+    tokens = [
+        WHITESPACE='regexp:[ \n\t\r\f]'
+
+        PLACEHOLDER_ADDRESS='regexp:\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
+        DIEM_ADDRESS='regexp:0x[0-9a-fA-F]{1,40}'
+        BECH32_ADDRESS='regexp:wallet1[A-Z0-9a-z&&[^boi1]]{6,83}'
+        POLKADOT_ADDRESS='regexp:[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
+
+        BOOL_LITERAL='regexp:(true)|(false)'
+        INTEGER_LITERAL='regexp:[0-9]+((u8)|(u16)|(u32)|(u64)|(u128)|(u256))?'
+        HEX_INTEGER_LITERAL='regexp:0x[0-9a-fA-F]+((u8)|(u16)|(u32)|(u64)|(u128)|(u256))?'
+
+        HEX_STRING_LITERAL='regexp:x\"([A-F0-9a-f]*)\"'
+        BYTE_STRING_LITERAL='regexp:b"(.*)"'
+
+        IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
+        FUNCTION_PATTERN_IDENT='regexp:[*_a-zA-Z][*_a-zA-Z0-9]*'
+        MARCO_IDENTIFIER='regexp:\$[_a-zA-Z][_a-zA-Z0-9]*'
+
+        L_BRACE          =  '{'
+        R_BRACE          =  '}'
+        L_BRACK          =  '['
+        R_BRACK          =  ']'
+        L_PAREN          =  '('
+        R_PAREN          =  ')'
+        COLON_COLON      =  '::'
+        COLON           =  ':'
+        SEMICOLON   =  ';'
+        COMMA       =  ','
+        LT            =  '<'
+        GT         =  '>'
+        AND = '&'
+        OR = '|'
+        EQ_EQ = '=='
+        NOT_EQ = '!='
+        EQ = '='
+        DOT         =  '.'
+
+        EXCL        =  '!'
+        PLUS        =  '+'
+        MINUS       =  '-'
+        XOR         =  '^'
+        MUL         =  '*'
+        DIV         =  '/'
+        MODULO         =  '%'
+
+        AT         =  '@'
+        HASH         =  '#'
+
+        // Contextual tokens
+        LT_EQ           = '<='
+        LT_LT           = '<<'
+        GT_EQ           = '>='
+        GT_GT           = '>>'
+        OR_OR           = '||'
+        AND_AND         = '&&'
+        EQ_EQ_GT        = '==>'
+        LT_EQ_EQ_GT     = '<==>'
+        DOT_DOT     = '..'
+        FAT_ARROW       = '=>'
+        BACKTICK = '`'
+        ADDRESS     = 'address_kw'
+        HAS     = 'has_kw'
+        ENTRY     = 'entry_kw'
+        INLINE     = 'inline_kw'
+        FRIEND     = 'friend_kw'
+        PACKAGE     = 'package_kw'
+        FOR     = 'for_kw'
+
+        READS     = 'reads_kw'
+        WRITES     = 'writes_kw'
+        PURE     = 'pure_kw'
+
+        SCRIPT_KW     = 'script_kw'
+        MODULE_KW     = 'module'
+        STRUCT_KW     = 'struct_kw'
+        CONST_KW     = 'const_kw'
+        SCHEMA_KW     = 'schema_kw'
+        ENUM_KW     = 'enum_kw'
+        MATCH_KW     = 'match_kw'
+
+        LOCAL     = 'local_kw'
+        GLOBAL     = 'global_kw'
+        PRAGMA     = 'pragma_kw'
+        POST     = 'post_kw'
+        EMITS     = 'emits_kw'
+        TO     = 'to_kw'
+        APPLY     = 'apply_kw'
+        INTERNAL     = 'internal_kw'
+        EXCEPT     = 'except_kw'
+        WITH     = 'with_kw'
+        INCLUDE     = 'include_kw'
+        INVARIANT     = 'invariant_kw'
+        AXIOM     = 'axiom_kw'
+        MACRO_KW    = 'macro_kw'
+
+        PACK     = 'pack_kw'
+        UNPACK     = 'unpack_kw'
+        UPDATE     = 'update_kw'
+
+        ASSERT     = 'assert_kw'
+        ASSUME     = 'assume_kw'
+        MODIFIES     = 'modifies_kw'
+        ENSURES     = 'ensures_kw'
+        REQUIRES     = 'requires_kw'
+        DECREASES     = 'decreases_kw'
+        ABORTS_IF     = 'aborts_if_kw'
+        ABORTS_WITH     = 'aborts_with_kw'
+
+        CHOOSE     = 'choose_kw'
+        MIN     = 'min_kw'
+
+        FORALL     = 'forall_kw'
+        EXISTS     = 'exists_kw'
+        WHERE     = 'where_kw'
+        IN     = 'in_kw'
+        TYPE_KW = 'type_kw'
+    ]
+}
+
+// Naming convention:
+//
+//   * tokens are lowercase: for, if, identifier
+//   * rules are PascalCase: StructItem
+//   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
+File ::=   Module*  // (NamedAddressDef | Script | AddressDef | Module | ModuleSpec)*
+
+QualPathCodeFragmentElement ::= PathImpl
+
+Attr ::= '#' '[' <<non_empty_comma_sep_items AttrItem>> ']' { pin = 1 }
+private Attr_first ::= '#'
+
+AttrItem ::= IDENTIFIER (AttrItemList | AttrItemInitializer)?
+{
+    implements = [
+        "org.sui.lang.core.resolve.ref.MvReferenceElement"
+//        "org.sui.lang.core.types.infer.MvInferenceContextOwner"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvAttrItemMixin"
+}
+AttrItemList ::= '(' <<non_empty_comma_sep_items AttrItem>>? ')' { pin = 1 }
+//AttrItemArgument ::= IDENTIFIER ('=' Expr)?
+//{
+//    implements = [
+//        "org.sui.lang.core.resolve.ref.MvReferenceElement"
+//    ]
+//    mixin = "org.sui.lang.core.psi.ext.MvAttrItemArgumentMixin"
+//}
+AttrItemInitializer ::= '=' Expr { pin = 1 }
+
+NamedAddressDef ::= address IDENTIFIER '=' AddressRef ';' { pin = 3 }
+
+Script ::= SCRIPT_KW '{' ScriptItem_with_recover* '}'
+{
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.ext.MvItemsOwner"
+    ]
+}
+ScriptBlock ::= '{' ScriptItem_with_recover* '}' {
+//    pin = 1
+//    implements = [
+//        "org.move.lang.core.psi.ext.MvItemsOwner"
+//    ]
+}
+
+private ScriptItem_with_recover ::= !('}' | <<eof>>) ScriptItem
+{
+    pin = 1
+    recoverWhile = ScriptItem_recover
+}
+// top-level recovery
+private ScriptItem_recover ::= !('}' | ScriptItem_first | TopLevel_first)
+private ScriptItem_first ::= use | CONST_KW | fun
+
+private ScriptItem ::= UseStmt | Const | FunctionInner
+
+private address ::= <<addressKeyword>>
+private has ::= <<hasKeyword>>
+private entry ::= <<entryKeyword>>
+private inline ::= <<inlineKeyword>>
+private schema ::= <<schemaKeyword>>
+
+private reads ::= <<readsKeyword>>
+private writes ::= <<writesKeyword>>
+private pure ::= <<pureKeyword>>
+
+AddressDef ::= address AddressRef AddressBlock {
+    pin = 1
+    mixin = "org.sui.lang.core.psi.ext.MvAddressDefMixin"
+}
+AddressBlock ::= '{' AddressBlockItems '}' { pin = 1 }
+private AddressBlockItems ::= Module*
+{
+    recoverWhile = AddressBlockItems_recover
+}
+private AddressBlockItems_recover ::= !'}'
+
+Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ';'? '{'? ModuleItem_with_recover* '}'?
+{
+    pin = "MODULE_KW"
+    name = "module declaration"
+    implements = [
+        "org.sui.lang.core.psi.MvQualNamedElement"
+        "org.sui.lang.core.psi.MvNameIdentifierOwner"
+        "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.sui.lang.core.psi.ext.MvItemsOwner"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvModuleMixin"
+    stubClass = "org.sui.lang.core.stubs.MvModuleStub"
+    elementTypeFactory = "org.sui.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+
+ModuleBlock ::= '{' ModuleItem_with_recover* '}'
+{
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.ext.MvItemsOwner"
+    ]
+}
+private ModuleItem_with_recover ::= !('}' | <<eof>>) ModuleItem
+{
+    pin = 1
+    recoverWhile = ModuleItem_recover
+}
+private ModuleItem_recover ::= !('}' | ModuleItem_first | TopLevel_first)
+// top-level recovery
+private ModuleItem_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec
+                            | Attr_first | "friend"  | "entry" | "inline" | "enum"  | MACRO_KW
+private TopLevel_first ::= MODULE_KW  //| SCRIPT_KW
+
+private ModuleItem ::=        PublicUseFun
+                            | UseStmt
+                            | FriendDecl
+                            | StructItem
+                            | Enum
+                            | FunctionItem
+                            | SpecFunctionItem
+                            | Const
+                            | Schema
+                            | ModuleItemSpec
+                            | ItemSpec
+
+Const ::= Attr* CONST_KW IDENTIFIER TypeAnnotation Initializer ';'
+{
+    pin = "CONST_KW"
+    implements = [
+        "org.sui.lang.core.psi.MvQualNamedElement"
+        "org.sui.lang.core.psi.ext.MvItemElement"
+        "org.sui.lang.core.psi.MvTypeAnnotationOwner"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvConstMixin"
+    stubClass = "org.sui.lang.core.stubs.MvConstStub"
+    elementTypeFactory = "org.sui.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Functions
+///////////////////////////////////////////////////////////////////////////////////////////////////
+fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
+                        FunctionParameterList? ReturnType?
+                        (';' | SpecCodeBlock)?
+{
+    implements = [
+        "org.sui.lang.core.psi.MvQualNamedElement"
+        "org.sui.lang.core.psi.MvFunctionLike"
+        "org.sui.lang.core.psi.ext.MvItemElement"
+        "org.sui.lang.core.types.infer.MvInferenceContextOwner"
+        "org.sui.lang.core.psi.ScopeMslOnlyElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvSpecFunctionMixin"
+    stubClass = "org.sui.lang.core.stubs.MvSpecFunctionStub"
+    elementTypeFactory = "org.sui.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+private SpecFunctionItem ::= SpecFunctionInner
+                            | NativeSpecFunctionInner
+
+SpecFunctionInner ::= Attr* spec fun IDENTIFIER TypeParameterList?
+                       FunctionParameterList ReturnType? (<<msl SpecCodeBlock>> | ';')
+{
+    pin = 3
+    elementType = SpecFunction
+}
+NativeSpecFunctionInner ::= Attr* spec (native fun) IDENTIFIER TypeParameterList?
+                             FunctionParameterList ReturnType? ';'
+{
+    pin = 3
+    elementType = SpecFunction
+}
+
+fake SpecInlineFunction ::= Attr* native? fun IDENTIFIER? TypeParameterList?
+                                FunctionParameterList? ReturnType?
+                                (SpecCodeBlock | ';')?
+{
+    implements = [
+        "org.sui.lang.core.psi.MvFunctionLike"
+        "org.sui.lang.core.types.infer.MvInferenceContextOwner"
+        "org.sui.lang.core.psi.ext.MvItemElement"
+        "org.sui.lang.core.psi.ScopeMslOnlyElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvSpecInlineFunctionMixin"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+//private SpecInlineFunctionImpl ::= SpecInlineFunctionInner
+//                                    | NativeSpecInlineFunctionInner
+//                                    | UninterpretedSpecInlineFunctionInner
+
+SpecInlineFunctionInner ::= fun IDENTIFIER TypeParameterList?
+                             FunctionParameterList ReturnType? (<<msl SpecCodeBlock>> | ';')
+{
+    pin = 1
+    elementType = SpecInlineFunction
+}
+NativeSpecInlineFunctionInner ::= (native fun) IDENTIFIER TypeParameterList?
+                                  FunctionParameterList ReturnType? ';'
+{
+    elementType = SpecInlineFunction
+    pin = 1
+}
+
+SpecInlineFunctionStmt ::= SpecInlineFunctionInner
+                            | NativeSpecInlineFunctionInner
+{
+    implements = [
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+
+
+private PublicKeyword ::= 'public'
+///  explame : 1. public struct Test;
+///            2. public  struct Test has copy {}(BlockFields)
+///            2. public struct Text(u64,bool)
+///
+fake Struct ::= Attr* PublicKeyword native? STRUCT_KW IDENTIFIER TypeParameterList?
+                            //AbilitiesList?   (';' | BlockFields)?
+                (StructBlock | StructTupleBlock | StructBlockFields)?
+{
+ implements = [
+     "org.sui.lang.core.psi.MvQualNamedElement"
+     "org.sui.lang.core.psi.MvTypeParametersOwner"
+     "org.sui.lang.core.psi.ext.MvStructOrEnumItemElement"
+     "org.sui.lang.core.psi.ext.MvFieldsOwner"
+ ]
+ mixin = "org.sui.lang.core.psi.ext.MvStructMixin"
+ stubClass = "org.sui.lang.core.stubs.MvStructStub"
+ elementTypeFactory = "org.sui.lang.core.stubs.StubsKt.factory"
+}
+
+private StructBlock ::= AbilitiesList  (';' | BlockFields | TupleFields)?
+
+private StructTupleBlock ::= TupleFields (AbilitiesList';')?
+
+private StructBlockFields ::= BlockFields (AbilitiesList';')?
+
+private StructInnerFirst ::= STRUCT_KW
+StructInner ::= Attr* VisibilityModifier? StructInnerFirst IDENTIFIER TypeParameterList?  (StructBlock | StructTupleBlock | StructBlockFields)?
+{
+ pin = StructInnerFirst
+ elementType = Struct
+ hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+private NativeStructInnerFirst ::= native STRUCT_KW
+NativeStructInner ::= Attr* PublicKeyword? NativeStructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList? ';'
+{
+ pin = NativeStructInnerFirst
+ elementType = Struct
+ hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+private StructItem ::= StructInner | NativeStructInner
+
+Enum ::= Attr* VisibilityModifier? enum IDENTIFIER TypeParameterList? AbilitiesList? EnumBody
+{
+   pin = "enum"
+   implements = [
+        "org.sui.lang.core.psi.MvTypeParametersOwner"
+        "org.sui.lang.core.psi.ext.MvStructOrEnumItemElement"
+        ]
+     mixin = "org.sui.lang.core.psi.ext.MvEnumMixin"
+     stubClass = "org.sui.lang.core.stubs.MvEnumStub"
+     elementTypeFactory = "org.sui.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+ }
+EnumBody ::= '{' (EnumVariant ','?)* '}'
+{
+   pin = 1
+ }
+
+EnumVariant ::= Attr* IDENTIFIER BlockFields?
+{
+  pin = 2
+    implements = [
+        "org.sui.lang.core.psi.MvNameIdentifierOwner"
+        "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.sui.lang.core.psi.ext.MvFieldsOwner"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvEnumVariantMixin"
+    stubClass = "org.sui.lang.core.stubs.MvEnumVariantStub"
+    elementTypeFactory = "org.sui.lang.core.stubs.StubsKt.factory"
+  hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+
+private VariantArgs ::= [BlockFields | TupleFields]
+TupleFields ::= '(' TupleFieldDecl_with_recover* ')'
+private TupleFieldDecl_with_recover ::= !')' TupleFieldDecl (',' | &')') {
+  pin = 1
+  recoverWhile = TupleFieldDecl_recover
+}
+private TupleFieldDecl_recover ::= !(')' | Type )
+TupleFieldDecl ::= Type
+
+
+UseFunFirst::= 'use fun'
+PublicUseFun ::= 'public'? UseFunFirst PathStart? 'as' IDENTIFIER'.'IDENTIFIER ';' {
+    pin=2
+}
+
+fake Function ::= Attr* native? VisibilityModifier? entry? inline? MACRO_KW?
+                    fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
+                        ReturnType? (ResourceAccessItemList | AcquiresType)?
+                        (';' | CodeBlock)?
+{
+    implements = [
+        "org.sui.lang.core.psi.MvQualNamedElement"
+        "org.sui.lang.core.psi.MvFunctionLike"
+        "org.sui.lang.core.psi.ext.MvItemElement"
+        "org.sui.lang.core.types.infer.MvInferenceContextOwner"
+        "org.sui.lang.core.psi.MvModificationTrackerOwner"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvFunctionMixin"
+    stubClass = "org.sui.lang.core.stubs.MvFunctionStub"
+    elementTypeFactory = "org.sui.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+
+private FunctionInnerNoVisFirst ::= fun
+private FunctionInnerVisFirst ::= FunctionModifierSetInner fun { pin = 1 }
+private FunctionInnerFirst ::= FunctionInnerVisFirst | FunctionInnerNoVisFirst
+
+FunctionInner ::= Attr* FunctionInnerFirst FunctionSignatureInner CodeBlock
+{
+    pin = FunctionInnerFirst
+    elementType = Function
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+
+NativeFunctionInner ::= Attr* NativeFunctionModifierSetInner fun FunctionSignatureInner ';'
+{
+    pin = NativeFunctionModifierSetInner
+    elementType = Function
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+
+private FunctionItem ::= FunctionMacro | NativeFunctionInner | FunctionInner
+
+private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
+                                    FunctionParameterList ReturnType?
+                                    //  (ResourceAccessItemList | AcquiresType)?
+{
+    recoverWhile = "FunctionSignatureInner_recover"
+}
+private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | ModuleItem_first)
+
+
+///  macro fun
+private FunctionMacroInnerNoVisFirst ::= MACRO_KW fun
+private FunctionMacroInnerVisFirst ::= FunctionModifierSetInner MACRO_KW fun { pin = 1 }
+private FunctionMacroInnerFirst ::= FunctionMacroInnerNoVisFirst | FunctionMacroInnerVisFirst
+FunctionMacro ::=Attr* FunctionMacroInnerFirst FunctionMacroSignatureInner CodeBlock{
+        pin = FunctionMacroSignatureInner
+        elementType = Function
+        hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+
+private FunctionMacroSignatureInner ::= IDENTIFIER MacroTypeParameterList?
+                                    MacroFunctionParameterList ReturnType?
+                                    //  (ResourceAccessItemList | AcquiresType)?
+{
+    recoverWhile = "FunctionSignatureInner_recover"
+}
+//private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | ModuleItem_first)
+
+
+private friend ::= <<friendKeyword>>
+private enum ::= <<enumKeyword>>
+private match ::= <<matchKeyword>>
+private package::= <<packageKeyword>>
+private for ::= <<forKeyword>>
+
+private AttrsAndVis_first ::= '#'
+//private AttrsAndVis_first ::= '#' | public
+
+private FunctionModifierSetInner ::= <<functionModifierSet VisibilityModifier>>
+private NativeFunctionModifierSetInner ::= <<nativeFunctionModifierSet VisibilityModifier>>
+
+VisibilityModifier ::= public ('(' ( package | friend) ')')?
+
+FunctionParameterList ::= '(' FunctionParameter_with_recover* ')' { pin = 1 }
+private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter (',' | &')')
+{
+    pin = 1
+    recoverWhile = FunctionParameter_recover
+}
+private FunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER | mut)
+
+FunctionParameter ::= PatBinding TypeAnnotation {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MvTypeAnnotationOwner"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvFunctionParameterMixin"
+}
+
+/// MacroPatBinding
+
+MacroFunctionParameterList ::= '(' MacroFunctionParameter_with_recover* ')' { pin = 1 }
+private MacroFunctionParameter_with_recover ::= !(')' | '{' | ';') MacroFunctionParameter (',' | &')')
+{
+    pin = 1
+    recoverWhile = MacroFunctionParameter_recover
+}
+private MacroFunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER | '$')
+
+MacroFunctionParameter ::= MacroPatBinding TypeAnnotation {
+    pin = 1
+    elementType = FunctionParameter
+}
+
+
+// u8 | (u8,) | (u8, u8) | (u8, u8,)
+// tuples only allowed as a return types
+ReturnType ::= ':' ReturnTypeItem_with_recover { pin = 1 }
+private ReturnTypeItem_with_recover ::= Type
+{
+    pin = 1
+    recoverWhile = ReturnTypeItem_recover
+}
+private ReturnTypeItem_recover ::= !( '{' | ';' | '!' )   //( '{' | ';' | acquires | reads | writes | pure | '!' )
+
+ResourceAccessItemList::=<<isResourceAccessEnabled>>ResourceAccessItem*
+ResourceAccessItem::=pure|(('!')?(acquires|reads|writes)AccessSpecifierList)
+
+AccessSpecifierList ::= <<non_empty_comma_sep_items AccessSpecifier>>
+AccessSpecifier ::= <<pathMode 'WILDCARD' PathImpl>> AddressSpecifier?
+
+AddressSpecifier::='('AddressSpecifierArg')'{pin=1}
+AddressSpecifierArg::='*'
+|AddressSpecifierLit
+                        | <<pathMode 'VALUE' (PathImpl '(' AddressSpecifierCallParam ')')>>
+|IDENTIFIER
+AddressSpecifierLit::=DIEM_ADDRESS|INTEGER_LITERAL
+
+AddressSpecifierCallParam ::= AddressSpecifierCallParamImpl
+AddressSpecifierCallParamImpl ::= PathIdent { elementType = Path }
+// acquires T, Record
+AcquiresType ::= acquires AcquiresType_items { pin = 1 }
+private AcquiresType_items ::= <<non_empty_comma_sep_items PathType>>
+{
+    recoverWhile = AcquiresType_items_recover
+}
+private AcquiresType_items_recover ::= !(';' | '{')
+
+AbilitiesList ::= has <<non_empty_comma_sep_items Ability>> { pin = 1 }
+Ability ::= copy | IDENTIFIER
+{
+    name = "ability"
+}
+
+BlockFields ::= '{' NamedFieldDecl_with_recover* '}' { pin = 1 }
+private NamedFieldDecl_with_recover ::= !'}' NamedFieldDecl (',' | &'}')
+{
+    pin = 1
+    recoverWhile = NamedFieldDecl_recover
+}
+private NamedFieldDecl_recover ::= !('}' | NamedFieldDecl_first)
+
+NamedFieldDecl ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
+{
+    pin = 2
+    implements = [
+        "org.sui.lang.core.psi.MvMandatoryNameIdentifierOwner"
+        "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.sui.lang.core.psi.MvTypeAnnotationOwner"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvNamedFieldDeclMixin"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+private NamedFieldDecl_first ::= AttrsAndVis_first | IDENTIFIER
+
+FriendDecl ::= Attr* friend PathImpl ';'
+{
+    pin = "friend"
+    implements = [ "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+}
+
+UseStmt ::= Attr* use UseSpeck ';' {
+    pin = "use"
+    extends = Stmt
+    implements = [ "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+}
+UseSpeck ::= PathImpl ( UseAlias | ('::' UseGroup) )?
+
+UseGroup ::= '{' UseSpeck_with_recover* '}'
+{
+    pin = 1
+}
+// todo:
+private PathWithoutTypeArgs ::= PathImpl
+
+private UseSpeck_with_recover ::= !'}' UseSpeck (','|&'}') {
+    pin = 1
+  recoverWhile = UseSpeck_recover
+}
+private UseSpeck_recover ::= !('}' | '{' | IDENTIFIER | '::' )
+
+UseAlias ::= as IDENTIFIER
+{
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MvNameIdentifierOwner" ]
+    mixin = "org.sui.lang.core.psi.ext.MvUseAliasMixin"
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Types
+///////////////////////////////////////////////////////////////////////////////////////////////////
+TypeAnnotation ::= ':' Type {
+    pin = 1
+    name = "type annotation"
+}
+
+Type ::=  RefType | PathType | TupleType | LambdaType | UnitType | ParensType | WildType | MarcoType
+
+WildType ::= '_'
+MarcoType ::= MARCO_IDENTIFIER
+
+ParensType ::= '(' (Type !',') ')' { pin = 2 }
+
+UnitType ::= '(' ')'
+RefType ::= RefTypeStart Type
+{
+    pin = 1
+}
+RefTypeStart ::= '&' mut?
+
+PathType ::= PathImpl
+{
+    name = "type"
+}
+
+TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 3 }
+
+LambdaType ::= '|' <<non_empty_comma_sep_items LambdaTypeParam>>? '|' (('->')? Type)? { pin = 1 }
+LambdaTypeParam ::= Type
+
+TypeParameterList ::= '<' TypeParameter_with_recover* '>'
+{
+    pin = 1
+    name = "type parameters"
+}
+private TypeParameter_with_recover ::= !'>' TypeParameterImpl (',' | &'>')
+{
+    pin = 1
+    recoverWhile = TypeParameter_recover
+}
+private TypeParameter_recover ::= !('>' | '(' | '{' | phantom | IDENTIFIER )
+
+fake TypeParameter ::= phantom? (MARCO_IDENTIFIER|IDENTIFIER)? TypeParamBound? {
+    pin = 2
+    implements = [
+        "org.sui.lang.core.psi.MvNameIdentifierOwner"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvTypeParameterMixin"
+}
+
+private TypeParameterImpl ::= PlainTypeParameter | PhantomTypeParameter
+PlainTypeParameter ::= IDENTIFIER TypeParamBound? { pin = 1 elementType = TypeParameter }
+PhantomTypeParameter ::= phantom IDENTIFIER TypeParamBound? { pin = 1 elementType = TypeParameter }
+
+//private macroTypeParameterInner ::= MARCO_IDENTIFIER TypeParamBound
+//MacroTypeParameter ::= (macroTypeParameterInner)? { pin = 1 elementType = TypeParameter }
+///macro  Type
+
+MacroTypeParameterList ::= '<' MacroTypeParameter_with_recover* '>'
+{
+    pin = 1
+    name = "type parameters"
+}
+
+private MacroTypeParameter_with_recover ::= !'>' MacroTypeParameter (',' | &'>')
+{
+    pin = 1
+    recoverWhile = MacroTypeParameter_recover
+}
+
+private MacroTypeParameter_recover ::= !('>' | '$' | IDENTIFIER )
+
+//private MacroIDENTIFIER ::= '$'IDENTIFIER
+
+MacroTypeParameter ::= MARCO_IDENTIFIER TypeParamBound? { pin = 1 elementType = TypeParameter }
+
+TypeParamBound ::= ':' TypeParamBound_items
+{
+    pin = 1
+}
+private TypeParamBound_items ::= Ability ( '+' Ability )*
+{
+    recoverWhile = TypeParamBound_items_recover
+}
+private TypeParamBound_items_recover ::= !('>' | ',')
+
+TypeArgumentList ::= TypeArgumentListImpl {
+    name = "type arguments"
+}
+ColonTypeArgumentList ::= (&'::')? TypeArgumentListImpl { elementType = TypeArgumentList }
+
+//private TypeArgumentListImpl ::= '::'? '<' !'=' TypeArgumentImpl* '>' { pin = 3 }
+//private TypeArgumentImpl ::= !'>' TypeArgument (',' | &'>') { pin = 2 }
+private TypeArgumentListImpl ::= '::'? '<' !'=' <<non_empty_comma_sep_items ( TypeArgument &(',' | '>'))>>? '>'
+TypeArgument ::= Type
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Patterns (destructuring)
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//Pat ::= TuplePat
+//       | StructPat
+//        | WildPat
+//        | BindingPat
+//        | EnumVariantPat
+
+Pat ::= PatWild
+        | PatTuple
+        | PatBinding
+        | PatStruct
+        | PatConst
+
+MatchPat ::= Pat | PathPat
+PathPat ::= PathImpl
+EnumVariantPat ::= PathImpl
+
+PatWild ::= '_'
+WildPat ::= '_'
+
+ConstPat ::= PathImpl
+PatConst ::= PathExpr
+
+PatIdent ::= PatBinding
+//EnumVariantPat ::= PathImpl EnumPat? !('{')
+//private EnumPat ::= '(' EnumArgumentList_items? ')' {
+//    pin = 1
+//}
+//private EnumArgumentList_items ::= BindingPat (',' BindingPat)* ','?
+
+// XXX(matklad): it is impossible to distinguish between nullary enum variants
+// and identifiers during parsing.
+//
+//   match x {
+//       None => { } // match enum variant
+//       Name => { } // bind Name to x
+//   }
+//PatIdent ::= PatBinding
+PatBinding ::=mut? (IDENTIFIER|MARCO_IDENTIFIER) !ForbiddenPatBindingLast {
+    implements = [
+        "org.sui.lang.core.psi.MvMandatoryNameIdentifierOwner"
+        "org.sui.lang.core.resolve.ref.MvMandatoryReferenceElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvPatBindingMixin"
+}
+
+
+MacroPatBinding ::=MARCO_IDENTIFIER !ForbiddenPatBindingLast {
+   pin = 1
+   elementType =PatBinding
+}
+//BindingPat ::= IDENTIFIER !ForbiddenPatBindingLast
+
+
+//private ForbiddenBindingPatLast ::= '...' | '::' | '..=' | '..' | '<' | '(' | '{' | '!' {
+private ForbiddenPatBindingLast ::= '::' | '<' | '(' | '{' | '!'{
+  consumeTokenMethod = "consumeTokenFast"
+}
+
+TuplePat ::= '(' ParenListElemPat_with_recover* ')'
+PatTuple ::= '(' ParenListElemPat_with_recover* ')'
+private ParenListElemPat_with_recover ::= !')' Pat (',' | &')') {
+  pin = 1
+  recoverWhile = ParenListElemPat_recover
+}
+private ParenListElemPat_recover ::= !(')' | Pat_first)
+
+StructPat ::= PathImpl '{' PatField_with_recover* '}'
+PatStruct ::= PathImpl '{' PatField_with_recover* '}'
+{
+    implements = [ "org.sui.lang.core.resolve2.ref.InferenceCachedPathElement" ]
+}
+//StructPatFieldsBlock ::= '{' FieldPat_with_recover* '}'
+
+private PatField_with_recover ::= !'}' PatField (',' | &'}')
+{
+    pin = 1
+    recoverWhile = PatField_recover
+
+}
+private PatField_recover ::= !('}' |mut? IDENTIFIER)
+
+PatFieldFull ::=mut? IDENTIFIER ':' Pat
+{
+    implements = [
+//        "org.sui.lang.core.resolve.ref.MvStructPatFieldReferenceElement"
+        "org.sui.lang.core.resolve.ref.MvMandatoryReferenceElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvPatFieldFullMixin"
+}
+FieldPatFull ::=mut? IDENTIFIER ':' Pat
+
+PatField ::= PatFieldFull | PatBinding
+FieldPat ::= PatFieldFull | PatBinding
+
+//FieldPat ::= (BindingPat !':') | (IDENTIFIER FieldPatBinding)
+//{
+//    implements = [
+////        "org.move.lang.core.resolve.ref.MvStructPatFieldReferenceElement"
+//        "org.move.lang.core.psi.ext.MvFieldReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvFieldPatMixin"
+//}
+FieldPatBinding ::= ':' Pat
+
+private Pat_first ::= '_' | '(' | Path_first | AnyLitToken_first | mut
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Stmts
+///////////////////////////////////////////////////////////////////////////////////////////////////
+Stmt ::= LetMoveStmt | ExprStmt
+
+SpecExprStmt ::= (SpecExpr_item !'}') ';' { pin = 1 }
+private SpecExpr ::= SpecExprStmt_items | Expr
+private SpecExpr_item ::= SpecExprStmt_items | ExprStmt_expr
+{
+    recoverWhile = SpecExprStmt_recover
+}
+private SpecExprStmt_recover ::= !(';' | '}' | SpecExpr_first | Expr_first)
+private SpecExprStmt_first ::= let | if | while
+                                    | include | apply | pragma | emits | assume | assert | ensures
+                                    | axiom | modifies | aborts_if | aborts_with | requires | invariant
+
+private SpecExprStmt_items ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExpr | AbortsWithSpecExpr
+                | RequiresSpecExpr | DecreasesSpecExpr
+                | EnsuresSpecExpr | ModifiesSpecExpr | InvariantSpecExpr | AxiomSpecExpr
+                | EmitsSpecExpr
+
+private post ::= <<postKeyword>>
+fake LetStmt ::= let post? Pat? 'mut'? TypeAnnotation? Initializer? ';'?
+{
+    implements = ["org.sui.lang.core.psi.MvTypeAnnotationOwner"]
+}
+
+LetMoveStmt ::= let mut? Pat TypeAnnotation? Initializer? ';'
+{
+    pin = 1
+    elementType = LetStmt
+}
+LetMslStmt ::= (let post? ) mut? Pat TypeAnnotation? Initializer? ';'
+{
+    pin = 1
+    elementType = LetStmt
+}
+
+ExprStmt ::= (ExprStmt_expr !('}')) ';' { pin = 1 }
+private ExprStmt_expr ::= ItemSpecBlockExpr | Expr
+{
+    recoverWhile = "ExprStmt_recover"
+}
+private ExprStmt_recover ::= !(';' | '}' | <<mslOnly SpecExpr_first>> | Expr_first)
+private Expr_first ::= let | if | while | loop | continue | break | return | spec
+                        | copy | move | abort
+//                        | (<<VECTOR_IDENTIFIER>> ('<' | '['))
+                        | IDENTIFIER
+                        | '*' | '&' | '!' | '|' | '{' | '('
+                        | AnyLitToken_first
+                        | (AddressRef '::')
+private SpecExpr_first ::= include | apply | pragma | emits | assume | assert | ensures
+                            | axiom | modifies | aborts_if | aborts_with | requires
+                            | invariant | choose | decreases | update
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Blocks
+///////////////////////////////////////////////////////////////////////////////////////////////////
+private AnyBlock ::= CodeBlock | InlineBlock
+
+InlineBlock ::= Expr
+
+CodeBlockExpr ::= CodeBlock
+CodeBlock ::= '{' CodeBlock_items '}'
+{
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.ext.MvItemsOwner"
+        "org.sui.lang.core.psi.AnyBlock"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvCodeBlockMixin"
+}
+
+private CodeBlock_items ::= UseStmt*
+                            Stmt*
+                            ExprStmt_expr?
+{
+    recoverWhile = "CodeBlock_items_recover"
+}
+private CodeBlock_items_recover ::= !('}' | <<eof>>)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Expressions
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// from lowest to highest
+Expr ::= AssignmentExpr
+        | RangeExpr
+        | (ForallQuantExpr | ExistsQuantExpr | ChooseQuantExpr)
+        | CastExpr
+        | ImplyBinExpr_items
+        | OrBinExpr
+        | AndBinExpr
+        | LogicalEqExpr_items
+        | BitOrBinExpr
+        | BitXorBinExpr
+        | BitAndBinExpr
+        | (LeftShiftBinExpr | RightShiftBinExpr)
+        | AddExpr_items
+        | MulExpr_items
+        | ControlFlowExpr_items
+        | UnaryExpr
+        | BorrowExpr
+        | AtomExpr
+
+fake BinaryExpr ::= Expr BinaryOp Expr {
+    methods = [
+        left="/Expr[0]"
+        right="/Expr[1]"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvBinaryExprMixin"
+}
+
+//noinspection BnfUnusedRule
+fake BinaryOp ::= '<==>' | '==>' | '='
+                    | '==' | '!='
+                    | '<' | '>' | '<=' | '>='
+                    | '<<' | '>>'
+                    | '+' | '-' | '*' | '/' | '%'
+                    | '||' | '&&' | '|' | '&' | '^'
+
+
+private MulExpr_items ::= DivBinExpr | MulBinExpr | ModBinExpr
+private AddExpr_items ::= PlusBinExpr | MinusBinExpr
+private LogicalEqExpr_items ::= EqualsBinExpr | NotEqualsBinExpr | LessEqualsBinExpr | LessBinExpr | GreaterEqualsBinExpr | GreaterBinExpr
+
+private ControlFlowExpr_items ::= IfExpr | LoopExpr | MatchExpr | WhileExpr | ForExpr
+private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
+                      | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
+private AtomExpr ::=
+                    AnnotatedExpr
+                    | TupleLitOrParenExpr
+                    | StructLitExpr
+                    | VectorLitExpr
+                    | DotExpr
+                    | IndexExpr
+                    | PathExpr
+                    | CallExpr
+                    | AssertMacroExpr
+//                    | (CallExpr | AssertExpr)
+//                    | RefExpr
+                    | LambdaExpr
+                    | LitExpr
+                    | CodeBlockExpr
+
+
+CastExpr ::= Expr as Type
+
+private AnnotatedExpPrefix ::= '(' Expr ':'
+AnnotatedExpr ::= AnnotatedExpPrefix Type ')' { pin = 1 }
+
+EqualsBinExpr ::= Expr (!eqeq_gt EqualsBinOp) Expr
+NotEqualsBinExpr ::= Expr NotEqualsBinOp Expr
+
+EqualsBinOp ::= '=='
+NotEqualsBinOp ::= '!='
+
+// booleans
+OrBinExpr ::= Expr OrBinOp Expr
+AndBinExpr ::= Expr AndBinOp Expr
+
+OrBinOp ::= oror
+AndBinOp ::= andand
+
+LessBinExpr ::= Expr (!(ltlt | lt_eqeq_gt) LessBinOp) Expr
+GreaterBinExpr ::= Expr (!gtgt GreaterBinOp) Expr
+LessEqualsBinExpr ::= Expr LessEqualsBinOp Expr
+GreaterEqualsBinExpr ::= Expr GreaterEqualsBinOp Expr
+
+LessBinOp ::= '<'
+GreaterBinOp ::= '>'
+LessEqualsBinOp ::= lteq
+GreaterEqualsBinOp ::= gteq
+
+// bitwise ops
+BitOrBinExpr ::= Expr (!oror BitOrBinOp) Expr
+BitAndBinExpr ::= Expr (!andand BitAndBinOp) Expr
+BitXorBinExpr ::= Expr BitXorBinOp Expr
+
+BitOrBinOp ::= '|'
+BitAndBinOp ::= '&'
+BitXorBinOp ::= '^'
+
+// arithmetic
+MulBinExpr ::= Expr MulBinOp Expr
+DivBinExpr ::= Expr DivBinOp Expr
+PlusBinExpr ::= Expr PlusBinOp Expr
+MinusBinExpr ::= Expr MinusBinOp Expr
+ModBinExpr ::= Expr ModBinOp Expr
+
+MulBinOp ::= '*'
+DivBinOp ::= '/'
+PlusBinOp ::= '+'
+MinusBinOp ::= '-'
+ModBinOp ::= '%'
+
+// bit shifts
+LeftShiftBinExpr ::= Expr LeftShiftBinOp Expr
+RightShiftBinExpr ::= Expr RightShiftBinOp Expr
+
+LeftShiftBinOp ::= ltlt
+RightShiftBinOp ::= gtgt
+
+// imply
+private ImplyBinExpr_items ::= ImplyBinExpr | PartialImplyBinExpr
+ImplyBinExpr ::= Expr ImplyBinOp Expr
+PartialImplyBinExpr ::= Expr PartialImplyBinOp Expr
+
+ImplyBinOp ::= <<includeStmtModeFalse>> <<mslOnly eqeq_gt>>
+PartialImplyBinOp ::= <<mslOnly lt_eqeq_gt>>
+
+BangExpr ::= '!' Expr
+DerefExpr ::= '*' Expr
+
+CopyExpr ::= copy Expr
+MoveExpr ::= move Expr
+
+ReturnExpr ::= return Expr?
+
+AbortExpr ::= abort Expr
+BreakExpr ::= break
+ContinueExpr ::= continue
+
+VectorLitExpr ::= <<vectorIdent>> ('<' TypeArgument '>')? VectorLitItems
+VectorLitItems ::= '[' <<non_empty_comma_sep_items Expr>>? ']'
+{
+    pin = 1
+}
+
+StructLitExpr ::= <<includeStmtModeFalse>> PathImpl StructLitFieldsBlock
+{
+    implements = ["org.sui.lang.core.resolve2.ref.InferenceCachedPathElement"]
+}
+StructLitFieldsBlock ::= '{' StructLitField_with_recover* '}' { pin = 1 }
+
+private StructLitField_with_recover ::= !'}' StructLitField (',' | &'}')
+{
+    pin = 1
+    recoverWhile = StructLitField_recover
+}
+private StructLitField_recover ::= !('}' | IDENTIFIER)
+
+StructLitField ::= IDENTIFIER StructLitFieldInit?
+{
+    implements = [
+        "org.sui.lang.core.resolve.ref.MvMandatoryReferenceElement"
+//        "org.sui.lang.core.psi.ext.MvFieldReferenceElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvStructLitFieldMixin"
+}
+
+private StructLitFieldInit ::= ':' Expr { pin = 1 }
+
+fake TupleLitExpr ::= '(' Expr+ ')' {
+    pin = 2
+}
+fake ParensExpr ::= '(' Expr ')' {
+    pin = 1
+}
+
+TupleLitOrParenExpr ::= '(' Expr (TupleLitExprUpper | ')') {
+    pin = 1
+    elementType = ParensExpr
+}
+upper TupleLitExprUpper ::= ',' [ Expr (',' Expr)* ','? ] ')' {
+    pin = 1
+    elementType = TupleLitExpr
+}
+
+LambdaExpr ::= '|' <<non_empty_comma_sep_items PatBinding>> '|' Expr { pin = 1 }
+
+RangeExpr ::= Expr dotdot Expr { pin = 2 }
+
+
+private HEX_INTEGER_LITERAL ::= <<hexIntegerLiteral>>
+LitExpr ::= HEX_INTEGER_LITERAL
+                | BOOL_LITERAL
+                | INTEGER_LITERAL
+                | HEX_STRING_LITERAL
+                | BYTE_STRING_LITERAL
+                | AddressLit
+
+private AnyLitToken_first ::= HEX_INTEGER_LITERAL
+                                  | BOOL_LITERAL
+                                  | INTEGER_LITERAL
+                                  | HEX_STRING_LITERAL
+                                  | BYTE_STRING_LITERAL
+                                  | '@'
+
+AddressLit ::= '@' AddressRef { pin = 1 }
+
+CallExpr ::= PathImpl !'!' ValueArgumentList {
+//    pin = 2
+    implements = [
+        "org.sui.lang.core.psi.ext.MvCallable"
+        "org.sui.lang.core.psi.MvAcquireTypesOwner"
+        "org.sui.lang.core.resolve2.ref.InferenceCachedPathElement"
+    ]
+}
+ValueArgumentList ::= '(' ValueArgumentList_items? ')' {
+    pin = 1
+}
+private ValueArgumentList_items ::= ValueArgument (',' ValueArgument)* ','?
+
+ValueArgument ::= !')' Expr &(',' | ')') {
+    pin = 1
+    recoverWhile = ValueArgument_recover
+}
+private ValueArgument_recover ::= !(<<mslOnly SpecExpr_first>> | Expr_first | ')' | '}' | ';' | ',')
+
+MatchExpr ::= Attr* <<remapContextualKwOnRollback (match MatchArgument MatchBody)>>
+{
+    implements = [ "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+}
+MatchArgument ::= '(' Expr ')'
+
+MatchBody ::= '{' MatchArm_with_recover* '}' { pin = 1 }
+MatchArm ::= Attr* (Pat) MatchArmGuard? '=>' Expr ','?
+{
+    pin = 2
+    implements = [ "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+}
+MatchArmGuard ::= if Expr
+
+private MatchArm_with_recover ::= !'}' MatchArm
+{
+    pin = 1
+    recoverWhile = MatchArm_recover
+}
+private MatchArm_recover ::= !(Pat_first | Attr_first | '}')
+
+IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
+
+Condition ::= '(' ConditionBody ')' { pin = 1 }
+private ConditionBody ::= Expr { recoverWhile = "ConditionBody_recover" }
+private ConditionBody_recover ::= !')'
+
+ElseBlock ::= else AnyBlock { pin = 1 }
+
+LoopExpr ::= loop AnyBlock {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MvLoopLike" ]
+}
+WhileExpr ::= while Condition AnyBlock {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MvLoopLike" ]
+}
+ForExpr ::= for ForIterCondition AnyBlock {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MvLoopLike" ]
+}
+ForIterCondition ::= '(' PatBinding in Expr ')' {
+    pin = 1
+}
+
+AssignmentExpr ::= Expr Initializer { rightAssociative = true }
+Initializer ::= '=' Expr { pin = 1 }
+LabelDecl ::= QUOTE_IDENTIFIER ':'
+BorrowExpr ::= '&' mut? Expr
+
+DotExpr ::= Expr DotExpr_inner
+// Do not inline this rule, it breaks expression parsing
+private DotExpr_inner ::= '.' !('.' | VectorStart) (MethodCall | StructDotField) {
+    pin = 2
+    consumeTokenMethod = "consumeTokenFast"
+}
+
+private VectorStart ::= (<<vectorIdent>> ('[' | '<'))
+
+StructDotField ::= IDENTIFIER !('(' | '::' | '!' | '{')
+{
+    implements = ["org.sui.lang.core.psi.ext.MvMethodOrField"]
+    mixin = "org.sui.lang.core.psi.ext.MvStructDotFieldMixin"
+}
+MethodCall ::= IDENTIFIER ColonTypeArgumentList? ValueArgumentList
+{
+    implements = [
+        "org.sui.lang.core.psi.ext.MvMethodOrField"
+        "org.sui.lang.core.psi.ext.MvMethodOrPath"
+        "org.sui.lang.core.psi.ext.MvCallable"
+        "org.sui.lang.core.psi.MvAcquireTypesOwner"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvMethodCallMixin"
+}
+
+IndexExpr ::= Expr IndexArg
+{
+    implements = [ "org.sui.lang.core.psi.MvAcquireTypesOwner" ]
+}
+// Do not inline this rule, it breaks expression parsing
+private IndexArg ::= '[' Expr ']'
+
+//RefExpr ::= PathImpl !'{' {
+//RefExpr ::= Path !'{' {
+//    implements = ["org.move.lang.core.psi.PathExpr"]
+//}
+
+//Path3Impl ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
+//{
+//    implements = [
+//        "org.move.lang.core.resolve.ref.MvPathReferenceElement"
+//        "org.move.lang.core.psi.ext.MvMethodOrPath"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvPathMixin"
+//}
+
+PathExpr ::= PathImpl !('(' | '!')
+{
+    implements = [ "org.sui.lang.core.resolve2.ref.InferenceCachedPathElement" ]
+}
+RefExpr ::= PathImpl
+
+fake Path ::= (Path '::')? (PathIdent | PathAddress) TypeArgumentList?
+{
+    implements = [
+        "org.sui.lang.core.resolve.ref.MvNameAccessChainReferenceElement"
+        "org.sui.lang.core.psi.ext.MvMethodOrPath"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvPathMixin"
+}
+
+private PathImpl ::= PathStart PathSegment*
+private Path_first ::= PATH_MODE_IDENTIFIER | DIEM_ADDRESS | INTEGER_LITERAL
+
+PathStart ::= ((PathAddress &'::') | PathIdent) TypeArgumentList?
+{
+    name = "path"
+    elementType = Path
+}
+// negation for UseSpeck
+left PathSegment ::= '::' !'{' PathIdent TypeArgumentList? {
+    pin = 2
+    elementType = Path
+}
+
+private PathIdent ::= PATH_MODE_IDENTIFIER
+PathAddress ::= DIEM_ADDRESS
+                | INTEGER_LITERAL
+                | PLACEHOLDER_ADDRESS
+                | BECH32_ADDRESS
+                | POLKADOT_ADDRESS
+
+//private LocalPathIdent ::= PATH_MODE_IDENTIFIER
+//private ModulePathIdent ::= ModuleRef ('::' !(PATH_MODE_IDENTIFIER '::')) PATH_MODE_IDENTIFIER
+//{
+//    pin = 2
+//}
+//private FQModulePathIdent ::= FQModuleRef '::' PATH_MODE_IDENTIFIER
+//{
+//    pin = 1
+//}
+private PATH_MODE_IDENTIFIER ::= (<<isPathMode 'VALUE' >> IDENTIFIER)
+                                | (<<isPathMode 'WILDCARD' >> ('*' | IDENTIFIER))
+
+AddressRef ::= NamedAddress
+                | DIEM_ADDRESS
+                | INTEGER_LITERAL
+                | PLACEHOLDER_ADDRESS
+                | BECH32_ADDRESS
+                | POLKADOT_ADDRESS
+NamedAddress ::= IDENTIFIER
+{
+    implements = ["org.sui.lang.core.resolve.ref.NamedAddressReferenceElement"]
+    mixin = "org.sui.lang.core.psi.ext.MvNamedAddressMixin"
+}
+
+/// Macros
+AssertMacroExpr ::= <<assertIdent>> '!' ValueArgumentList {
+//    pin = 2
+    implements = [ "org.sui.lang.core.psi.ext.MvCallable" ]
+}
+AssertBangExpr ::= <<assertIdent>> '!' ValueArgumentList
+//AssertBangExpr ::= MacroIdent ValueArgumentList { pin = 1 }
+//MacroIdent ::= IDENTIFIER '!'
+
+private assert ::= <<assertKeyword>>
+private assume ::= <<assumeKeyword>>
+private modifies ::= <<modifiesKeyword>>
+private requires ::= <<requiresKeyword>>
+private decreases ::= <<decreasesKeyword>>
+private ensures ::= <<ensuresKeyword>>
+private aborts_if ::= <<abortsIfKeyword>>
+private aborts_with ::= <<abortsWithKeyword>>
+private include ::= <<includeKeyword>>
+private choose ::= <<chooseKeyword>>
+private min ::= <<minKeyword>>
+
+private invariant ::= <<invariantKeyword>>
+private axiom ::= <<axiomKeyword>>
+private forall ::= <<forallKeyword>>
+private exists ::= <<existsKeyword>>
+private with ::= <<withKeyword>>
+private where ::= <<whereKeyword>>
+private in ::= <<inKeyword>>
+private update ::= <<updateKeyword>>
+
+private pragma ::= <<pragmaKeyword>>
+private local ::= <<localKeyword>>
+private global ::= <<globalKeyword>>
+private emits ::= <<emitsKeyword>>
+private to ::= <<toKeyword>>
+private apply ::= <<applyKeyword>>
+private except ::= <<exceptKeyword>>
+
+ModuleSpec ::= Attr* spec PathImpl ModuleSpecBlock
+//ModuleSpec ::= Attr* spec FQModuleRef ModuleSpecBlock
+{
+    pin = "spec"
+    name = "module spec declaration"
+    mixin = "org.sui.lang.core.psi.ext.MvModuleSpecMixin"
+    stubClass = "org.sui.lang.core.stubs.MvModuleSpecStub"
+    elementTypeFactory = "org.sui.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'
+{
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.ext.MvItemsOwner"
+        "org.sui.lang.core.psi.ScopeMslOnlyElement"
+        "org.sui.lang.core.psi.AnyBlock"
+    ]
+}
+
+private ModuleSpecBlock_item_with_recover ::= !('}' | <<eof>>) ModuleSpecBlock_item
+{
+    pin = 1
+    recoverWhile = ModuleSpecBlock_item_recover
+}
+private ModuleSpecBlock_item ::= UseStmt | SpecFunctionItem | Schema | ModuleItemSpec | ItemSpec
+private ModuleSpecBlock_item_recover ::= !('}' | <<eof>> | spec | use)
+
+ModuleItemSpec ::= spec MODULE_KW <<msl SpecCodeBlock>>
+{
+    pin = 2
+    implements = [
+        "org.sui.lang.core.types.infer.MvInferenceContextOwner"
+        "org.sui.lang.core.psi.ScopeMslOnlyElement"
+    ]
+}
+ItemSpec ::= (spec !MODULE_KW) ItemSpecRef ItemSpecSignature? <<msl SpecCodeBlock>>
+{
+    pin = 1
+    implements = [
+        "org.sui.lang.core.types.infer.MvInferenceContextOwner"
+        "org.sui.lang.core.psi.MvModificationTrackerOwner"
+        "org.sui.lang.core.psi.ScopeMslOnlyElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvItemSpecMixin"
+}
+ItemSpecSignature ::= ItemSpecTypeParameterList? ItemSpecFunctionParameterList ReturnType?
+{
+    pin = ItemSpecFunctionParameterList
+    name = "function signature"
+}
+
+ItemSpecTypeParameterList ::= '<' ItemSpecTypeParameter_with_recover* '>'
+{
+    pin = 1
+}
+private ItemSpecTypeParameter_with_recover ::= !'>' ItemSpecTypeParameter (',' | &'>')
+{
+    pin = 1
+    recoverWhile = ItemSpecTypeParameter_recover
+}
+private ItemSpecTypeParameter_recover ::= !('>' | '(' | '{' | phantom | IDENTIFIER)
+
+ItemSpecTypeParameter ::= IDENTIFIER TypeParamBound? {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.resolve.ref.MvItemSpecParameterReferenceElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvItemSpecTypeParameterMixin"
+}
+
+ItemSpecFunctionParameterList ::= '(' ItemSpecFunctionParameter_with_recover* ')' { pin = 1 }
+private ItemSpecFunctionParameter_with_recover ::= !(')' | '{' | ';') ItemSpecFunctionParameter (',' | &')')
+{
+    pin = 1
+    recoverWhile = ItemSpecFunctionParameter_recover
+}
+private ItemSpecFunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
+
+ItemSpecFunctionParameter ::='mut'? IDENTIFIER TypeAnnotation {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.resolve.ref.MvItemSpecParameterReferenceElement"
+        "org.sui.lang.core.psi.MvTypeAnnotationOwner"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvItemSpecFunctionParameterMixin"
+}
+
+ItemSpecRef ::= IDENTIFIER
+{
+    implements = ["org.sui.lang.core.resolve.ref.MvMandatoryReferenceElement"]
+    mixin = "org.sui.lang.core.psi.ext.MvItemSpecRefMixin"
+}
+
+Schema ::= Attr* (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock>> {
+    pin = 2
+    implements = [
+        "org.sui.lang.core.psi.MvTypeParametersOwner"
+        "org.sui.lang.core.psi.MvQualNamedElement"
+        "org.sui.lang.core.types.infer.MvInferenceContextOwner"
+        "org.sui.lang.core.psi.ScopeMslOnlyElement"
+        "org.sui.lang.core.psi.ext.MvItemElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvSchemaMixin"
+    stubClass = "org.sui.lang.core.stubs.MvSchemaStub"
+    elementTypeFactory = "org.sui.lang.core.stubs.StubsKt.factory"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+
+ItemSpecBlockExpr ::= spec <<msl SpecCodeBlock>> {
+    implements = [
+        "org.sui.lang.core.psi.ScopeMslOnlyElement"
+    ]
+}
+
+SpecCodeBlock ::= '{' ItemSpecBlock_items '}'
+{
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.ext.MvItemsOwner"
+        "org.sui.lang.core.psi.AnyBlock"
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvSpecCodeBlockMixin"
+}
+private ItemSpecBlock_items ::= (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_expr)?
+{
+    recoverWhile = ItemSpecBlock_items_recover
+}
+private ItemSpecBlock_items_recover ::= !('}' | <<eof>>)
+
+private SpecStmt ::= UseStmt
+                       | SchemaFieldStmtImpl
+                       | GlobalVariableStmt
+                       | SpecInlineFunctionStmt
+                       | PragmaSpecStmt
+                       | IncludeStmt
+                       | UpdateSpecStmt
+                       | ApplySchemaStmt
+                       | LetMslStmt
+                       | SpecExprStmt
+
+fake SchemaFieldStmt ::= local? PatBinding TypeAnnotation ';'
+{
+    implements = [
+        "org.sui.lang.core.psi.MvTypeAnnotationOwner"
+		"org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+private SchemaFieldStmtImpl ::= SchemaFieldStmt_local | SchemaFieldStmt_simple
+
+SchemaFieldStmt_simple ::= PatBinding TypeAnnotation ';' {
+    pin = 2
+    elementType = SchemaFieldStmt
+}
+SchemaFieldStmt_local ::= local PatBinding TypeAnnotation ';' {
+    pin = 1
+    elementType = SchemaFieldStmt
+}
+
+GlobalVariableStmt ::= Attr* global IDENTIFIER TypeParameterList? TypeAnnotation ('=' Expr)? ';'
+{
+    pin = 2
+    implements = [
+        "org.sui.lang.core.psi.MvNameIdentifierOwner"
+        "org.sui.lang.core.psi.MvTypeAnnotationOwner"
+        "org.sui.lang.core.psi.MslOnlyElement"
+        "org.sui.lang.core.psi.ext.MvItemElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvGlobalVariableMixin"
+}
+
+PragmaSpecStmt ::= pragma <<non_empty_comma_sep_items PragmaAttribute>> ';' {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+PragmaAttribute ::= IDENTIFIER ('=' Expr)? {
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+
+AbortsIfSpecExpr ::= aborts_if SpecPropertyList? Expr AbortsIfWith? {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MvBoolSpecExpr"
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+AbortsIfWith ::= with Expr {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+
+AbortsWithSpecExpr ::= aborts_with SpecPropertyList? <<non_empty_comma_sep_items Expr>> {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+
+AssertSpecExpr ::= assert SpecPropertyList? Expr {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MvBoolSpecExpr"
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+AssumeSpecExpr ::= assume SpecPropertyList? Expr {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MvBoolSpecExpr"
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+EnsuresSpecExpr ::= ensures SpecPropertyList? SpecExpr {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MvBoolSpecExpr"
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+RequiresSpecExpr ::= requires SpecPropertyList? Expr {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MvBoolSpecExpr"
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+DecreasesSpecExpr ::= decreases SpecPropertyList? Expr {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+ModifiesSpecExpr ::= modifies SpecPropertyList? Expr {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+IncludeStmt ::= include SpecPropertyList? IncludeItem ';' {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+UpdateSpecStmt ::= update UpdateExpr_items '=' Expr ';' {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+private UpdateExpr_items ::= UnaryExpr | BorrowExpr | AtomExpr
+
+IncludeItem ::= SchemaIncludeItem | AndIncludeItem | IfElseIncludeItem | ImplyIncludeItem
+{
+    implements = [
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+SchemaIncludeItem ::= SchemaLit &(';' | '}' | SpecExprStmt_first)
+{
+    extends = IncludeItem
+}
+AndIncludeItem ::= SchemaLit AndBinOp SchemaLit
+{
+    extends = IncludeItem
+}
+ImplyIncludeItem ::= <<includeStmtMode Expr>> ImplyBinOp SchemaLit
+{
+    extends = IncludeItem
+}
+IfElseIncludeItem ::= if Condition SchemaLit else SchemaLit
+{
+    extends = IncludeItem
+}
+
+SchemaLit ::= PathImpl SchemaFieldsBlock?
+{
+    implements = [
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+SchemaFieldsBlock ::= '{' SchemaField_with_recover* '}' { pin = 1 }
+private SchemaField_with_recover ::= !'}' SchemaLitField (',' | &'}')
+{
+    pin = 1
+    recoverWhile = SchemaField_recover
+}
+private SchemaField_recover ::= !('}' | IDENTIFIER)
+
+SchemaLitField ::= IDENTIFIER SchemaLitFieldInit?
+{
+    implements = [
+        "org.sui.lang.core.resolve.ref.MvSchemaRefFieldReferenceElement"
+		"org.sui.lang.core.psi.MslOnlyElement"
+    ]
+    mixin = "org.sui.lang.core.psi.ext.MvSchemaLitFieldMixin"
+}
+private SchemaLitFieldInit ::= ':' Expr { pin = 1 }
+
+private PatternVis ::= <<patternVisibility>>
+private PatternIdent ::= <<patternIdent>>
+
+FunctionPattern ::= PatternVis? PatternIdent TypeParameterList? {
+    pin = 2
+    implements = [
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+InvariantSpecExpr ::= invariant TypeParameterList? update? SpecPropertyList? Expr {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MvBoolSpecExpr"
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+AxiomSpecExpr ::= axiom TypeParameterList? SpecPropertyList? Expr {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MvBoolSpecExpr"
+        "org.sui.lang.core.psi.MvTypeParametersOwner"
+		"org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+SpecPropertyList ::= '[' SpecPropertyList_items? ']' {
+    implements = [
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+private SpecPropertyList_items ::= SpecProperty (',' SpecProperty)* ','?
+
+SpecProperty ::= !']' IDENTIFIER ('=' LitExpr)? &(',' | ']') {
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+
+EmitsSpecExpr ::= emits SpecPropertyList? Expr to Expr EmitsCondition? {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+EmitsCondition ::= if Expr {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+
+ApplySchemaStmt ::= apply SchemaRef ApplyTo ApplyExcept? ';' {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+ApplyTo ::= to <<non_empty_comma_sep_items FunctionPattern>> {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+ApplyExcept ::= except <<non_empty_comma_sep_items FunctionPattern>> {
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+
+SchemaRef ::= PathImpl ('{' <<non_empty_comma_sep_items ApplySchemaNameAttribute>> '}')?
+{
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+ApplySchemaNameAttribute ::= IDENTIFIER ':' Expr
+{
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+
+QuantWhere ::= where Expr
+{
+    pin = 1
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+
+ForallQuantExpr ::= <<mslOnly forall>> QuantBindings QuantWhere? ':' Expr
+{
+    pin = 1
+    rightAssociative = true
+    implements = [
+        "org.sui.lang.core.psi.ext.MvQuantExpr"
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+ExistsQuantExpr ::= <<mslOnly exists>> QuantBindings QuantWhere? ':' Expr
+{
+    pin = 1
+    rightAssociative = true
+    implements = [
+        "org.sui.lang.core.psi.ext.MvQuantExpr"
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+QuantBindings ::= <<non_empty_comma_sep_items QuantBinding>>
+
+// TODO: should be single QuantBinding, multiple are not allowed
+ChooseQuantExpr ::= choose min? QuantBindings QuantWhere?
+{
+    pin = 1
+    implements = [
+        "org.sui.lang.core.psi.ext.MvQuantBindingsOwner"
+        "org.sui.lang.core.psi.MslOnlyElement"
+    ]
+}
+QuantBinding ::= RangeQuantBinding | TypeQuantBinding
+{
+    implements = [ "org.sui.lang.core.psi.MslOnlyElement" ]
+}
+
+RangeQuantBinding ::= PatBinding in Expr {
+    pin = 2
+    extends = QuantBinding
+}
+TypeQuantBinding ::= PatBinding ':' Type {
+    pin = 2
+    extends = QuantBinding
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Meta rules
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+private gtgt   ::= <<gtgtImpl>>
+private gteq   ::= <<gteqImpl>>
+private ltlt   ::= <<ltltImpl>>
+private lteq   ::= <<lteqImpl>>
+private oror   ::= <<ororImpl>>
+private andand ::= <<andandImpl>>
+private eqeq_gt ::= <<eqeqgtImpl>>
+private lt_eqeq_gt ::= <<lteqeqgtImpl>>
+
+private dotdot ::= <<dotdotImpl>>
+
+private meta non_empty_comma_sep_items ::= <<param>> ( ',' <<param>> )* ','?
+private meta comma_separated_list ::= <<param>> ( ',' <<param>> )* ','?
+private meta list_element ::= !'>' <<param>> (',' | &'>') { pin = 2 }
