@@ -75,9 +75,9 @@ HEX_INTEGER_LITERAL=0x[0-9a-zA-Z_]*
 HEX_STRING_LITERAL=x\" ( [0-9a-zA-Z]* ) (\")?
 BYTE_STRING_LITERAL=b\" ( [^\\\"\n] | \\[^] )* (\")?
 
-IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]* | `type`
+IDENTIFIER=(\$)?[_a-zA-Z][_a-zA-Z0-9]* | `type`
 
-MARCO_IDENTIFIER=\$[_a-zA-Z][_a-zA-Z0-9]*
+
 %%
 <YYINITIAL> {
       {WHITE_SPACE}        { return WHITE_SPACE; }
@@ -164,7 +164,7 @@ MARCO_IDENTIFIER=\$[_a-zA-Z][_a-zA-Z0-9]*
   {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }
   {BYTE_STRING_LITERAL}      { return BYTE_STRING_LITERAL; }
   {IDENTIFIER}               { return IDENTIFIER; }
-  {MARCO_IDENTIFIER}               { return MARCO_IDENTIFIER; }
+
 }
 
 <IN_BLOCK_COMMENT> {

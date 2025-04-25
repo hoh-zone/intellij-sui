@@ -99,6 +99,7 @@ fun generateFunction(function: MvFunction, buffer: StringBuilder) {
         buffer += "\n"
     }
     if (function.isNative) buffer += "native "
+    if (function.isMacro) buffer += "macro "
     buffer += "fun "
     buffer.b { it += function.name }
     function.typeParameterList?.generateDocumentation(buffer)
@@ -177,7 +178,7 @@ private fun PsiElement.generateDocumentation(
                 .joinToWithBuffer(buffer, ", ", "(", ")") { generateDocumentation(it) }
 
         is MvFunctionParameter -> {
-            buffer += this.patBinding.identifier.text
+            buffer += this.patBinding.identifier?.text
             this.typeAnnotation?.type?.generateDocumentation(buffer, ": ")
         }
 

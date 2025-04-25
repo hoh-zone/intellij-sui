@@ -9,6 +9,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.ErrorReportSubmitter
 import com.intellij.openapi.diagnostic.IdeaLoggingEvent
 import com.intellij.openapi.diagnostic.SubmittedReportInfo
+import com.intellij.openapi.extensions.PluginDescriptor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
@@ -33,6 +34,9 @@ class SentryErrorReporter : ErrorReportSubmitter() {
         }
     }
 
+    override fun getPluginDescriptor(): PluginDescriptor {
+        return super.getPluginDescriptor()
+    }
     override fun getReportActionText(): String = "Report to Pontem Network"
 
     override fun submit(
@@ -72,7 +76,8 @@ class SentryErrorReporter : ErrorReportSubmitter() {
             val sentryEvent = SentryEvent()
             sentryEvent.level = SentryLevel.ERROR
 
-            val plugin = IdeErrorsDialog.getPlugin(event)
+            val plugin =  this.pluginDescriptor
+
             val pluginInfoContext = mutableMapOf<String, Any>()
             pluginInfoContext["Platform"] = ApplicationInfo.getInstance().fullApplicationName
             pluginInfoContext["Plugin Version"] = plugin?.version ?: "unknown"

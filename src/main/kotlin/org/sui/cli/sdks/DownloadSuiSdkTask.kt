@@ -4,7 +4,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.diagnostic.ControlFlowException
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkDownloaderLogger
+// com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkDownloaderLogger
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.component1
 import com.intellij.openapi.util.component2
@@ -94,7 +94,7 @@ class DownloadSuiSdkTask(
 
         } catch (t: Throwable) {
             //if we were cancelled in the middle or failed, let's clean up
-            JdkDownloaderLogger.logDownload(false)
+            //JdkDownloaderLogger.logDownload(false)
 
             // Create and display a notification
             MvNotifications.pluginNotifications().createNotification(

@@ -17,7 +17,7 @@ import org.sui.stdext.makeBitMask
 import kotlin.math.max
 
 enum class FunModifier {
-    VIS, NATIVE, ENTRY, INLINE;
+    VIS, NATIVE, ENTRY, INLINE,MACRO_KW;
 }
 
 @Suppress("UNUSED_PARAMETER")
@@ -281,6 +281,11 @@ object MoveParserUtil : GeneratedParserUtilBase() {
                 inlineKeyword(b, level) -> {
                     if (FunModifier.INLINE !in modifiersLeft) return isParsed()
                     modifiersLeft.remove(FunModifier.INLINE)
+                    parsed = true
+                }
+                b.tokenType == MACRO_KW -> {
+                    if (FunModifier.MACRO_KW !in modifiersLeft) return isParsed()
+                    modifiersLeft.remove(FunModifier.MACRO_KW)
                     parsed = true
                 }
                 else -> return isParsed()

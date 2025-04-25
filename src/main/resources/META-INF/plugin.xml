@@ -60,6 +60,8 @@
                              implementationClass="org.sui.bytecode.SuiBytecodeDecompiler"/>
         <editorNotificationProvider implementation="org.sui.bytecode.SuiBytecodeNotificationProvider"/>
 
+        <!--platform.lsp.serverSupportProvider implementation="org.sui.ide.lsp.MvSuiLspServerSupportProvider"/-->
+
         <fileType name="Sui Move"
                   language="Sui Move"
                   extensions="move"

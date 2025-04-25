@@ -52,6 +52,8 @@ val MvFunctionLike.functionItemPresentation: PresentationData?
         )
     }
 
+val MvFunctionLike.isMraco get() = hasChild(MvElementTypes.MACRO_KW)
+
 val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()

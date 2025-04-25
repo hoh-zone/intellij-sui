@@ -132,11 +132,11 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
         if (referenceElement.hasAncestor<MvMatchArm>() && referenceElement.parent is MvFieldPat) return
 
         if (referenceElement.hasAncestor<MvDotExpr>() && referenceElement is MvMethodCall) return
-        if (referenceElement.hasAncestor<MvCallExpr>() && referenceElement is MvPathImpl) return
+        if (referenceElement.hasAncestor<MvCallExpr>() && referenceElement is MvPathImpl && !referenceElement.hasAncestor<MvValueArgument>()) return
 
-        if (referenceElement.hasAncestor<MvMacroFunctionParameterList>() && referenceElement.text.equals("_")) return
+        if (referenceElement.hasAncestor<MvFunctionParameterList>() && referenceElement.text.equals("_")) return
 
-        if (referenceElement.hasAncestor<MvMacroFunctionParameterList>() && referenceElement.textMatches("$")) return
+        //if (referenceElement.hasAncestor<MvMacroFunctionParameterList>() && referenceElement.textMatches("$")) return
 
         val reference = referenceElement.reference ?: return
 

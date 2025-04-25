@@ -75,7 +75,7 @@ fun MvPath.pathKind(isCompletion: Boolean = false): PathKind {
         if (pathAddress != null) {
             return PathKind.ValueAddress(Address.Value(pathAddress.text))
         }
-        val referenceName = this.referenceName ?: error("if pathAddress is null, reference has to be non-null")
+        val referenceName = this.referenceName ?: error("if pathAddress is null, reference has to be non-null"+this.identifier)
 
         // check whether it's a first element in use stmt, i.e. use [std]::module;
         //                                                           ^

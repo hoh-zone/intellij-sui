@@ -14,7 +14,7 @@ val MvFunctionParameter.paramIndex: Int get() =
     (this.parent as MvFunctionParameterList).functionParameterList.indexOf(this)
 
 val MvFunctionParameter.isSelfParam: Boolean get() =
-    this.patBinding.name?:this.patBinding.marcoIdentifier!!.text == "self" && this.paramIndex == 0
+    this.patBinding.name== "self" && this.paramIndex == 0
 
 var MvFunctionParameter.resolveContext: MvFunction?
     get() = (this as MvFunctionParameterMixin).resolveContext

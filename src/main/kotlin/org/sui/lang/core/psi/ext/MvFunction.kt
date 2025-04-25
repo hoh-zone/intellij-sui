@@ -36,7 +36,7 @@ val MvFunction.isView: Boolean
     }
 
 // is a Macro function
-val MvFunction.isMacro :Boolean get() = this.isChildExists(MvElementTypes.MARCO_TYPE)
+val MvFunction.isMacro :Boolean get() = this.isChildExists(MvElementTypes.MACRO_KW)
 
 fun MvFunction.functionId(moveProject: MoveProject): String? = qualName?.cmdText(moveProject)
 

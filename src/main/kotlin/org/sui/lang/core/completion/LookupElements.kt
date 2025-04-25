@@ -153,6 +153,7 @@ open class DefaultInsertHandler(val completionCtx: CompletionContext? = null) : 
                     val isMethodCall = context.getElementOfType<MvMethodOrField>() != null
                     val requiresExplicitTypes =
                         element.requiresExplicitlyProvidedTypeArguments(completionCtx)
+                    val marco = element.isMraco
                     if (isMethodCall) {
                         var suffix = ""
                         if (requiresExplicitTypes && !context.alreadyHasColonColon) {
@@ -171,6 +172,8 @@ open class DefaultInsertHandler(val completionCtx: CompletionContext? = null) : 
                         EditorModificationUtil.moveCaretRelatively(context.editor, caretShift)
                     } else {
                         var suffix = ""
+                        if(marco)
+                            suffix += "!"
                         if (requiresExplicitTypes && !context.alreadyHasAngleBrackets) {
                             suffix += "<>"
                         }

@@ -51,6 +51,9 @@ sealed class Diagnostic(
         }
     }
 
+
+
+
     class NoTypeArgumentsExpected(
         element: PsiElement,
         private val itemLabel: String,
@@ -64,6 +67,8 @@ sealed class Diagnostic(
         }
     }
 
+
+
     class ValueArgumentsNumberMismatch(
         target: PsiElement,
         private val expectedCount: Int,
@@ -72,6 +77,24 @@ sealed class Diagnostic(
         override fun prepare(): PreparedAnnotation {
             val errorMessage =
                 "This function takes " +
+                        "$expectedCount ${pluralise(expectedCount, "parameter", "parameters")} " +
+                        "but $realCount ${pluralise(realCount, "parameter", "parameters")} " +
+                        "${pluralise(realCount, "was", "were")} supplied"
+            return PreparedAnnotation(
+                ERROR,
+                errorMessage
+            )
+        }
+    }
+
+    class LambdaValueArgumentsNumberMismatch(
+        target: PsiElement,
+        private val expectedCount: Int,
+        private val realCount: Int,
+    ): Diagnostic(target) {
+        override fun prepare(): PreparedAnnotation {
+            val errorMessage =
+                "This Lambda takes " +
                         "$expectedCount ${pluralise(expectedCount, "parameter", "parameters")} " +
                         "but $realCount ${pluralise(realCount, "parameter", "parameters")} " +
                         "${pluralise(realCount, "was", "were")} supplied"

@@ -3,6 +3,8 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.ByteArrayOutputStream
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
 import java.util.*
 
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
@@ -57,21 +59,22 @@ if (publishingChannel != "default") {
 val pluginGroup = "org.sui"
 val pluginName = "intellij-sui-move"
 val pluginJarName = "intellij-sui-move-$pluginVersion"
-val javaVersion = JavaVersion.VERSION_17
+val javaVersion = JavaVersion.VERSION_23
 
-val kotlinReflectVersion = "1.9.10"
+val kotlinReflectVersion = "2.0.21"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.9.25"
-    id("org.jetbrains.intellij.platform") version "2.0.1"
+    //kotlin("jvm") version "1.9.25"
+    kotlin("jvm") version "2.1.10"
+    id("org.jetbrains.intellij.platform") version "2.5.0"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
-    id("de.undercouch.download") version "5.5.0"
+    id("de.undercouch.download") version "5.6.0"
 }
 
 allprojects {
@@ -97,6 +100,7 @@ allprojects {
         implementation("io.sentry:sentry:7.2.0") {
             exclude("org.slf4j")
         }
+        implementation("org.apache.commons:commons-text:1.12.0")
         implementation("com.github.ajalt.clikt:clikt:3.5.2")
         testImplementation("junit:junit:4.13.2")
         testImplementation("org.opentest4j:opentest4j:1.3.0")
@@ -108,19 +112,20 @@ allprojects {
 //            plugins(listOf(psiViewerPlugin))
             //intellijIdeaCommunity("2024.3.2",useInstaller = true)
             //rustRover("2024.3.3", useInstaller = true)
-            pycharmCommunity("2024.2.4", useInstaller = true)
+            local("D:\\JetBrains\\RustRover 2025.1.1")
+            //pycharmCommunity("2024.2.4", useInstaller = true)
 //            create(prop("platformType"), prop("platformVersion"), useInstaller = useInstaller)
             testFramework(TestFrameworkType.Platform)
             pluginVerifier(Constraints.LATEST_VERSION)
             bundledPlugin("org.toml.lang")
-            jetbrainsRuntime("17.0.11b1207.30")
+            jetbrainsRuntime()
         }
     }
 
-    configure<JavaPluginExtension> {
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
-    }
+//    configure<JavaPluginExtension> {
+//        sourceCompatibility = javaVersion
+//        targetCompatibility = javaVersion
+//    }
 
     sourceSets {
         main {
@@ -129,6 +134,7 @@ allprojects {
     }
 
     kotlin {
+        jvmToolchain(21)
         if (file("src/$shortPlatformVersion/main/kotlin").exists()) {
             sourceSets {
                 main {
@@ -188,11 +194,11 @@ allprojects {
     }
     tasks {
         compileKotlin {
-            kotlinOptions {
-                jvmTarget = "17"
-                languageVersion = "1.9"
-                apiVersion = "1.9"
-                freeCompilerArgs = listOf("-Xjvm-default=all")
+            compilerOptions  {
+                
+                languageVersion.set(KOTLIN_2_0)
+                apiVersion.set(KOTLIN_1_9)
+                freeCompilerArgs.add("-Xjvm-default=all")
             }
         }
 

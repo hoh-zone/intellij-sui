@@ -17,7 +17,7 @@
 
     extends(".*Expr")=Expr
     extends("Pat(Struct|Binding|Tuple|Wild|Const)")=Pat
-    extends("(Lambda|Ref|Path|Tuple|Unit|Parens|Wild|Macro)Type")=Type
+    extends("(Lambda|Ref|Path|Tuple|Unit|Parens|Wild)Type")=Type
 
     elementType(".+BinExpr")=BinaryExpr
     elementType(".+BinOp")=BinaryOp
@@ -53,9 +53,9 @@
         HEX_STRING_LITERAL='regexp:x\"([A-F0-9a-f]*)\"'
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 
-        IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
+        IDENTIFIER='regexp:(\$)*[_a-zA-Z][_a-zA-Z0-9]*'
         FUNCTION_PATTERN_IDENT='regexp:[*_a-zA-Z][*_a-zA-Z0-9]*'
-        MARCO_IDENTIFIER='regexp:\$[_a-zA-Z][_a-zA-Z0-9]*'
+
 
         L_BRACE          =  '{'
         R_BRACE          =  '}'
@@ -477,9 +477,9 @@ fake Function ::= Attr* native? VisibilityModifier? entry? inline? MACRO_KW?
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
-private FunctionInnerNoVisFirst ::= fun
-private FunctionInnerVisFirst ::= FunctionModifierSetInner fun { pin = 1 }
-private FunctionInnerFirst ::= FunctionInnerVisFirst | FunctionInnerNoVisFirst
+private FunctionInnerNoVisFirst ::= MACRO_KW? fun
+private FunctionInnerVisFirst ::= FunctionModifierSetInner MACRO_KW? fun { pin = 1 }
+private FunctionInnerFirst ::=  FunctionInnerVisFirst | FunctionInnerNoVisFirst
 
 FunctionInner ::= Attr* FunctionInnerFirst FunctionSignatureInner CodeBlock
 {
@@ -495,7 +495,7 @@ NativeFunctionInner ::= Attr* NativeFunctionModifierSetInner fun FunctionSignatu
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
-private FunctionItem ::= FunctionMacro | NativeFunctionInner | FunctionInner
+private FunctionItem ::=  NativeFunctionInner | FunctionInner
 
 private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
                                     FunctionParameterList ReturnType?
@@ -506,22 +506,7 @@ private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
 private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | ModuleItem_first)
 
 
-///  macro fun
-private FunctionMacroInnerNoVisFirst ::= MACRO_KW fun
-private FunctionMacroInnerVisFirst ::= FunctionModifierSetInner MACRO_KW fun { pin = 1 }
-private FunctionMacroInnerFirst ::= FunctionMacroInnerNoVisFirst | FunctionMacroInnerVisFirst
-FunctionMacro ::=Attr* FunctionMacroInnerFirst FunctionMacroSignatureInner CodeBlock{
-        pin = FunctionMacroSignatureInner
-        elementType = Function
-        hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
-}
 
-private FunctionMacroSignatureInner ::= IDENTIFIER MacroTypeParameterList?
-                                    MacroFunctionParameterList ReturnType?
-                                    //  (ResourceAccessItemList | AcquiresType)?
-{
-    recoverWhile = "FunctionSignatureInner_recover"
-}
 //private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | ModuleItem_first)
 
 
@@ -557,18 +542,7 @@ FunctionParameter ::= PatBinding TypeAnnotation {
 
 /// MacroPatBinding
 
-MacroFunctionParameterList ::= '(' MacroFunctionParameter_with_recover* ')' { pin = 1 }
-private MacroFunctionParameter_with_recover ::= !(')' | '{' | ';') MacroFunctionParameter (',' | &')')
-{
-    pin = 1
-    recoverWhile = MacroFunctionParameter_recover
-}
-private MacroFunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER | '$')
 
-MacroFunctionParameter ::= MacroPatBinding TypeAnnotation {
-    pin = 1
-    elementType = FunctionParameter
-}
 
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
@@ -672,10 +646,16 @@ TypeAnnotation ::= ':' Type {
     name = "type annotation"
 }
 
-Type ::=  RefType | PathType | TupleType | LambdaType | UnitType | ParensType | WildType | MarcoType
+Type ::=  RefType | PathType | TupleType | LambdaType | UnitType | ParensType | WildType
+
+//MARCO_IDENTIFIER ::= IDENTIFIER {
+//    recoverWhile = MARCO_IDENTIFIER_recover
+//}
+//
+//private MARCO_IDENTIFIER_recover ::= !"$"
 
 WildType ::= '_'
-MarcoType ::= MARCO_IDENTIFIER
+
 
 ParensType ::= '(' (Type !',') ')' { pin = 2 }
 
@@ -708,7 +688,7 @@ private TypeParameter_with_recover ::= !'>' TypeParameterImpl (',' | &'>')
 }
 private TypeParameter_recover ::= !('>' | '(' | '{' | phantom | IDENTIFIER )
 
-fake TypeParameter ::= phantom? (MARCO_IDENTIFIER|IDENTIFIER)? TypeParamBound? {
+fake TypeParameter ::= phantom? IDENTIFIER? TypeParamBound? {
     pin = 2
     implements = [
         "org.sui.lang.core.psi.MvNameIdentifierOwner"
@@ -720,27 +700,7 @@ private TypeParameterImpl ::= PlainTypeParameter | PhantomTypeParameter
 PlainTypeParameter ::= IDENTIFIER TypeParamBound? { pin = 1 elementType = TypeParameter }
 PhantomTypeParameter ::= phantom IDENTIFIER TypeParamBound? { pin = 1 elementType = TypeParameter }
 
-//private macroTypeParameterInner ::= MARCO_IDENTIFIER TypeParamBound
-//MacroTypeParameter ::= (macroTypeParameterInner)? { pin = 1 elementType = TypeParameter }
-///macro  Type
 
-MacroTypeParameterList ::= '<' MacroTypeParameter_with_recover* '>'
-{
-    pin = 1
-    name = "type parameters"
-}
-
-private MacroTypeParameter_with_recover ::= !'>' MacroTypeParameter (',' | &'>')
-{
-    pin = 1
-    recoverWhile = MacroTypeParameter_recover
-}
-
-private MacroTypeParameter_recover ::= !('>' | '$' | IDENTIFIER )
-
-//private MacroIDENTIFIER ::= '$'IDENTIFIER
-
-MacroTypeParameter ::= MARCO_IDENTIFIER TypeParamBound? { pin = 1 elementType = TypeParameter }
 
 TypeParamBound ::= ':' TypeParamBound_items
 {
@@ -811,10 +771,7 @@ PatBinding ::=mut? (IDENTIFIER|MARCO_IDENTIFIER) !ForbiddenPatBindingLast {
 }
 
 
-MacroPatBinding ::=MARCO_IDENTIFIER !ForbiddenPatBindingLast {
-   pin = 1
-   elementType =PatBinding
-}
+
 //BindingPat ::= IDENTIFIER !ForbiddenPatBindingLast
 
 
@@ -1161,7 +1118,7 @@ private AnyLitToken_first ::= HEX_INTEGER_LITERAL
 
 AddressLit ::= '@' AddressRef { pin = 1 }
 
-CallExpr ::= PathImpl !'!' ValueArgumentList {
+CallExpr ::= PathImpl'!'?  ValueArgumentList {
 //    pin = 2
     implements = [
         "org.sui.lang.core.psi.ext.MvCallable"
@@ -1244,7 +1201,7 @@ StructDotField ::= IDENTIFIER !('(' | '::' | '!' | '{')
     implements = ["org.sui.lang.core.psi.ext.MvMethodOrField"]
     mixin = "org.sui.lang.core.psi.ext.MvStructDotFieldMixin"
 }
-MethodCall ::= IDENTIFIER ColonTypeArgumentList? ValueArgumentList
+MethodCall ::= IDENTIFIER'!'? ColonTypeArgumentList? ValueArgumentList
 {
     implements = [
         "org.sui.lang.core.psi.ext.MvMethodOrField"
@@ -1321,8 +1278,9 @@ PathAddress ::= DIEM_ADDRESS
 //{
 //    pin = 1
 //}
-private PATH_MODE_IDENTIFIER ::= (<<isPathMode 'VALUE' >> IDENTIFIER)
+private PATH_MODE_IDENTIFIER ::= (<<isPathMode 'VALUE' >> IDENTIFIER '!'?)
                                 | (<<isPathMode 'WILDCARD' >> ('*' | IDENTIFIER))
+
 
 AddressRef ::= NamedAddress
                 | DIEM_ADDRESS
@@ -1343,7 +1301,7 @@ AssertMacroExpr ::= <<assertIdent>> '!' ValueArgumentList {
 }
 AssertBangExpr ::= <<assertIdent>> '!' ValueArgumentList
 //AssertBangExpr ::= MacroIdent ValueArgumentList { pin = 1 }
-//MacroIdent ::= IDENTIFIER '!'
+MacroIdent ::= IDENTIFIER '!'
 
 private assert ::= <<assertKeyword>>
 private assume ::= <<assumeKeyword>>

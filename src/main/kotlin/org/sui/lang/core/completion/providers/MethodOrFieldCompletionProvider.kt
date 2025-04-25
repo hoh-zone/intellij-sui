@@ -35,7 +35,7 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
         val pos = parameters.position
         val element = pos.parent as MvMethodOrField
 
-        addMethodOrFieldVariants(element, result)
+         addMethodOrFieldVariants(element, result)
     }
 
     @VisibleForTesting

@@ -7,7 +7,8 @@ import com.intellij.usages.impl.rules.UsageTypeProviderEx
 import org.sui.lang.core.psi.MvNamedAddress
 
 class NamedAddressUsageTypeProvider : UsageTypeProviderEx {
-    override fun getUsageType(element: PsiElement?, targets: Array<out UsageTarget>): UsageType? {
+
+    override fun getUsageType(element: PsiElement, p1: Array<out UsageTarget>): UsageType? {
         return when (element) {
             is MvNamedAddress -> ADDRESS_REF_USAGE_TYPE
             else -> null

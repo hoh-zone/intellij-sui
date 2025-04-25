@@ -2,13 +2,16 @@ package org.sui.ide.annotator
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
+import com.tylerthrailkill.helpers.prettyprint.get
 import org.sui.ide.presentation.declaringModule
 import org.sui.ide.presentation.fullname
 import org.sui.ide.utils.functionSignature
 import org.sui.ide.utils.getSignature
 import org.sui.lang.MvElementTypes.R_PAREN
+import org.sui.lang.MvElementTypes.COMMA
 import org.sui.lang.core.psi.*
 import org.sui.lang.core.psi.ext.*
+import org.sui.lang.core.resolve.ref.MvReferenceElement
 import org.sui.lang.core.types.address
 import org.sui.lang.core.types.fullname
 import org.sui.lang.core.types.infer.descendantHasTypeError
@@ -36,6 +39,8 @@ class MvErrorAnnotator: MvAnnotatorBase() {
             override fun visitPath(o: MvPath) = checkMethodOrPath(o, moveHolder)
             override fun visitMethodCall(o: MvMethodCall) = checkMethodOrPath(o, moveHolder)
 
+            override fun visitLetStmt(o: MvLetStmt) =checkLet(o,moveHolder)
+
             override fun visitCallExpr(callExpr: MvCallExpr) {
                 val msl = callExpr.path.isMslScope
                 if (msl) return
@@ -44,8 +49,11 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                 if (outerFunction.isInline) return
 
                 val path = callExpr.path
+
                 val item = path.reference?.resolve() ?: return
                 if (item !is MvFunction) return
+
+
 
                 val referenceName = path.referenceName ?: return
                 if (referenceName !in GLOBAL_STORAGE_ACCESS_FUNCTIONS) return
@@ -128,9 +136,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
                 val argumentExprs = valueArguments.map { it.expr!! }
                 val realCount = argumentExprs.size
-
-                when {
-                    realCount < expectedCount -> {
+                when {realCount < expectedCount -> {
                         val target = arguments.findFirstChildByType(R_PAREN) ?: arguments
                         Diagnostic
                             .ValueArgumentsNumberMismatch(target, expectedCount, realCount)
@@ -148,6 +154,9 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                         return
                     }
                 }
+
+                checkFunctionParameter(arguments,moveHolder)
+
             }
 
             override fun visitPatStruct(o: MvPatStruct) {
@@ -177,6 +186,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
     private fun checkFunction(holder: MvAnnotationHolder, function: MvFunction) {
         checkFunctionDuplicates(holder, function)
         warnOnBuiltInFunctionName(holder, function)
+        checkFunctionMacro(holder, function)
     }
 
     private fun checkModuleDef(moveHolder: MvAnnotationHolder, mod: MvModule) {
@@ -214,6 +224,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
         val item = methodOrPath.reference?.resolveFollowingAliases()
         val msl = methodOrPath.isMslScope
         val realCount = methodOrPath.typeArguments.size
+
 
         val parent = methodOrPath.parent
         if (item == null && methodOrPath is MvPath
@@ -271,6 +282,8 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                     val typeArgumentList =
                         methodOrPath.typeArgumentList ?: error("cannot be null if realCount != 0")
                     checkTypeArgumentList(typeArgumentList, qualItem, holder)
+
+
                 } else {
                     val inference = callable.inference(msl) ?: return
                     if (callable.descendantHasTypeError(inference.typeErrors)) {
@@ -286,6 +299,12 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                             .addToHolder(holder)
                     }
                 }
+                getMarcoFunctions(holder,qualItem,methodOrPath)
+
+//                val functions =
+//                    qualItem.module?.allFunctions() ?: qualItem.script?.functionList ?: emptyList()
+//                val marcofunction = functions.
+
             }
             qualItem is MvSchema && parent is MvSchemaLit -> {
                 val expectedCount = qualItem.typeParameters.size
@@ -435,6 +454,21 @@ private fun getDuplicates(elements: Sequence<MvNamedElement>): Set<MvNamedElemen
         .toSet()
 }
 
+
+
+private fun getMarcoFunctions(
+    holder: MvAnnotationHolder,
+    fn: MvFunction,
+    methodOrPath: MvMethodOrPath) {
+    val functions = fn.module?.allFunctions() ?: fn.script?.functionList ?: emptyList()
+    val mergeMarcoFunction = functions.filter { it.name.equals(fn.name)&&it.isMacro } ?: return
+    val hasMarcoFunction = mergeMarcoFunction.size.compareTo(0)!=0
+    if(!hasMarcoFunction &&methodOrPath.lastChild.text.equals("!"))
+        holder.createErrorAnnotation(methodOrPath, "macro function must be end with !")
+    else if(hasMarcoFunction &&!methodOrPath.lastChild.text.equals("!"))
+        holder.createErrorAnnotation(methodOrPath, "not macro function no end with !")
+}
+
 private fun getDuplicatedNamedChildren(namedChildren: Sequence<MvNamedElement>): Set<MvNamedElement> {
     val notNullNamedChildren = namedChildren.filter { it.name != null }
     return notNullNamedChildren
@@ -455,4 +489,99 @@ private fun warnOnBuiltInFunctionName(holder: MvAnnotationHolder, element: MvNam
     if (name in BUILTIN_FUNCTIONS) {
         holder.createErrorAnnotation(nameElement, "Invalid function name: `$name` is a built-in function")
     }
+}
+private fun checkFunctionMacro(
+    holder: MvAnnotationHolder,
+    fn: MvFunction,
+){
+    val hasLambadFunctionParameter = fn.functionParameterList?.functionParameterList?.any { it.typeAnnotation?.type is MvLambdaType } ?: return
+    if(!fn.isMacro && hasLambadFunctionParameter){
+        holder.createErrorAnnotation(fn, "function must be macro if has lambda function parameter")
+        return
+    }
+    if (!fn.isMacro)  return
+    fn.typeParameterList?.typeParameterList?.forEach {
+            val name = it.name
+            if(name?.length!!.compareTo(0)!=0 && name?.get(0)!='$')
+                holder.createErrorAnnotation(it, "macros Type parameters must has $")
+    }
+    fn.functionParameterList?.functionParameterList?.forEach {
+        val name = it.name
+        if(name?.length!!.compareTo(0)!=0 && name?.get(0)!='$')
+            holder.createErrorAnnotation(it, "macros function Type parameters must has $")
+   }
+}
+
+
+
+private fun checkFunctionParameter(
+    arguments: MvValueArgumentList,
+    holder: MvAnnotationHolder) {
+    val parentCallable = arguments.parent
+    val callTy =
+        when (parentCallable) {
+            is MvCallExpr -> {
+                val msl = parentCallable.path.isMslScope
+                val callTy =
+                    parentCallable.inference(msl)?.getCallableType(parentCallable) as? TyCallable
+                        ?: return
+                getLambdaTypeSize(callTy.paramTypes)
+
+            }
+
+            is MvMethodCall -> {
+                val msl = parentCallable.isMslScope
+                val callTy =
+                    parentCallable.inference(msl)?.getCallableType(parentCallable) as? TyCallable
+                        ?: return
+                // 1 for self
+                getLambdaTypeSize(callTy.paramTypes)
+            }
+
+            else -> return
+        }
+    val lambdaArguments = arguments.valueArgumentList.filter { it.expr is MvLambdaExpr }
+    val lambdaArgumentsExpr = lambdaArguments.map { it.expr as MvLambdaExpr }
+
+    if (callTy.size.compareTo(lambdaArgumentsExpr.size) != 0) return
+
+    lambdaArgumentsExpr.forEachIndexed() { index, lambdaExpr ->
+        val expectedCount = callTy.elementAt(index)
+        val realCount = lambdaExpr.patBindingList.size
+        when {realCount < expectedCount -> {
+            val target = lambdaArguments.get(index).findFirstChildByType(COMMA) ?: lambdaArguments.get(index)
+            Diagnostic
+                .ValueArgumentsNumberMismatch(target, expectedCount, realCount)
+                .addToHolder(holder)
+            return
+        }
+            realCount > expectedCount -> {
+                lambdaExpr.
+                    patBindingList
+                    .drop(expectedCount)
+                    .forEach {
+                        Diagnostic
+                            .ValueArgumentsNumberMismatch(it, expectedCount, realCount)
+                            .addToHolder(holder)
+                    }
+                return
+            }
+        }
+
+    }
+
+}
+
+
+private fun getLambdaTypeSize(paramentList:List<Ty>):Set<Int> {
+    return paramentList.filter{it is TyLambda}.map{it as TyLambda}.map{it.paramTypes.size}.toSet()
+}
+
+
+private fun checkLet(
+    let: MvLetStmt, holder: MvAnnotationHolder
+) {
+    val InitializerExpr = let.initializer?.expr?: return
+    if(InitializerExpr is MvLambdaExpr)
+        holder.createErrorAnnotation(let.initializer!!, "let initializer can't be lambda")
 }
