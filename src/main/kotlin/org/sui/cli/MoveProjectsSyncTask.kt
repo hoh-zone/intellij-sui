@@ -138,7 +138,8 @@ class MoveProjectsSyncTask(
         var (moveProject, rootMoveToml) =
             runReadAction {
                 val tomlFile = moveTomlFile.toTomlFile(project)!!
-                val rootMoveToml = MoveToml.fromTomlFile(tomlFile)
+                var rootMoveToml = MoveToml.fromTomlFile(tomlFile)
+                rootMoveToml = MoveToml.fromBuildInfo(tomlFile, rootMoveToml)
 //                val rootMoveToml = MoveToml.fromTomlFile(tomlFile, projectRoot)
                 val rootPackage = MovePackage.fromMoveToml(rootMoveToml)
                 val rootProject = MoveProject(project, rootPackage, emptyList())
@@ -305,6 +306,7 @@ class MoveProjectsSyncTask(
                     ?.toVirtualFile()
                     ?.toTomlFile(project) ?: continue
                 val depMoveToml = MoveToml.fromTomlFile(depTomlFile)
+
 //                val depMoveToml = MoveToml.fromTomlFile(depTomlFile, depRoot)
 
                 // first try to parse MovePackage from dependency, no need for nested if parent is invalid
