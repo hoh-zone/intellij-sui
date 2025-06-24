@@ -1,6 +1,5 @@
 package org.sui.cli.sentryReporter
 
-import com.intellij.diagnostic.DiagnosticBundle
 import com.intellij.diagnostic.IdeErrorsDialog
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -122,10 +121,10 @@ private fun onSuccess(project: Project?, callback: Consumer<in SubmittedReportIn
     val reportInfo = SubmittedReportInfo(SubmittedReportInfo.SubmissionStatus.NEW_ISSUE)
     callback.consume(reportInfo)
     ApplicationManager.getApplication().invokeLater {
-        val title = DiagnosticBundle.message("error.report.submitted")
-        val content = DiagnosticBundle.message("error.report.gratitude")
+//        val title = DiagnosticBundle.message("error.report.submitted")
+//        val content = DiagnosticBundle.message("error.report.gratitude")
         NotificationGroupManager.getInstance().getNotificationGroup("Error Report")
-            .createNotification(title, content, NotificationType.INFORMATION)
+            .createNotification("error.report.submitted", "error.report.gratitude", NotificationType.INFORMATION)
             .setImportant(false)
             .notify(project)
     }

@@ -100,8 +100,9 @@ class MoveToml(
         fun fromBuildInfo(tomlFile: TomlFile,depMoveToml:MoveToml): MoveToml {
             val deps = depMoveToml.deps
             val contentRoot = tomlFile.parent?.virtualFile?.toNioPathOrNull() ?: return depMoveToml
-            val projectName = tomlFile.project.name
+            val projectName = depMoveToml.packageName
             val path = Paths.get(contentRoot.toString(),  "build",projectName, "BuildInfo.yaml")
+            path.toVirtualFile()?.toNioPathOrNull()?: return depMoveToml
             val yaml =
                 try {
                     Yaml().load<Map<String, Any>>(path.readText())

@@ -158,6 +158,7 @@ class MoveProjectsSyncTask(
                 runReadAction {
                     val rootPackage = moveProject.currentPackage
                     val deps = mutableListOf<Pair<MovePackage, RawAddressMap>>()
+                   // val visitedDepIds = mutableSetOf(DepId(rootPackage.contentRoot.path))
                     val visitedDepIds = mutableSetOf(DepId(rootPackage.contentRoot.path))
                     loadDependencies(
                         project,
