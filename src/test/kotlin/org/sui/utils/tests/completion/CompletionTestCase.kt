@@ -90,7 +90,7 @@ abstract class CompletionTestCase : MvTestBase() {
     protected fun checkNotContainsCompletion(
         notExpected: String,
         @Language("Move") code: String
-    ) = checkNotContainsCompletion(code, notExpected)
+    ): Unit = checkNotContainsCompletion(code, notExpected)
 
     protected fun doFirstCompletion(
         @Language("Move") before: String,

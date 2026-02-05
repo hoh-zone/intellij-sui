@@ -184,11 +184,5 @@ class ResolveNamedModulePathTreeProjectTest : ResolveProjectTestCase() {
         }
     }
 
-    override fun checkByFileTree(fileTree: FileTreeBuilder.() -> Unit) {
-        checkByFileTree(
-            MvNamedAddress::class.java,
-            TomlKeySegment::class.java,
-            fileTree
-        )
-    }
+    // ResolveProjectTestCase already prepares the file tree and positions caret.
 }

@@ -36,12 +36,14 @@ import org.sui.lang.toNioPathOrNull
 import org.sui.lang.toTomlFile
 import org.sui.openapiext.TaskResult
 import org.sui.openapiext.contentRoots
-import org.sui.openapiext.resolveExisting
 import org.sui.openapiext.toVirtualFile
+import org.sui.openapiext.common.isUnitTestMode
+import org.sui.stdext.exists
 import org.sui.stdext.iterateFiles
 import org.sui.stdext.unwrapOrElse
 import org.sui.stdext.withExtended
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
 
@@ -67,6 +69,17 @@ class MoveProjectsSyncTask(
 
         val before = System.currentTimeMillis()
         LOG.logProjectsRefresh("started", reason)
+
+        // In unit tests, avoid creating build toolwindows / editor listeners
+        // (SyncViewManager may leak listeners in headless environments).
+        if (isUnitTestMode) {
+            val refreshedProjects = doRunUnitTest(indicator)
+            future.complete(refreshedProjects)
+            val elapsed = System.currentTimeMillis() - before
+            LOG.logProjectsRefresh("finished Sui projects Sync Task in $elapsed ms", reason)
+            Disposer.dispose(this)
+            return
+        }
 
         val syncProgress = SyncViewManager.createBuildProgress(project)
 
@@ -100,13 +113,44 @@ class MoveProjectsSyncTask(
         Disposer.dispose(this)
     }
 
+    private fun doRunUnitTest(indicator: ProgressIndicator): List<MoveProject> {
+        val moveProjects = mutableListOf<MoveProject>()
+
+        val roots = project.contentRoots.toList().ifEmpty {
+            listOfNotNull(
+                project.basePath
+                    ?.let { Paths.get(it) }
+                    ?.takeIf { it.exists() }
+                    ?.toVirtualFile()
+            )
+        }
+
+        for (contentRoot in roots.asSequence()) {
+            contentRoot.iterateFiles({ it.name == MvConstants.MANIFEST_FILE }) { moveTomlFile ->
+                indicator.checkCanceled()
+                val context = SyncContext(project, indicator, buildId = Any(), syncProgress = null)
+                loadProject(moveTomlFile, projects = moveProjects, context = context)
+                true
+            }
+        }
+        return moveProjects
+    }
+
     private fun doRun(
         indicator: ProgressIndicator,
         syncProgress: BuildProgress<BuildProgressDescriptor>
     ): List<MoveProject> {
         val moveProjects = mutableListOf<MoveProject>()
 
-        for (contentRoot in project.contentRoots) {
+        val roots = project.contentRoots.toList().ifEmpty {
+            listOfNotNull(
+                project.basePath
+                    ?.let { Paths.get(it) }
+                    ?.takeIf { it.exists() }
+                    ?.toVirtualFile()
+            )
+        }
+        for (contentRoot in roots.asSequence()) {
             contentRoot.iterateFiles({ it.name == MvConstants.MANIFEST_FILE }) { moveTomlFile ->
                 indicator.checkCanceled()
 
@@ -177,6 +221,9 @@ class MoveProjectsSyncTask(
 
     private fun fetchDependencyPackages(context: SyncContext, projectRoot: Path): TaskResult<Unit> =
         context.runWithChildProgress("Synchronize dependencies") { childContext ->
+            // Unit tests should not depend on having Sui CLI installed or on network access.
+            if (isUnitTestMode) return@runWithChildProgress TaskResult.Ok(Unit)
+
             val listener = SyncProcessAdapter(childContext)
 
             val skipLatest = project.moveSettings.skipFetchLatestGitDeps
@@ -238,10 +285,10 @@ class MoveProjectsSyncTask(
 //        val toolchain: RsToolchainBase,
         val progress: ProgressIndicator,
         val buildId: Any,
-        val syncProgress: BuildProgress<BuildProgressDescriptor>
+        val syncProgress: BuildProgress<BuildProgressDescriptor>?
     ) {
 
-        val id: Any get() = syncProgress.id
+        val id: Any get() = syncProgress?.id ?: buildId
 
         fun <T> runWithChildProgress(
             @NlsContexts.ProgressText title: String,
@@ -250,6 +297,7 @@ class MoveProjectsSyncTask(
             progress.checkCanceled()
             progress.text = title
 
+            val syncProgress = syncProgress ?: return action(this)
             return syncProgress.runWithChildProgress(
                 title,
                 { copy(syncProgress = it) },
@@ -272,7 +320,7 @@ class MoveProjectsSyncTask(
 
         fun withProgressText(@NlsContexts.ProgressText @NlsContexts.ProgressTitle text: String) {
             progress.text = text
-            syncProgress.progress(text)
+            syncProgress?.progress(text)
         }
     }
 
@@ -303,7 +351,8 @@ class MoveProjectsSyncTask(
                 if (depId in visitedIds) continue
 
                 val depTomlFile = depRoot
-                    .resolveExisting(MvConstants.MANIFEST_FILE)
+                    .resolve(MvConstants.MANIFEST_FILE)
+                    .takeIf { it.exists() }
                     ?.toVirtualFile()
                     ?.toTomlFile(project) ?: continue
                 val depMoveToml = MoveToml.fromTomlFile(depTomlFile)
@@ -369,14 +418,14 @@ private fun MoveProjectsSyncTask.SyncContext.error(
     @BuildEventsNls.Title title: String,
     @BuildEventsNls.Message message: String
 ) {
-    syncProgress.message(title, message, com.intellij.build.events.MessageEvent.Kind.ERROR, null)
+    syncProgress?.message(title, message, com.intellij.build.events.MessageEvent.Kind.ERROR, null)
 }
 
 private fun MoveProjectsSyncTask.SyncContext.warning(
     @BuildEventsNls.Title title: String,
     @BuildEventsNls.Message message: String
 ) {
-    syncProgress.message(title, message, com.intellij.build.events.MessageEvent.Kind.WARNING, null)
+    syncProgress?.message(title, message, com.intellij.build.events.MessageEvent.Kind.WARNING, null)
 }
 
 

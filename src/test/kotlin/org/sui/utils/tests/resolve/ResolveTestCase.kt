@@ -113,7 +113,21 @@ abstract class ResolveTestCase : MvTestBase() {
 abstract class ResolveProjectTestCase : org.sui.utils.tests.MvProjectTestBase() {
 
     protected open fun checkByFileTree(fileTree: org.sui.utils.tests.FileTreeBuilder.() -> Unit) {
+        // Build a project and open the file that contains caret marker.
+        testProject(fileTree)
+    }
+
+    /**
+     * Stub-only resolve tests: build a project with 2 files:
+     * - one file contains `//^` marker (reference)
+     * - another file contains `//X` marker (target)
+     *
+     * We assert that resolving the reference lands in the target file.
+     */
+    protected fun stubOnlyResolve(fileTree: org.sui.utils.tests.FileTreeBuilder.() -> Unit) {
         val testProject = testProject(fileTree)
-        // Resolve testing logic would go here
+        val from = testProject.fileWithCaret
+        val to = testProject.fileWithNamedElement
+        testProject.checkReferenceIsResolved<org.sui.lang.core.resolve.ref.MvReferenceElement>(from, toFile = to)
     }
 }

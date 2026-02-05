@@ -14,7 +14,7 @@ class SpecsParsingTest : MvParsingTestCase("specs") {
     fun `test spec properties`() = doTest()
     fun `test spec variables`() = doTest()
 
-    fun doTest() {
+    override fun doTest() {
         super.doTest(true, true)
     }
 }

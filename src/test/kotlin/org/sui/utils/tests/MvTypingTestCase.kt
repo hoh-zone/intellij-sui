@@ -11,6 +11,21 @@ import org.intellij.lang.annotations.Language
  * Base class for typing/auto-completion tests.
  */
 abstract class MvTypingTestCase : MvTestBase() {
+    /**
+     * File-based typing tests.
+     *
+     * Expects `<test_name>.move` and `<test_name>_after.move` under `src/test/resources/<dataPath>/`.
+     * The before file should contain a caret marker (`<caret>` or `/*caret*/`).
+     */
+    protected fun doTestByFile(c: Char = '\n') {
+        val testName = getTestName(true)
+        val before = "$testName.move"
+        val after = "${testName}_after.move"
+        myFixture.configureByFile(before)
+        myFixture.type(c)
+        myFixture.checkResultByFile(after)
+    }
+
 
     /**
      * Test typing by entering a newline (Enter key) at the caret position.

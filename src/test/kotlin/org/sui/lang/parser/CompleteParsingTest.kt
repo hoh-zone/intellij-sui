@@ -56,7 +56,7 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
     @CompilerV2Features(RESOURCE_CONTROL)
     fun `test access control`() = doTest()
 
-    fun doTest() {
+    override fun doTest() {
         super.doTest(true, true)
     }
 }

@@ -7,7 +7,7 @@ class StructLitFieldsInfoHandlerTest :
     ParameterInfoHandlerTestCase<MvStructLitFieldsBlock,
             FieldsDescription>(StructLitFieldsInfoHandler()) {
 
-    fun `test no hint if call expr`() = checkByText(
+    fun `test no hint if call expr`() = checkNoParameterInfo(
         """
     module 0x1::M {
         struct S { s: u8 }

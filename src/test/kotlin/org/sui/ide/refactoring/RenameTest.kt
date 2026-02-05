@@ -589,7 +589,7 @@ class RenameTest : MvTestBase() {
         @Language("Sui Move") before: String,
         @Language("Sui Move") after: String,
     ) {
-        InlineFile(before).withCaret()
+        InlineFile(before)
         val element = myFixture.elementAtCaret
         myFixture.renameElement(element, newName, false, false)
         myFixture.checkResult(after)
@@ -602,7 +602,7 @@ class RenameTest : MvTestBase() {
         @Language("Sui Move") before: String,
         @Language("Sui Move") after: String,
     ) {
-        InlineFile(before, name = beforeFileName).withCaret()
+        InlineFile(before, name = beforeFileName)
         val element = myFixture.elementAtCaret
         myFixture.renameElement(element, newName, false, false)
         myFixture.checkResult(after)

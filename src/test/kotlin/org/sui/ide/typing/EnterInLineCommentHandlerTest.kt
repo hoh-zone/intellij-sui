@@ -14,5 +14,5 @@ class EnterInLineCommentHandlerTest: MvTypingTestCase() {
     module 0x1::M {}    
     """)
 
-    fun `test after outer doc comment`() = doTest()
+    fun `test after outer doc comment`() = doTestByFile()
 }

@@ -6,15 +6,19 @@
 package org.sui.utils.tests
 
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.ide.bookmarks.BookmarkManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.openapi.util.Disposer
 import com.intellij.testFramework.HeavyPlatformTestCase
+import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
+import org.sui.cli.moveProjectsService
 import org.sui.openapiext.fullyRefreshDirectory
 
 /**
@@ -37,6 +41,13 @@ abstract class MvProjectTestBase : HeavyPlatformTestCase() {
         myFixture.setUp()
 
         rootDirectory = myFixture.tempDirFixture.getFile(".")!!
+        // Ensure temp directory is a real module content root so project-scoped services
+        // (like MoveProjectsService) can discover Move.toml files via Project.contentRoots.
+        try {
+            PsiTestUtil.addContentRoot(myFixture.module, rootDirectory)
+        } catch (_: IllegalArgumentException) {
+            // In some platform versions / fixture setups the temp dir is already a content root.
+        }
 
         handleCompilerV2Annotations(project)
         handleNamedAddressAnnotations(project)
@@ -44,6 +55,11 @@ abstract class MvProjectTestBase : HeavyPlatformTestCase() {
 
     override fun tearDown() {
         try {
+            // Workaround for occasional document listener leaks in headless tests.
+            // BookmarkManager registers document listeners and may outlive the fixture teardown checks.
+            runCatching {
+                (BookmarkManager.getInstance(project) as? com.intellij.openapi.Disposable)?.let { Disposer.dispose(it) }
+            }
             myFixture.tearDown()
         } catch (e: Throwable) {
             addSuppressedException(e)
@@ -56,7 +72,10 @@ abstract class MvProjectTestBase : HeavyPlatformTestCase() {
         val fileTree = fileTreeFromText(code)
         val testProject = fileTree.create(project, rootDirectory)
         lastTestProject = testProject
-        configureByFileWithCaret(testProject)
+        fullyRefreshDirectory(rootDirectory)
+        // Ensure Move projects model is initialized for project-level tests
+        project.moveProjectsService.scheduleProjectsRefreshSync("testProject(code)")
+        // Avoid auto-opening editors in project-level tests (can cause listener leaks in headless).
         return testProject
     }
 
@@ -64,7 +83,10 @@ abstract class MvProjectTestBase : HeavyPlatformTestCase() {
         val fileTree = fileTree(builder)
         val testProject = fileTree.create(project, rootDirectory)
         lastTestProject = testProject
-        configureByFileWithCaret(testProject)
+        fullyRefreshDirectory(rootDirectory)
+        // Ensure Move projects model is initialized for project-level tests
+        project.moveProjectsService.scheduleProjectsRefreshSync("testProject(builder)")
+        // Avoid auto-opening editors in project-level tests (can cause listener leaks in headless).
         return testProject
     }
 

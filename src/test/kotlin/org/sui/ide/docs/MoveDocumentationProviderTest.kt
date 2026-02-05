@@ -4,7 +4,7 @@ import org.intellij.lang.annotations.Language
 import org.sui.utils.tests.MvDocumentationProviderTestCase
 
 class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
-    fun `test show docs for move_from`() = doTest(
+    fun `test show docs for move_from`() = doTestWithProvider(
         """
     module 0x1::M {
         fun m() {
@@ -20,7 +20,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
         """
     )
 
-    fun `test show doc comment for module`() = doTest(
+    fun `test show doc comment for module`() = doTestWithProvider(
         """
     /// module docstring
     module 0x1::M {}
@@ -31,7 +31,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
         """
     )
 
-    fun `test show doc comment for const`() = doTest(
+    fun `test show doc comment for const`() = doTestWithProvider(
         """
     module 0x1::M {
         /// const docstring
@@ -45,7 +45,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     """
     )
 
-    fun `test show doc comments and signature for function`() = doTest(
+    fun `test show doc comments and signature for function`() = doTestWithProvider(
         """
     module 0x1::M {
         /// Adds two numbers.
@@ -63,7 +63,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     """
     )
 
-    fun `test show signature for function parameter`() = doTest(
+    fun `test show signature for function parameter`() = doTestWithProvider(
         """
     module 0x1::M {
         fun add(a: u8, b: u8): u8 {
@@ -76,7 +76,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     """
     )
 
-    fun `test show signature for type parameter`() = doTest(
+    fun `test show signature for type parameter`() = doTestWithProvider(
         """
     module 0x1::M {
         fun move_r<R: store + drop>(res: R): R {
@@ -88,7 +88,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     """
     )
 
-    fun `test show signature for simple let variable`() = doTest(
+    fun `test show signature for simple let variable`() = doTestWithProvider(
         """
     module 0x1::M {
         fun m() {
@@ -102,7 +102,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     """
     )
 
-    fun `test struct docstring`() = doTest(
+    fun `test struct docstring`() = doTestWithProvider(
         """
     module 0x1::M {
         /// docstring
@@ -119,7 +119,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     """
     )
 
-    fun `test struct field as vector`() = doTest(
+    fun `test struct field as vector`() = doTestWithProvider(
         """
     module 0x1::M {
         struct NFT {}
@@ -139,7 +139,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
         <div class='content'><p>docstring</p></div>"""
     )
 
-    fun `test function signature with return generic`() = doTest(
+    fun `test function signature with return generic`() = doTestWithProvider(
         """
 module 0x1::main {
     struct Box<T> has copy, drop, store { x: T }
@@ -157,7 +157,7 @@ fun <b>box3</b>&lt;T&gt;(x: T): Box3&lt;T&gt;</pre></div>
     """
     )
 
-    fun `test result type documentation`() = doTest(
+    fun `test result type documentation`() = doTestWithProvider(
         """
 module 0x1::m {
     fun call(): u8 {}
@@ -171,7 +171,7 @@ value parameter <b>result</b>: num
     """
     )
 
-    fun `test generic result type documentation`() = doTest(
+    fun `test generic result type documentation`() = doTestWithProvider(
         """
 module 0x1::m {
     fun call<T>(): &mut T {}
@@ -186,6 +186,6 @@ value parameter <b>result</b>: &mut T
     )
     //)
 
-    private fun doTest(@Language("Sui Move") code: String, @Language("Html") expected: String?) =
-        doTest(code, expected, block = MvDocumentationProvider::generateDoc)
+    private fun doTestWithProvider(@Language("Sui Move") code: String, @Language("Html") expected: String?) =
+        doTest(code, expected, block = MvDocumentationProvider()::generateDoc)
 }

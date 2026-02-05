@@ -10,8 +10,10 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.intellij.lang.annotations.Language
 import org.sui.lang.core.psi.MvExpr
 import org.sui.lang.core.psi.MvPatBinding
+import org.sui.lang.core.psi.MvTypeArgument
+import org.sui.lang.core.types.infer.MvInferenceContextOwner
+import org.sui.lang.core.types.infer.inferExpectedTy
 import org.sui.lang.core.types.infer.inference
-import org.sui.lang.core.types.infer.loweredType
 import org.sui.utils.tests.InlineFile
 import org.sui.utils.tests.MvTestBase
 
@@ -20,6 +22,14 @@ import org.sui.utils.tests.MvTestBase
  * Provides utility methods for testing expression types in Move code.
  */
 abstract class TypificationTestCase : MvTestBase() {
+
+    // Back-compat helpers used by existing tests in this repo
+    protected fun testExpectedTyExpr(@Language("Move") code: String) = testExpectedTyAtMarker(code)
+
+    protected inline fun <reified T : PsiElement> testExpectedType(@Language("Move") code: String) =
+        testExpectedTyAtMarker(code, T::class.java)
+
+    protected fun testExpectedTyType(@Language("Move") code: String) = testExpectedTyAtMarker(code)
 
     /**
      * Test the type of an expression marked with //^ marker.
@@ -31,10 +41,10 @@ abstract class TypificationTestCase : MvTestBase() {
      *       //^ u8
      * ```
      */
-    protected fun testExpr(@Language("Move") code: String) {
+    protected fun testExpr(@Language("Move") code: String, allowErrors: Boolean = true) {
         InlineFile(myFixture, code)
         val (expr, expectedType) = findElementAndExpectedType<MvExpr>()
-        val actualType = expr.inference(false)?.getExprType(expr)?.loweredType(false)
+        val actualType = expr.inference(false)?.getExprType(expr)
         val actualTypeText = actualType?.toString() ?: "<unknown>"
 
         check(expectedType == actualTypeText) {
@@ -51,7 +61,7 @@ abstract class TypificationTestCase : MvTestBase() {
         val markers = findAllElementsAndExpectedTypes<MvExpr>()
 
         for ((expr, expectedType) in markers) {
-            val actualType = expr.inference(false)?.getExprType(expr)?.loweredType(false)
+            val actualType = expr.inference(false)?.getExprType(expr)
             val actualTypeText = actualType?.toString() ?: "<unknown>"
 
             check(expectedType == actualTypeText) {
@@ -73,11 +83,39 @@ abstract class TypificationTestCase : MvTestBase() {
     protected fun testBinding(@Language("Move") code: String) {
         InlineFile(myFixture, code)
         val (binding, expectedType) = findElementAndExpectedType<MvPatBinding>()
-        val actualType = binding.inference(false)?.getBindingType(binding)?.loweredType(false)
+        val actualType = binding.inference(false)?.getBindingType(binding)
         val actualTypeText = actualType?.toString() ?: "<unknown>"
 
         check(expectedType == actualTypeText) {
             "Type mismatch. Expected: $expectedType, Actual: $actualTypeText"
+        }
+    }
+
+    @PublishedApi
+    internal fun testExpectedTyAtMarker(
+        @Language("Move") code: String,
+        expectedPsiClass: Class<out PsiElement>? = null,
+    ) {
+        InlineFile(myFixture, code)
+        val (elementAtMarker, expectedTypeText) = findElementAndExpectedType<PsiElement>()
+
+        val element =
+            when {
+                expectedPsiClass != null ->
+                    PsiTreeUtil.getParentOfType(elementAtMarker, expectedPsiClass, false)
+                        ?: error("No ${expectedPsiClass.simpleName} found at marker position")
+                else -> elementAtMarker
+            }
+
+        val inferenceOwner =
+            PsiTreeUtil.getParentOfType(element, MvInferenceContextOwner::class.java, false)
+                ?: error("No inference context owner for `${element.text}`")
+        val inference = inferenceOwner.inference(false)
+        val expectedTy = inferExpectedTy(element, inference)
+        val actual = expectedTy?.toString() ?: "<unknown>"
+
+        check(expectedTypeText == actual) {
+            "Expected type mismatch. Expected: $expectedTypeText, Actual: $actual"
         }
     }
 
