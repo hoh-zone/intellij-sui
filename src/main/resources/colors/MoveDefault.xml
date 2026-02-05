@@ -1,0 +1,47 @@
+<?xml version='1.0'?>
+<list>
+    <option name="org.sui.BUILTIN_FUNCTION_CALL">
+        <value>
+            <option name="FOREGROUND" value="34349A"/>
+        </value>
+    </option>
+    <option name="org.sui.VECTOR_LITERAL">
+        <value>
+            <option name="FOREGROUND" value="34349A"/>
+        </value>
+    </option>
+    <option name="org.sui.BUILTIN_TYPE">
+        <value>
+            <option name="FOREGROUND" value="34349A"/>
+        </value>
+    </option>
+    <option name="org.sui.TYPE_PARAMETER">
+        <value>
+            <option name="FOREGROUND" value="20999d"/>
+        </value>
+    </option>
+    <option name="org.sui.KEY_OBJECT">
+        <value>
+            <option name="EFFECT_COLOR" value="000000" />
+            <option name="EFFECT_TYPE" value="1" />
+        </value>
+    </option>
+    <option name="org.sui.STORE_NO_DROP_OBJECT">
+        <value>
+            <option name="EFFECT_COLOR" value="000000" />
+            <option name="EFFECT_TYPE" value="1" />
+        </value>
+    </option>
+    <option name="org.sui.MUT_REF_TO_KEY_OBJECT">
+        <value>
+            <option name="EFFECT_COLOR" value="000000" />
+            <option name="EFFECT_TYPE" value="1" />
+        </value>
+    </option>
+    <option name="org.sui.MUT_REF_TO_STORE_NO_DROP_OBJECT">
+        <value>
+            <option name="EFFECT_COLOR" value="000000" />
+            <option name="EFFECT_TYPE" value="1" />
+        </value>
+    </option>
+</list>

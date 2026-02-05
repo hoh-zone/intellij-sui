@@ -1,0 +1,69 @@
+<templateSet group="Move">
+    <!-- public struct -->
+    <template name="pstruct" value="public struct $NAME$ {&#10;    $END$&#10;}" description="public struct declaration" toReformat="true" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;StructName&quot;" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_MODULE" value="true"/>
+        </context>
+    </template>
+
+    <!-- public fun -->
+    <template name="pfun" value="public fun $NAME$($PARAMS$) {&#10;    $END$&#10;}" description="public function declaration" toReformat="true" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;function_name&quot;" alwaysStopAt="true"/>
+        <variable name="PARAMS" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_MODULE" value="true"/>
+        </context>
+    </template>
+
+    <!-- public(package) fun -->
+    <template name="ppfun" value="public(package) fun $NAME$($PARAMS$) {&#10;    $END$&#10;}" description="public(package) function declaration" toReformat="true" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;function_name&quot;" alwaysStopAt="true"/>
+        <variable name="PARAMS" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_MODULE" value="true"/>
+        </context>
+    </template>
+
+    <!-- entry fun -->
+    <template name="entryfun" value="entry fun $NAME$($PARAMS$) {&#10;    $END$&#10;}" description="entry function declaration" toReformat="true" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;function_name&quot;" alwaysStopAt="true"/>
+        <variable name="PARAMS" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_MODULE" value="true"/>
+        </context>
+    </template>
+
+    <!-- public entry fun -->
+    <template name="pentryfun" value="public entry fun $NAME$($PARAMS$) {&#10;    $END$&#10;}" description="public entry function declaration" toReformat="true" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;function_name&quot;" alwaysStopAt="true"/>
+        <variable name="PARAMS" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_MODULE" value="true"/>
+        </context>
+    </template>
+
+    <!-- module -->
+    <template name="mod" value="module $ADDRESS$::$NAME$ {&#10;    $END$&#10;}" description="module declaration" toReformat="true" toShortenFQNames="true">
+        <variable name="ADDRESS" expression="" defaultValue="&quot;0x1&quot;" alwaysStopAt="true"/>
+        <variable name="NAME" expression="" defaultValue="&quot;module_name&quot;" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_FILE" value="true"/>
+        </context>
+    </template>
+
+    <!-- #[test] -->
+    <template name="test" value="#[test]&#10;fun $NAME$() {&#10;    $END$&#10;}" description="test function" toReformat="true" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;test_name&quot;" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_MODULE" value="true"/>
+        </context>
+    </template>
+
+    <!-- #[test_only] -->
+    <template name="testonly" value="#[test_only]&#10;$END$" description="test_only attribute" toReformat="true" toShortenFQNames="true">
+        <context>
+            <option name="MOVE_MODULE" value="true"/>
+        </context>
+    </template>
+</templateSet>
