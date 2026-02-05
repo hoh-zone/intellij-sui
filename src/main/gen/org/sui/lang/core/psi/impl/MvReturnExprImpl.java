@@ -34,6 +34,12 @@ public class MvReturnExprImpl extends MvExprImpl implements MvReturnExpr {
   }
 
   @Override
+  @Nullable
+  public MvLabelRef getLabelRef() {
+    return PsiTreeUtil.getChildOfType(this, MvLabelRef.class);
+  }
+
+  @Override
   @NotNull
   public PsiElement getReturn() {
     return notNullChild(findChildByType(RETURN));

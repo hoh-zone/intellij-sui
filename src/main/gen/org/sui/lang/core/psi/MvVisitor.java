@@ -444,8 +444,24 @@ public class MvVisitor extends PsiElementVisitor {
     visitElement(o);
   }
 
+  public void visitLabelRef(@NotNull MvLabelRef o) {
+    visitElement(o);
+  }
+
+  public void visitLabeledBlockExpr(@NotNull MvLabeledBlockExpr o) {
+    visitExpr(o);
+  }
+
   public void visitLambdaExpr(@NotNull MvLambdaExpr o) {
     visitExpr(o);
+  }
+
+  public void visitLambdaExprBlock(@NotNull MvLambdaExprBlock o) {
+    visitElement(o);
+  }
+
+  public void visitLambdaParam(@NotNull MvLambdaParam o) {
+    visitElement(o);
   }
 
   public void visitLambdaType(@NotNull MvLambdaType o) {
@@ -634,7 +650,7 @@ public class MvVisitor extends PsiElementVisitor {
   }
 
   public void visitPublicUseFun(@NotNull MvPublicUseFun o) {
-    visitElement(o);
+    visitDocAndAttributeOwner(o);
   }
 
   public void visitQualPathCodeFragmentElement(@NotNull MvQualPathCodeFragmentElement o) {
@@ -860,6 +876,10 @@ public class MvVisitor extends PsiElementVisitor {
     visitQuantBinding(o);
   }
 
+  public void visitUnitLitExpr(@NotNull MvUnitLitExpr o) {
+    visitExpr(o);
+  }
+
   public void visitUnitType(@NotNull MvUnitType o) {
     visitType(o);
   }
@@ -874,6 +894,10 @@ public class MvVisitor extends PsiElementVisitor {
   }
 
   public void visitUseFunFirst(@NotNull MvUseFunFirst o) {
+    visitElement(o);
+  }
+
+  public void visitUseFunMethodAlias(@NotNull MvUseFunMethodAlias o) {
     visitElement(o);
   }
 

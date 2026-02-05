@@ -10,15 +10,15 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static org.sui.lang.MvElementTypes.*;
 import org.sui.lang.core.psi.*;
 
-public class MvContinueExprImpl extends MvExprImpl implements MvContinueExpr {
+public class MvUnitLitExprImpl extends MvExprImpl implements MvUnitLitExpr {
 
-  public MvContinueExprImpl(ASTNode node) {
+  public MvUnitLitExprImpl(ASTNode node) {
     super(node);
   }
 
   @Override
   public void accept(@NotNull MvVisitor visitor) {
-    visitor.visitContinueExpr(this);
+    visitor.visitUnitLitExpr(this);
   }
 
   @Override
@@ -28,15 +28,15 @@ public class MvContinueExprImpl extends MvExprImpl implements MvContinueExpr {
   }
 
   @Override
-  @Nullable
-  public MvLabelRef getLabelRef() {
-    return PsiTreeUtil.getChildOfType(this, MvLabelRef.class);
+  @NotNull
+  public PsiElement getLParen() {
+    return notNullChild(findChildByType(L_PAREN));
   }
 
   @Override
-  @NotNull
-  public PsiElement getContinue() {
-    return notNullChild(findChildByType(CONTINUE));
+  @Nullable
+  public PsiElement getRParen() {
+    return findChildByType(R_PAREN);
   }
 
 }

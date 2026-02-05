@@ -13,6 +13,9 @@ public interface MvLoopExpr extends MvExpr, MvLoopLike {
   @Nullable
   MvInlineBlock getInlineBlock();
 
+  @Nullable
+  MvLabelDecl getLabelDecl();
+
   @NotNull
   PsiElement getLoop();
 

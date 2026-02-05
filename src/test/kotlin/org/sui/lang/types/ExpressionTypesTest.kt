@@ -232,6 +232,79 @@ class ExpressionTypesTest : TypificationTestCase() {
     """
     )
 
+    // Tuples and Unit (https://move-book.com/reference/primitive-types/tuples)
+    fun `test unit literal`() = testExpr(
+        """
+    module 0x1::M {
+        fun main() {
+            ();
+          //^ ()
+        }
+    }
+    """
+    )
+
+    fun `test tuple literal two elements`() = testExpr(
+        """
+    module 0x1::M {
+        fun main() {
+            (0, false);
+          //^ (u64, bool)
+        }
+    }
+    """
+    )
+
+    fun `test tuple literal with references`() = testExpr(
+        """
+    module 0x1::M {
+        fun main(x: &u64) {
+            (x, 0u8);
+          //^ (&u64, u8)
+        }
+    }
+    """
+    )
+
+    fun `test single element tuple`() = testExpr(
+        """
+    module 0x1::M {
+        fun main() {
+            (1,);
+          //^ (u64,)
+        }
+    }
+    """
+    )
+
+    fun `test let tuple destructuring`() = testExprsTypified(
+        """
+    module 0x1::M {
+        fun main() {
+            let (mut x, mut y): (u8, u64) = (0, 1);
+            x;
+          //^ u8
+            y;
+          //^ u64
+        }
+    }
+    """
+    )
+
+    fun `test tuple subtyping with references`() = testExpr(
+        """
+    module 0x1::M {
+        fun main() {
+            let x: &u64 = &0;
+            let y: &mut u64 = &mut 1;
+            let (a, b): (&u64, &u64) = (x, y);
+            (a, b);
+          //^ (&u64, &u64)
+        }
+    }
+    """
+    )
+
     fun `test add expr with untyped and typed integer`() = testExpr(
         """
     module 0x1::M {

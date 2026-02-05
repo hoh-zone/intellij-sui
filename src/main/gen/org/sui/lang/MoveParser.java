@@ -62,11 +62,11 @@ public class MoveParser implements PsiParser, LightPsiParser {
       DECREASES_SPEC_EXPR, DEREF_EXPR, DOT_EXPR, EMITS_SPEC_EXPR,
       ENSURES_SPEC_EXPR, EXISTS_QUANT_EXPR, EXPR, FORALL_QUANT_EXPR,
       FOR_EXPR, IF_EXPR, INDEX_EXPR, INVARIANT_SPEC_EXPR,
-      ITEM_SPEC_BLOCK_EXPR, LAMBDA_EXPR, LIT_EXPR, LOOP_EXPR,
-      MATCH_EXPR, MODIFIES_SPEC_EXPR, MOVE_EXPR, PARENS_EXPR,
-      PATH_EXPR, RANGE_EXPR, REF_EXPR, REQUIRES_SPEC_EXPR,
-      RETURN_EXPR, STRUCT_LIT_EXPR, TUPLE_LIT_EXPR, VECTOR_LIT_EXPR,
-      WHILE_EXPR),
+      ITEM_SPEC_BLOCK_EXPR, LABELED_BLOCK_EXPR, LAMBDA_EXPR, LIT_EXPR,
+      LOOP_EXPR, MATCH_EXPR, MODIFIES_SPEC_EXPR, MOVE_EXPR,
+      PARENS_EXPR, PATH_EXPR, RANGE_EXPR, REF_EXPR,
+      REQUIRES_SPEC_EXPR, RETURN_EXPR, STRUCT_LIT_EXPR, TUPLE_LIT_EXPR,
+      UNIT_LIT_EXPR, VECTOR_LIT_EXPR, WHILE_EXPR),
   };
 
   /* ********************************************************** */
@@ -1340,6 +1340,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
   //                         | copy | move | abort
   // //                        | (<<VECTOR_IDENTIFIER>> ('<' | '['))
   //                         | IDENTIFIER
+  //                         | QUOTE_IDENTIFIER
   //                         | '*' | '&' | '!' | '|' | '{' | '('
   //                         | AnyLitToken_first
   //                         | (AddressRef '::')
@@ -1359,6 +1360,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     if (!result_) result_ = consumeTokenFast(builder_, MOVE);
     if (!result_) result_ = consumeTokenFast(builder_, ABORT);
     if (!result_) result_ = consumeTokenFast(builder_, IDENTIFIER);
+    if (!result_) result_ = consumeTokenFast(builder_, QUOTE_IDENTIFIER);
     if (!result_) result_ = consumeTokenFast(builder_, MUL);
     if (!result_) result_ = consumeTokenFast(builder_, AND);
     if (!result_) result_ = consumeTokenFast(builder_, EXCL);
@@ -1366,14 +1368,14 @@ public class MoveParser implements PsiParser, LightPsiParser {
     if (!result_) result_ = consumeTokenFast(builder_, L_BRACE);
     if (!result_) result_ = consumeTokenFast(builder_, L_PAREN);
     if (!result_) result_ = AnyLitToken_first(builder_, level_ + 1);
-    if (!result_) result_ = Expr_first_19(builder_, level_ + 1);
+    if (!result_) result_ = Expr_first_20(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
     return result_;
   }
 
   // AddressRef '::'
-  private static boolean Expr_first_19(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "Expr_first_19")) return false;
+  private static boolean Expr_first_20(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "Expr_first_20")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
     result_ = AddressRef(builder_, level_ + 1);
@@ -1952,15 +1954,57 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '[' Expr ']'
+  // '[' IndexArg_items? ']'
   static boolean IndexArg(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "IndexArg")) return false;
     if (!nextTokenIs(builder_, L_BRACK)) return false;
+    boolean result_, pinned_;
+    Marker marker_ = enter_section_(builder_, level_, _NONE_);
+    result_ = consumeToken(builder_, L_BRACK);
+    pinned_ = result_; // pin = 1
+    result_ = result_ && report_error_(builder_, IndexArg_1(builder_, level_ + 1));
+    result_ = pinned_ && consumeToken(builder_, R_BRACK) && result_;
+    exit_section_(builder_, level_, marker_, result_, pinned_, null);
+    return result_ || pinned_;
+  }
+
+  // IndexArg_items?
+  private static boolean IndexArg_1(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "IndexArg_1")) return false;
+    IndexArg_items(builder_, level_ + 1);
+    return true;
+  }
+
+  /* ********************************************************** */
+  // Expr (',' Expr)*
+  static boolean IndexArg_items(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "IndexArg_items")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, L_BRACK);
+    result_ = Expr(builder_, level_ + 1, -1);
+    result_ = result_ && IndexArg_items_1(builder_, level_ + 1);
+    exit_section_(builder_, marker_, null, result_);
+    return result_;
+  }
+
+  // (',' Expr)*
+  private static boolean IndexArg_items_1(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "IndexArg_items_1")) return false;
+    while (true) {
+      int pos_ = current_position_(builder_);
+      if (!IndexArg_items_1_0(builder_, level_ + 1)) break;
+      if (!empty_element_parsed_guard_(builder_, "IndexArg_items_1", pos_)) break;
+    }
+    return true;
+  }
+
+  // ',' Expr
+  private static boolean IndexArg_items_1_0(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "IndexArg_items_1_0")) return false;
+    boolean result_;
+    Marker marker_ = enter_section_(builder_);
+    result_ = consumeToken(builder_, COMMA);
     result_ = result_ && Expr(builder_, level_ + 1, -1);
-    result_ = result_ && consumeToken(builder_, R_BRACK);
     exit_section_(builder_, marker_, null, result_);
     return result_;
   }
@@ -2445,6 +2489,92 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_);
     result_ = consumeTokens(builder_, 0, QUOTE_IDENTIFIER, COLON);
     exit_section_(builder_, marker_, LABEL_DECL, result_);
+    return result_;
+  }
+
+  /* ********************************************************** */
+  // QUOTE_IDENTIFIER
+  public static boolean LabelRef(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LabelRef")) return false;
+    if (!nextTokenIs(builder_, QUOTE_IDENTIFIER)) return false;
+    boolean result_;
+    Marker marker_ = enter_section_(builder_);
+    result_ = consumeToken(builder_, QUOTE_IDENTIFIER);
+    exit_section_(builder_, marker_, LABEL_REF, result_);
+    return result_;
+  }
+
+  /* ********************************************************** */
+  // '->' Type CodeBlock
+  public static boolean LambdaExprBlock(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LambdaExprBlock")) return false;
+    boolean result_, pinned_;
+    Marker marker_ = enter_section_(builder_, level_, _NONE_, LAMBDA_EXPR_BLOCK, "<lambda expr block>");
+    result_ = consumeToken(builder_, "->");
+    pinned_ = result_; // pin = 1
+    result_ = result_ && report_error_(builder_, Type(builder_, level_ + 1));
+    result_ = pinned_ && CodeBlock(builder_, level_ + 1) && result_;
+    exit_section_(builder_, level_, marker_, result_, pinned_, null);
+    return result_ || pinned_;
+  }
+
+  /* ********************************************************** */
+  // Expr
+  static boolean LambdaExprBody(PsiBuilder builder_, int level_) {
+    return Expr(builder_, level_ + 1, -1);
+  }
+
+  /* ********************************************************** */
+  // PatBinding TypeAnnotation?
+  public static boolean LambdaParam(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LambdaParam")) return false;
+    boolean result_, pinned_;
+    Marker marker_ = enter_section_(builder_, level_, _NONE_, LAMBDA_PARAM, "<lambda param>");
+    result_ = PatBinding(builder_, level_ + 1);
+    pinned_ = result_; // pin = 1
+    result_ = result_ && LambdaParam_1(builder_, level_ + 1);
+    exit_section_(builder_, level_, marker_, result_, pinned_, null);
+    return result_ || pinned_;
+  }
+
+  // TypeAnnotation?
+  private static boolean LambdaParam_1(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LambdaParam_1")) return false;
+    TypeAnnotation(builder_, level_ + 1);
+    return true;
+  }
+
+  /* ********************************************************** */
+  // LambdaParam (',' LambdaParam)*
+  static boolean LambdaParams_list(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LambdaParams_list")) return false;
+    boolean result_;
+    Marker marker_ = enter_section_(builder_);
+    result_ = LambdaParam(builder_, level_ + 1);
+    result_ = result_ && LambdaParams_list_1(builder_, level_ + 1);
+    exit_section_(builder_, marker_, null, result_);
+    return result_;
+  }
+
+  // (',' LambdaParam)*
+  private static boolean LambdaParams_list_1(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LambdaParams_list_1")) return false;
+    while (true) {
+      int pos_ = current_position_(builder_);
+      if (!LambdaParams_list_1_0(builder_, level_ + 1)) break;
+      if (!empty_element_parsed_guard_(builder_, "LambdaParams_list_1", pos_)) break;
+    }
+    return true;
+  }
+
+  // ',' LambdaParam
+  private static boolean LambdaParams_list_1_0(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LambdaParams_list_1_0")) return false;
+    boolean result_;
+    Marker marker_ = enter_section_(builder_);
+    result_ = consumeToken(builder_, COMMA);
+    result_ = result_ && LambdaParam(builder_, level_ + 1);
+    exit_section_(builder_, marker_, null, result_);
     return result_;
   }
 
@@ -3049,7 +3179,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // use | public | native | fun | CONST_KW | STRUCT_KW | spec
-  //                             | Attr_first | "friend"  | "entry" | "inline" | "enum"  | MACRO_KW
+  //                             | Attr_first | "friend" | "entry" | "inline" | "enum" | MACRO_KW
   static boolean ModuleItem_first(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ModuleItem_first")) return false;
     boolean result_;
@@ -4357,32 +4487,38 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'public'? UseFunFirst PathStart? 'as' IDENTIFIER'.'IDENTIFIER ';'
+  // Attr* 'public'? UseFunFirst PathImpl 'as' UseFunMethodAlias ';'
   public static boolean PublicUseFun(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "PublicUseFun")) return false;
     boolean result_, pinned_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, PUBLIC_USE_FUN, "<public use fun>");
     result_ = PublicUseFun_0(builder_, level_ + 1);
-    result_ = result_ && UseFunFirst(builder_, level_ + 1);
+    result_ = result_ && PublicUseFun_1(builder_, level_ + 1);
     pinned_ = result_; // pin = 2
-    result_ = result_ && report_error_(builder_, PublicUseFun_2(builder_, level_ + 1));
+    result_ = result_ && report_error_(builder_, UseFunFirst(builder_, level_ + 1));
+    result_ = pinned_ && report_error_(builder_, PathImpl(builder_, level_ + 1)) && result_;
     result_ = pinned_ && report_error_(builder_, consumeToken(builder_, "as")) && result_;
-    result_ = pinned_ && report_error_(builder_, consumeTokens(builder_, -1, IDENTIFIER, DOT, IDENTIFIER, SEMICOLON)) && result_;
+    result_ = pinned_ && report_error_(builder_, UseFunMethodAlias(builder_, level_ + 1)) && result_;
+    result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
     exit_section_(builder_, level_, marker_, result_, pinned_, null);
     return result_ || pinned_;
   }
 
-  // 'public'?
+  // Attr*
   private static boolean PublicUseFun_0(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "PublicUseFun_0")) return false;
-    consumeToken(builder_, "public");
+    while (true) {
+      int pos_ = current_position_(builder_);
+      if (!Attr(builder_, level_ + 1)) break;
+      if (!empty_element_parsed_guard_(builder_, "PublicUseFun_0", pos_)) break;
+    }
     return true;
   }
 
-  // PathStart?
-  private static boolean PublicUseFun_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "PublicUseFun_2")) return false;
-    PathStart(builder_, level_ + 1);
+  // 'public'?
+  private static boolean PublicUseFun_1(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "PublicUseFun_1")) return false;
+    consumeToken(builder_, "public");
     return true;
   }
 
@@ -4995,12 +5131,13 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // UseStmt | Const | FunctionInner
+  // PublicUseFun | UseStmt | Const | FunctionInner
   static boolean ScriptItem(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ScriptItem")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
-    result_ = UseStmt(builder_, level_ + 1);
+    result_ = PublicUseFun(builder_, level_ + 1);
+    if (!result_) result_ = UseStmt(builder_, level_ + 1);
     if (!result_) result_ = Const(builder_, level_ + 1);
     if (!result_) result_ = FunctionInner(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
@@ -6499,6 +6636,19 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // PathImpl '.' IDENTIFIER
+  public static boolean UseFunMethodAlias(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "UseFunMethodAlias")) return false;
+    boolean result_, pinned_;
+    Marker marker_ = enter_section_(builder_, level_, _NONE_, USE_FUN_METHOD_ALIAS, "<use fun method alias>");
+    result_ = PathImpl(builder_, level_ + 1);
+    result_ = result_ && consumeTokens(builder_, 1, DOT, IDENTIFIER);
+    pinned_ = result_; // pin = 2
+    exit_section_(builder_, level_, marker_, result_, pinned_, null);
+    return result_ || pinned_;
+  }
+
+  /* ********************************************************** */
   // '{' UseSpeck_with_recover* '}'
   public static boolean UseGroup(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "UseGroup")) return false;
@@ -7360,13 +7510,14 @@ public class MoveParser implements PsiParser, LightPsiParser {
   // 15: BINARY(PlusBinExpr) BINARY(MinusBinExpr)
   // 16: BINARY(DivBinExpr) BINARY(MulBinExpr) BINARY(ModBinExpr)
   // 17: ATOM(IfExpr) ATOM(LoopExpr) ATOM(MatchExpr) ATOM(WhileExpr)
-  //    ATOM(ForExpr)
+  //    ATOM(ForExpr) ATOM(LabeledBlockExpr)
   // 18: PREFIX(CopyExpr) PREFIX(MoveExpr) PREFIX(DerefExpr) PREFIX(BangExpr)
   //    ATOM(ReturnExpr) ATOM(ContinueExpr) ATOM(BreakExpr) PREFIX(AbortExpr)
   // 19: PREFIX(BorrowExpr)
-  // 20: ATOM(AnnotatedExpr) ATOM(TupleLitOrParenExpr) ATOM(StructLitExpr) ATOM(VectorLitExpr)
-  //    POSTFIX(DotExpr) POSTFIX(IndexExpr) ATOM(PathExpr) ATOM(CallExpr)
-  //    ATOM(AssertMacroExpr) ATOM(LambdaExpr) ATOM(LitExpr) ATOM(CodeBlockExpr)
+  // 20: ATOM(AnnotatedExpr) ATOM(UnitLitExpr) ATOM(TupleLitOrParenExpr) ATOM(StructLitExpr)
+  //    ATOM(VectorLitExpr) POSTFIX(DotExpr) POSTFIX(IndexExpr) ATOM(PathExpr)
+  //    ATOM(CallExpr) ATOM(AssertMacroExpr) ATOM(LambdaExpr) ATOM(LitExpr)
+  //    ATOM(CodeBlockExpr)
   public static boolean Expr(PsiBuilder builder_, int level_, int priority_) {
     if (!recursion_guard_(builder_, level_, "Expr")) return false;
     addVariant(builder_, "<expression>");
@@ -7380,6 +7531,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     if (!result_) result_ = MatchExpr(builder_, level_ + 1);
     if (!result_) result_ = WhileExpr(builder_, level_ + 1);
     if (!result_) result_ = ForExpr(builder_, level_ + 1);
+    if (!result_) result_ = LabeledBlockExpr(builder_, level_ + 1);
     if (!result_) result_ = CopyExpr(builder_, level_ + 1);
     if (!result_) result_ = MoveExpr(builder_, level_ + 1);
     if (!result_) result_ = DerefExpr(builder_, level_ + 1);
@@ -7390,6 +7542,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     if (!result_) result_ = AbortExpr(builder_, level_ + 1);
     if (!result_) result_ = BorrowExpr(builder_, level_ + 1);
     if (!result_) result_ = AnnotatedExpr(builder_, level_ + 1);
+    if (!result_) result_ = UnitLitExpr(builder_, level_ + 1);
     if (!result_) result_ = TupleLitOrParenExpr(builder_, level_ + 1);
     if (!result_) result_ = StructLitExpr(builder_, level_ + 1);
     if (!result_) result_ = VectorLitExpr(builder_, level_ + 1);
@@ -7737,17 +7890,25 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // loop AnyBlock
+  // LabelDecl? loop AnyBlock
   public static boolean LoopExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "LoopExpr")) return false;
-    if (!nextTokenIsSmart(builder_, LOOP)) return false;
+    if (!nextTokenIsSmart(builder_, LOOP, QUOTE_IDENTIFIER)) return false;
     boolean result_, pinned_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, LOOP_EXPR, "<expression>");
-    result_ = consumeTokenSmart(builder_, LOOP);
-    pinned_ = result_; // pin = 1
+    result_ = LoopExpr_0(builder_, level_ + 1);
+    result_ = result_ && consumeToken(builder_, LOOP);
+    pinned_ = result_; // pin = 2
     result_ = result_ && AnyBlock(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, pinned_, null);
     return result_ || pinned_;
+  }
+
+  // LabelDecl?
+  private static boolean LoopExpr_0(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LoopExpr_0")) return false;
+    LabelDecl(builder_, level_ + 1);
+    return true;
   }
 
   // Attr* <<remapContextualKwOnRollback (match MatchArgument MatchBody)>>
@@ -7784,29 +7945,58 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // while Condition AnyBlock
+  // LabelDecl? while Condition AnyBlock
   public static boolean WhileExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "WhileExpr")) return false;
-    if (!nextTokenIsSmart(builder_, WHILE)) return false;
+    if (!nextTokenIsSmart(builder_, QUOTE_IDENTIFIER, WHILE)) return false;
     boolean result_, pinned_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, WHILE_EXPR, "<expression>");
-    result_ = consumeTokenSmart(builder_, WHILE);
-    pinned_ = result_; // pin = 1
+    result_ = WhileExpr_0(builder_, level_ + 1);
+    result_ = result_ && consumeToken(builder_, WHILE);
+    pinned_ = result_; // pin = 2
     result_ = result_ && report_error_(builder_, Condition(builder_, level_ + 1));
     result_ = pinned_ && AnyBlock(builder_, level_ + 1) && result_;
     exit_section_(builder_, level_, marker_, result_, pinned_, null);
     return result_ || pinned_;
   }
 
-  // for ForIterCondition AnyBlock
+  // LabelDecl?
+  private static boolean WhileExpr_0(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "WhileExpr_0")) return false;
+    LabelDecl(builder_, level_ + 1);
+    return true;
+  }
+
+  // LabelDecl? for ForIterCondition AnyBlock
   public static boolean ForExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ForExpr")) return false;
     boolean result_, pinned_;
     Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, FOR_EXPR, "<expression>");
-    result_ = for_$(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
+    result_ = ForExpr_0(builder_, level_ + 1);
+    result_ = result_ && for_$(builder_, level_ + 1);
+    pinned_ = result_; // pin = 2
     result_ = result_ && report_error_(builder_, ForIterCondition(builder_, level_ + 1));
     result_ = pinned_ && AnyBlock(builder_, level_ + 1) && result_;
+    exit_section_(builder_, level_, marker_, result_, pinned_, null);
+    return result_ || pinned_;
+  }
+
+  // LabelDecl?
+  private static boolean ForExpr_0(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "ForExpr_0")) return false;
+    LabelDecl(builder_, level_ + 1);
+    return true;
+  }
+
+  // LabelDecl CodeBlock
+  public static boolean LabeledBlockExpr(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LabeledBlockExpr")) return false;
+    if (!nextTokenIsSmart(builder_, QUOTE_IDENTIFIER)) return false;
+    boolean result_, pinned_;
+    Marker marker_ = enter_section_(builder_, level_, _NONE_, LABELED_BLOCK_EXPR, "<expression>");
+    result_ = LabelDecl(builder_, level_ + 1);
+    pinned_ = result_; // pin = 1
+    result_ = result_ && CodeBlock(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, pinned_, null);
     return result_ || pinned_;
   }
@@ -7859,7 +8049,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return result_ || pinned_;
   }
 
-  // return Expr?
+  // return LabelRef? Expr?
   public static boolean ReturnExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ReturnExpr")) return false;
     if (!nextTokenIsSmart(builder_, RETURN)) return false;
@@ -7867,37 +8057,69 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_, level_, _NONE_, RETURN_EXPR, "<expression>");
     result_ = consumeTokenSmart(builder_, RETURN);
     result_ = result_ && ReturnExpr_1(builder_, level_ + 1);
+    result_ = result_ && ReturnExpr_2(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
 
-  // Expr?
+  // LabelRef?
   private static boolean ReturnExpr_1(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ReturnExpr_1")) return false;
+    LabelRef(builder_, level_ + 1);
+    return true;
+  }
+
+  // Expr?
+  private static boolean ReturnExpr_2(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "ReturnExpr_2")) return false;
     Expr(builder_, level_ + 1, -1);
     return true;
   }
 
-  // continue
+  // continue LabelRef?
   public static boolean ContinueExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ContinueExpr")) return false;
     if (!nextTokenIsSmart(builder_, CONTINUE)) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, CONTINUE_EXPR, "<expression>");
     result_ = consumeTokenSmart(builder_, CONTINUE);
+    result_ = result_ && ContinueExpr_1(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
 
-  // break
+  // LabelRef?
+  private static boolean ContinueExpr_1(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "ContinueExpr_1")) return false;
+    LabelRef(builder_, level_ + 1);
+    return true;
+  }
+
+  // break LabelRef? Expr?
   public static boolean BreakExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "BreakExpr")) return false;
     if (!nextTokenIsSmart(builder_, BREAK)) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, BREAK_EXPR, "<expression>");
     result_ = consumeTokenSmart(builder_, BREAK);
+    result_ = result_ && BreakExpr_1(builder_, level_ + 1);
+    result_ = result_ && BreakExpr_2(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
+  }
+
+  // LabelRef?
+  private static boolean BreakExpr_1(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "BreakExpr_1")) return false;
+    LabelRef(builder_, level_ + 1);
+    return true;
+  }
+
+  // Expr?
+  private static boolean BreakExpr_2(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "BreakExpr_2")) return false;
+    Expr(builder_, level_ + 1, -1);
+    return true;
   }
 
   public static boolean AbortExpr(PsiBuilder builder_, int level_) {
@@ -7952,6 +8174,18 @@ public class MoveParser implements PsiParser, LightPsiParser {
     pinned_ = result_; // pin = 1
     result_ = result_ && report_error_(builder_, Type(builder_, level_ + 1));
     result_ = pinned_ && consumeToken(builder_, R_PAREN) && result_;
+    exit_section_(builder_, level_, marker_, result_, pinned_, null);
+    return result_ || pinned_;
+  }
+
+  // '(' ')'
+  public static boolean UnitLitExpr(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "UnitLitExpr")) return false;
+    if (!nextTokenIsSmart(builder_, L_PAREN)) return false;
+    boolean result_, pinned_;
+    Marker marker_ = enter_section_(builder_, level_, _NONE_, UNIT_LIT_EXPR, "<expression>");
+    result_ = consumeTokensSmart(builder_, 1, L_PAREN, R_PAREN);
+    pinned_ = result_; // pin = 1
     exit_section_(builder_, level_, marker_, result_, pinned_, null);
     return result_ || pinned_;
   }
@@ -8083,7 +8317,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // '|' <<non_empty_comma_sep_items PatBinding>> '|' Expr
+  // '|' LambdaParams_list? '|' ( LambdaExprBody | LambdaExprBlock )
   public static boolean LambdaExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "LambdaExpr")) return false;
     if (!nextTokenIsSmart(builder_, OR)) return false;
@@ -8091,11 +8325,27 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_, level_, _NONE_, LAMBDA_EXPR, "<expression>");
     result_ = consumeTokenSmart(builder_, OR);
     pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, non_empty_comma_sep_items(builder_, level_ + 1, MoveParser::PatBinding));
+    result_ = result_ && report_error_(builder_, LambdaExpr_1(builder_, level_ + 1));
     result_ = pinned_ && report_error_(builder_, consumeToken(builder_, OR)) && result_;
-    result_ = pinned_ && Expr(builder_, level_ + 1, -1) && result_;
+    result_ = pinned_ && LambdaExpr_3(builder_, level_ + 1) && result_;
     exit_section_(builder_, level_, marker_, result_, pinned_, null);
     return result_ || pinned_;
+  }
+
+  // LambdaParams_list?
+  private static boolean LambdaExpr_1(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LambdaExpr_1")) return false;
+    LambdaParams_list(builder_, level_ + 1);
+    return true;
+  }
+
+  // LambdaExprBody | LambdaExprBlock
+  private static boolean LambdaExpr_3(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "LambdaExpr_3")) return false;
+    boolean result_;
+    result_ = LambdaExprBody(builder_, level_ + 1);
+    if (!result_) result_ = LambdaExprBlock(builder_, level_ + 1);
+    return result_;
   }
 
   // HEX_INTEGER_LITERAL

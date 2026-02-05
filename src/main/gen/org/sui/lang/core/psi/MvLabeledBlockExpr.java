@@ -5,15 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface MvReturnExpr extends MvExpr {
+public interface MvLabeledBlockExpr extends MvExpr {
 
   @Nullable
-  MvExpr getExpr();
-
-  @Nullable
-  MvLabelRef getLabelRef();
+  MvCodeBlock getCodeBlock();
 
   @NotNull
-  PsiElement getReturn();
+  MvLabelDecl getLabelDecl();
 
 }

@@ -213,7 +213,7 @@ private ScriptItem_with_recover ::= !('}' | <<eof>>) ScriptItem
 private ScriptItem_recover ::= !('}' | ScriptItem_first | TopLevel_first)
 private ScriptItem_first ::= use | CONST_KW | fun
 
-private ScriptItem ::= UseStmt | Const | FunctionInner
+private ScriptItem ::= PublicUseFun | UseStmt | Const | FunctionInner
 
 private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
@@ -267,7 +267,7 @@ private ModuleItem_with_recover ::= !('}' | <<eof>>) ModuleItem
 private ModuleItem_recover ::= !('}' | ModuleItem_first | TopLevel_first)
 // top-level recovery
 private ModuleItem_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec
-                            | Attr_first | "friend"  | "entry" | "inline" | "enum"  | MACRO_KW
+                            | Attr_first | "friend" | "entry" | "inline" | "enum" | MACRO_KW
 private TopLevel_first ::= MODULE_KW  //| SCRIPT_KW
 
 private ModuleItem ::=        PublicUseFun
@@ -454,9 +454,16 @@ private TupleFieldDecl_recover ::= !(')' | Type )
 TupleFieldDecl ::= Type
 
 
-UseFunFirst::= 'use fun'
-PublicUseFun ::= 'public'? UseFunFirst PathStart? 'as' IDENTIFIER'.'IDENTIFIER ';' {
-    pin=2
+UseFunFirst ::= 'use fun'
+// use fun <function> as <type>.<method alias>;  (https://move-book.com/reference/method-syntax#use-fun-aliases)
+PublicUseFun ::= Attr* 'public'? UseFunFirst PathImpl 'as' UseFunMethodAlias ';' {
+    pin = 2
+    implements = [
+        "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner"
+    ]
+}
+UseFunMethodAlias ::= PathImpl '.' IDENTIFIER {
+    pin = 2
 }
 
 fake Function ::= Attr* native? VisibilityModifier? entry? inline? MACRO_KW?
@@ -876,6 +883,7 @@ private Expr_first ::= let | if | while | loop | continue | break | return | spe
                         | copy | move | abort
 //                        | (<<VECTOR_IDENTIFIER>> ('<' | '['))
                         | IDENTIFIER
+                        | QUOTE_IDENTIFIER
                         | '*' | '&' | '!' | '|' | '{' | '('
                         | AnyLitToken_first
                         | (AddressRef '::')
@@ -889,6 +897,11 @@ private SpecExpr_first ::= include | apply | pragma | emits | assume | assert | 
 private AnyBlock ::= CodeBlock | InlineBlock
 
 InlineBlock ::= Expr
+
+// Labeled block: 'a: { ... } for return 'a value (https://move-book.com/reference/control-flow/labeled-control-flow)
+LabeledBlockExpr ::= LabelDecl CodeBlock {
+    pin = 1
+}
 
 CodeBlockExpr ::= CodeBlock
 CodeBlock ::= '{' CodeBlock_items '}'
@@ -953,11 +966,12 @@ private MulExpr_items ::= DivBinExpr | MulBinExpr | ModBinExpr
 private AddExpr_items ::= PlusBinExpr | MinusBinExpr
 private LogicalEqExpr_items ::= EqualsBinExpr | NotEqualsBinExpr | LessEqualsBinExpr | LessBinExpr | GreaterEqualsBinExpr | GreaterBinExpr
 
-private ControlFlowExpr_items ::= IfExpr | LoopExpr | MatchExpr | WhileExpr | ForExpr
+private ControlFlowExpr_items ::= IfExpr | LoopExpr | MatchExpr | WhileExpr | ForExpr | LabeledBlockExpr
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
 private AtomExpr ::=
                     AnnotatedExpr
+                    | UnitLitExpr
                     | TupleLitOrParenExpr
                     | StructLitExpr
                     | VectorLitExpr
@@ -970,6 +984,7 @@ private AtomExpr ::=
 //                    | RefExpr
                     | LambdaExpr
                     | LitExpr
+                    | LabeledBlockExpr
                     | CodeBlockExpr
 
 
@@ -1044,11 +1059,15 @@ DerefExpr ::= '*' Expr
 CopyExpr ::= copy Expr
 MoveExpr ::= move Expr
 
-ReturnExpr ::= return Expr?
+ReturnExpr ::= return LabelRef? Expr?
 
 AbortExpr ::= abort Expr
-BreakExpr ::= break
-ContinueExpr ::= continue
+// break value | break 'label value | break 'label
+BreakExpr ::= break LabelRef? Expr?
+ContinueExpr ::= continue LabelRef?
+
+// Label ref for break/continue/return: 'outer, 'a
+LabelRef ::= QUOTE_IDENTIFIER
 
 VectorLitExpr ::= <<vectorIdent>> ('<' TypeArgument '>')? VectorLitItems
 VectorLitItems ::= '[' <<non_empty_comma_sep_items Expr>>? ']'
@@ -1080,6 +1099,9 @@ StructLitField ::= IDENTIFIER StructLitFieldInit?
 
 private StructLitFieldInit ::= ':' Expr { pin = 1 }
 
+// Unit literal: () - empty tuple, arity 0 (https://move-book.com/reference/primitive-types/tuples)
+UnitLitExpr ::= '(' ')' { pin = 1 }
+
 fake TupleLitExpr ::= '(' Expr+ ')' {
     pin = 2
 }
@@ -1096,7 +1118,14 @@ upper TupleLitExprUpper ::= ',' [ Expr (',' Expr)* ','? ] ')' {
     elementType = TupleLitExpr
 }
 
-LambdaExpr ::= '|' <<non_empty_comma_sep_items PatBinding>> '|' Expr { pin = 1 }
+// Macro lambdas: |x| expr, |x: T| expr, |x: T| -> R { block } (https://move-book.com/reference/functions/macros)
+LambdaParam ::= PatBinding TypeAnnotation? {
+    pin = 1
+}
+private LambdaParams_list ::= LambdaParam (',' LambdaParam)*
+LambdaExpr ::= '|' LambdaParams_list? '|' ( LambdaExprBody | LambdaExprBlock ) { pin = 1 }
+private LambdaExprBody ::= Expr
+LambdaExprBlock ::= '->' Type CodeBlock { pin = 1 }
 
 RangeExpr ::= Expr dotdot Expr { pin = 2 }
 
@@ -1166,16 +1195,17 @@ private ConditionBody_recover ::= !')'
 
 ElseBlock ::= else AnyBlock { pin = 1 }
 
-LoopExpr ::= loop AnyBlock {
-    pin = 1
+// Labeled control flow: 'label: loop/while/for (https://move-book.com/reference/control-flow/labeled-control-flow)
+LoopExpr ::= LabelDecl? loop AnyBlock {
+    pin = 2
     implements = [ "org.sui.lang.core.psi.MvLoopLike" ]
 }
-WhileExpr ::= while Condition AnyBlock {
-    pin = 1
+WhileExpr ::= LabelDecl? while Condition AnyBlock {
+    pin = 2
     implements = [ "org.sui.lang.core.psi.MvLoopLike" ]
 }
-ForExpr ::= for ForIterCondition AnyBlock {
-    pin = 1
+ForExpr ::= LabelDecl? for ForIterCondition AnyBlock {
+    pin = 2
     implements = [ "org.sui.lang.core.psi.MvLoopLike" ]
 }
 ForIterCondition ::= '(' PatBinding in Expr ')' {
@@ -1212,12 +1242,14 @@ MethodCall ::= IDENTIFIER'!'? ColonTypeArgumentList? ValueArgumentList
     mixin = "org.sui.lang.core.psi.ext.MvMethodCallMixin"
 }
 
+// Index syntax: m[i], m[i,j], mat[0,0] (https://move-book.com/reference/index-syntax)
 IndexExpr ::= Expr IndexArg
 {
     implements = [ "org.sui.lang.core.psi.MvAcquireTypesOwner" ]
 }
 // Do not inline this rule, it breaks expression parsing
-private IndexArg ::= '[' Expr ']'
+private IndexArg ::= '[' IndexArg_items? ']' { pin = 1 }
+private IndexArg_items ::= Expr (',' Expr)*
 
 //RefExpr ::= PathImpl !'{' {
 //RefExpr ::= Path !'{' {

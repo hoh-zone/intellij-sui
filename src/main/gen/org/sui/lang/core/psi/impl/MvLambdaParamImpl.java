@@ -8,17 +8,17 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.sui.lang.MvElementTypes.*;
+import org.sui.lang.core.psi.MvElementImpl;
 import org.sui.lang.core.psi.*;
 
-public class MvContinueExprImpl extends MvExprImpl implements MvContinueExpr {
+public class MvLambdaParamImpl extends MvElementImpl implements MvLambdaParam {
 
-  public MvContinueExprImpl(ASTNode node) {
+  public MvLambdaParamImpl(ASTNode node) {
     super(node);
   }
 
-  @Override
   public void accept(@NotNull MvVisitor visitor) {
-    visitor.visitContinueExpr(this);
+    visitor.visitLambdaParam(this);
   }
 
   @Override
@@ -28,15 +28,15 @@ public class MvContinueExprImpl extends MvExprImpl implements MvContinueExpr {
   }
 
   @Override
-  @Nullable
-  public MvLabelRef getLabelRef() {
-    return PsiTreeUtil.getChildOfType(this, MvLabelRef.class);
+  @NotNull
+  public MvPatBinding getPatBinding() {
+    return notNullChild(PsiTreeUtil.getChildOfType(this, MvPatBinding.class));
   }
 
   @Override
-  @NotNull
-  public PsiElement getContinue() {
-    return notNullChild(findChildByType(CONTINUE));
+  @Nullable
+  public MvTypeAnnotation getTypeAnnotation() {
+    return PsiTreeUtil.getChildOfType(this, MvTypeAnnotation.class);
   }
 
 }

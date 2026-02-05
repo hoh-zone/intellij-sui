@@ -127,7 +127,10 @@ private fun render(
             }
             s
         }
-        is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
+        is TyTuple -> {
+            val inner = ty.types.joinToString(", ", transform = r)
+            if (ty.types.size == 1) "($inner,)" else "($inner)"
+        }
         is TyVector -> "vector<${r(ty.item)}>"
         is TyRange -> "range<${r(ty.item)}>"
         is TyReference -> {

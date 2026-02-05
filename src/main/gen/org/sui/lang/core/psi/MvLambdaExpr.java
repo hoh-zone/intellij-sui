@@ -10,7 +10,10 @@ public interface MvLambdaExpr extends MvExpr {
   @Nullable
   MvExpr getExpr();
 
+  @Nullable
+  MvLambdaExprBlock getLambdaExprBlock();
+
   @NotNull
-  List<MvPatBinding> getPatBindingList();
+  List<MvLambdaParam> getLambdaParamList();
 
 }

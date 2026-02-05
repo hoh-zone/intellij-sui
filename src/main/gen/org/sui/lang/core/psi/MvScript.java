@@ -15,6 +15,9 @@ public interface MvScript extends MvItemsOwner {
   List<MvFunction> getFunctionList();
 
   @NotNull
+  List<MvPublicUseFun> getPublicUseFunList();
+
+  @NotNull
   List<MvUseStmt> getUseStmtList();
 
   @Nullable

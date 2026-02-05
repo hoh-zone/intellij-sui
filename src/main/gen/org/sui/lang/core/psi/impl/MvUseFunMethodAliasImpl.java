@@ -11,14 +11,14 @@ import static org.sui.lang.MvElementTypes.*;
 import org.sui.lang.core.psi.MvElementImpl;
 import org.sui.lang.core.psi.*;
 
-public class MvPublicUseFunImpl extends MvElementImpl implements MvPublicUseFun {
+public class MvUseFunMethodAliasImpl extends MvElementImpl implements MvUseFunMethodAlias {
 
-  public MvPublicUseFunImpl(ASTNode node) {
+  public MvUseFunMethodAliasImpl(ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull MvVisitor visitor) {
-    visitor.visitPublicUseFun(this);
+    visitor.visitUseFunMethodAlias(this);
   }
 
   @Override
@@ -29,32 +29,20 @@ public class MvPublicUseFunImpl extends MvElementImpl implements MvPublicUseFun 
 
   @Override
   @NotNull
-  public List<MvAttr> getAttrList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, MvAttr.class);
-  }
-
-  @Override
-  @Nullable
   public MvPath getPath() {
-    return PsiTreeUtil.getChildOfType(this, MvPath.class);
+    return notNullChild(PsiTreeUtil.getChildOfType(this, MvPath.class));
+  }
+
+  @Override
+  @NotNull
+  public PsiElement getDot() {
+    return notNullChild(findChildByType(DOT));
   }
 
   @Override
   @Nullable
-  public MvUseFunFirst getUseFunFirst() {
-    return PsiTreeUtil.getChildOfType(this, MvUseFunFirst.class);
-  }
-
-  @Override
-  @Nullable
-  public MvUseFunMethodAlias getUseFunMethodAlias() {
-    return PsiTreeUtil.getChildOfType(this, MvUseFunMethodAlias.class);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getSemicolon() {
-    return findChildByType(SEMICOLON);
+  public PsiElement getIdentifier() {
+    return findChildByType(IDENTIFIER);
   }
 
 }

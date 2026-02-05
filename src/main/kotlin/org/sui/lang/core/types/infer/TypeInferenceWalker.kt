@@ -231,6 +231,7 @@ class TypeInferenceWalker(
             is MvDerefExpr -> inferDerefExprTy(expr)
             is MvLitExpr -> inferLitExprTy(expr, expected)
             is MvTupleLitExpr -> inferTupleLitExprTy(expr, expected)
+            is MvUnitLitExpr -> TyUnit
             is MvLambdaExpr -> inferLambdaExpr(expr, expected)
 
             is MvMoveExpr -> expr.expr?.inferType() ?: TyUnknown
@@ -386,7 +387,7 @@ class TypeInferenceWalker(
             val ty = lambdaTy.paramTypes.getOrElse(i) { TyUnknown }
             ctx.writePatTy(binding, ty)
         }
-        lambdaExpr.expr?.inferTypeCoercableTo(lambdaTy.retType)
+        lambdaExpr.bodyExpr?.inferTypeCoercableTo(lambdaTy.retType)
         return TyUnknown
     }
 
@@ -742,7 +743,8 @@ class TypeInferenceWalker(
 
     private fun inferIndexExprTy(indexExpr: MvIndexExpr): Ty {
         val receiverTy = indexExpr.receiverExpr.inferType()
-        val argTy = indexExpr.argExpr.inferType()
+        val argList = indexExpr.argExprList
+        val firstArg = argList.firstOrNull() ?: return TyUnknown
 
         // compiler v2 only in non-msl
         if (!ctx.msl && !project.moveSettings.enableIndexExpr) {
@@ -752,22 +754,26 @@ class TypeInferenceWalker(
         val derefTy = receiverTy.derefIfNeeded()
         return when {
             derefTy is TyVector -> {
-                // argExpr can be either TyInteger or TyRange
+                // vector: single arg (TyInteger or TyRange)
+                val argTy = firstArg.inferType()
                 when (argTy) {
                     is TyRange -> derefTy
                     is TyInteger, is TyInfer.IntVar, is TyNum -> derefTy.item
                     else -> {
-                        coerce(indexExpr.argExpr, argTy, if (ctx.msl) TyNum else TyInteger.DEFAULT)
+                        coerce(firstArg, argTy, if (ctx.msl) TyNum else TyInteger.DEFAULT)
                         TyUnknown
                     }
                 }
             }
             receiverTy is TyAdt -> {
-                coerce(indexExpr.argExpr, argTy, TyAddress)
+                // address indexing: S[@0x1]
+                val argTy = firstArg.inferType()
+                coerce(firstArg, argTy, TyAddress)
                 receiverTy
             }
             else -> {
-                ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
+                // custom #[syntax(index)] types (e.g. Matrix m[i,j]) - infer args, return unknown
+                argList.forEach { it.inferType() }
                 TyUnknown
             }
         }

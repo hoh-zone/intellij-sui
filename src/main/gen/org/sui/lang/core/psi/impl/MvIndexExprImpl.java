@@ -40,9 +40,9 @@ public class MvIndexExprImpl extends MvExprImpl implements MvIndexExpr {
   }
 
   @Override
-  @NotNull
+  @Nullable
   public PsiElement getRBrack() {
-    return notNullChild(findChildByType(R_BRACK));
+    return findChildByType(R_BRACK);
   }
 
 }

@@ -34,6 +34,17 @@
         </context>
     </template>
 
+    <!-- use fun alias (method syntax) -->
+    <template name="usefun" value="use fun $FUNC$ as $TYPE$.$METHOD$;&#10;$END$" description="use fun method alias" toReformat="true" toShortenFQNames="true">
+        <variable name="FUNC" expression="" defaultValue="&quot;0x1::module::function&quot;" alwaysStopAt="true"/>
+        <variable name="TYPE" expression="" defaultValue="&quot;Type&quot;" alwaysStopAt="true"/>
+        <variable name="METHOD" expression="" defaultValue="&quot;method&quot;" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_MODULE" value="true"/>
+            <option name="MOVE_FILE" value="true"/>
+        </context>
+    </template>
+
     <!-- public entry fun -->
     <template name="pentryfun" value="public entry fun $NAME$($PARAMS$) {&#10;    $END$&#10;}" description="public entry function declaration" toReformat="true" toShortenFQNames="true">
         <variable name="NAME" expression="" defaultValue="&quot;function_name&quot;" alwaysStopAt="true"/>

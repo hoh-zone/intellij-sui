@@ -103,8 +103,12 @@ public interface MvElementTypes {
   IElementType ITEM_SPEC_SIGNATURE = new MvElementType("ITEM_SPEC_SIGNATURE");
   IElementType ITEM_SPEC_TYPE_PARAMETER = new MvElementType("ITEM_SPEC_TYPE_PARAMETER");
   IElementType ITEM_SPEC_TYPE_PARAMETER_LIST = new MvElementType("ITEM_SPEC_TYPE_PARAMETER_LIST");
+  IElementType LABELED_BLOCK_EXPR = new MvElementType("LABELED_BLOCK_EXPR");
   IElementType LABEL_DECL = new MvElementType("LABEL_DECL");
+  IElementType LABEL_REF = new MvElementType("LABEL_REF");
   IElementType LAMBDA_EXPR = new MvElementType("LAMBDA_EXPR");
+  IElementType LAMBDA_EXPR_BLOCK = new MvElementType("LAMBDA_EXPR_BLOCK");
+  IElementType LAMBDA_PARAM = new MvElementType("LAMBDA_PARAM");
   IElementType LAMBDA_TYPE = new MvElementType("LAMBDA_TYPE");
   IElementType LAMBDA_TYPE_PARAM = new MvElementType("LAMBDA_TYPE_PARAM");
   IElementType LET_STMT = new MvElementType("LET_STMT");
@@ -197,10 +201,12 @@ public interface MvElementTypes {
   IElementType TYPE_PARAMETER_LIST = new MvElementType("TYPE_PARAMETER_LIST");
   IElementType TYPE_PARAM_BOUND = new MvElementType("TYPE_PARAM_BOUND");
   IElementType TYPE_QUANT_BINDING = new MvElementType("TYPE_QUANT_BINDING");
+  IElementType UNIT_LIT_EXPR = new MvElementType("UNIT_LIT_EXPR");
   IElementType UNIT_TYPE = new MvElementType("UNIT_TYPE");
   IElementType UPDATE_SPEC_STMT = new MvElementType("UPDATE_SPEC_STMT");
   IElementType USE_ALIAS = new MvElementType("USE_ALIAS");
   IElementType USE_FUN_FIRST = new MvElementType("USE_FUN_FIRST");
+  IElementType USE_FUN_METHOD_ALIAS = new MvElementType("USE_FUN_METHOD_ALIAS");
   IElementType USE_GROUP = new MvElementType("USE_GROUP");
   IElementType USE_SPECK = new MvElementType("USE_SPECK");
   IElementType USE_STMT = new MvElementType("USE_STMT");
@@ -607,11 +613,23 @@ public interface MvElementTypes {
       else if (type == ITEM_SPEC_TYPE_PARAMETER_LIST) {
         return new MvItemSpecTypeParameterListImpl(node);
       }
+      else if (type == LABELED_BLOCK_EXPR) {
+        return new MvLabeledBlockExprImpl(node);
+      }
       else if (type == LABEL_DECL) {
         return new MvLabelDeclImpl(node);
       }
+      else if (type == LABEL_REF) {
+        return new MvLabelRefImpl(node);
+      }
       else if (type == LAMBDA_EXPR) {
         return new MvLambdaExprImpl(node);
+      }
+      else if (type == LAMBDA_EXPR_BLOCK) {
+        return new MvLambdaExprBlockImpl(node);
+      }
+      else if (type == LAMBDA_PARAM) {
+        return new MvLambdaParamImpl(node);
       }
       else if (type == LAMBDA_TYPE) {
         return new MvLambdaTypeImpl(node);
@@ -877,6 +895,9 @@ public interface MvElementTypes {
       else if (type == TYPE_QUANT_BINDING) {
         return new MvTypeQuantBindingImpl(node);
       }
+      else if (type == UNIT_LIT_EXPR) {
+        return new MvUnitLitExprImpl(node);
+      }
       else if (type == UNIT_TYPE) {
         return new MvUnitTypeImpl(node);
       }
@@ -888,6 +909,9 @@ public interface MvElementTypes {
       }
       else if (type == USE_FUN_FIRST) {
         return new MvUseFunFirstImpl(node);
+      }
+      else if (type == USE_FUN_METHOD_ALIAS) {
+        return new MvUseFunMethodAliasImpl(node);
       }
       else if (type == USE_GROUP) {
         return new MvUseGroupImpl(node);

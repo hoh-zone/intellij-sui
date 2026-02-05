@@ -163,6 +163,7 @@ IDENTIFIER=(\$)?[_a-zA-Z][_a-zA-Z0-9]* | `type`
   {INTEGER_LITERAL}          { return INTEGER_LITERAL; }
   {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }
   {BYTE_STRING_LITERAL}      { return BYTE_STRING_LITERAL; }
+  \'[a-zA-Z_][a-zA-Z0-9_]*   { return QUOTE_IDENTIFIER; }
   {IDENTIFIER}               { return IDENTIFIER; }
 
 }

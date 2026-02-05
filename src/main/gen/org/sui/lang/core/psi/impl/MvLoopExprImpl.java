@@ -40,6 +40,12 @@ public class MvLoopExprImpl extends MvExprImpl implements MvLoopExpr {
   }
 
   @Override
+  @Nullable
+  public MvLabelDecl getLabelDecl() {
+    return PsiTreeUtil.getChildOfType(this, MvLabelDecl.class);
+  }
+
+  @Override
   @NotNull
   public PsiElement getLoop() {
     return notNullChild(findChildByType(LOOP));

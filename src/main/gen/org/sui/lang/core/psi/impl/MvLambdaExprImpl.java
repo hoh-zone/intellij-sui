@@ -34,9 +34,15 @@ public class MvLambdaExprImpl extends MvExprImpl implements MvLambdaExpr {
   }
 
   @Override
+  @Nullable
+  public MvLambdaExprBlock getLambdaExprBlock() {
+    return PsiTreeUtil.getChildOfType(this, MvLambdaExprBlock.class);
+  }
+
+  @Override
   @NotNull
-  public List<MvPatBinding> getPatBindingList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, MvPatBinding.class);
+  public List<MvLambdaParam> getLambdaParamList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, MvLambdaParam.class);
   }
 
 }

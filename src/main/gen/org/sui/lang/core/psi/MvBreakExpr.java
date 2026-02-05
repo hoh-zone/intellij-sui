@@ -7,6 +7,12 @@ import com.intellij.psi.PsiElement;
 
 public interface MvBreakExpr extends MvExpr {
 
+  @Nullable
+  MvExpr getExpr();
+
+  @Nullable
+  MvLabelRef getLabelRef();
+
   @NotNull
   PsiElement getBreak();
 

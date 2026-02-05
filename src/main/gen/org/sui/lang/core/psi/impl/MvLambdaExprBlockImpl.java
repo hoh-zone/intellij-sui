@@ -8,17 +8,17 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.sui.lang.MvElementTypes.*;
+import org.sui.lang.core.psi.MvElementImpl;
 import org.sui.lang.core.psi.*;
 
-public class MvWhileExprImpl extends MvExprImpl implements MvWhileExpr {
+public class MvLambdaExprBlockImpl extends MvElementImpl implements MvLambdaExprBlock {
 
-  public MvWhileExprImpl(ASTNode node) {
+  public MvLambdaExprBlockImpl(ASTNode node) {
     super(node);
   }
 
-  @Override
   public void accept(@NotNull MvVisitor visitor) {
-    visitor.visitWhileExpr(this);
+    visitor.visitLambdaExprBlock(this);
   }
 
   @Override
@@ -35,26 +35,8 @@ public class MvWhileExprImpl extends MvExprImpl implements MvWhileExpr {
 
   @Override
   @Nullable
-  public MvCondition getCondition() {
-    return PsiTreeUtil.getChildOfType(this, MvCondition.class);
-  }
-
-  @Override
-  @Nullable
-  public MvInlineBlock getInlineBlock() {
-    return PsiTreeUtil.getChildOfType(this, MvInlineBlock.class);
-  }
-
-  @Override
-  @Nullable
-  public MvLabelDecl getLabelDecl() {
-    return PsiTreeUtil.getChildOfType(this, MvLabelDecl.class);
-  }
-
-  @Override
-  @NotNull
-  public PsiElement getWhile() {
-    return notNullChild(findChildByType(WHILE));
+  public MvType getType() {
+    return PsiTreeUtil.getChildOfType(this, MvType.class);
   }
 
 }

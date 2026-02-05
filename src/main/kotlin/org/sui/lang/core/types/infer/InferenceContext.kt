@@ -465,6 +465,9 @@ class InferenceContext(
 
             ty1 is TyTypeParameter && ty2 is TyTypeParameter && ty1 == ty2 -> Ok(Unit)
             ty1 is TyUnit && ty2 is TyUnit -> Ok(Unit)
+            // Unit () is empty tuple; TyUnit <-> TyTuple(empty) per Move Book
+            ty1 is TyUnit && ty2 is TyTuple && ty2.types.isEmpty() -> Ok(Unit)
+            ty1 is TyTuple && ty1.types.isEmpty() && ty2 is TyUnit -> Ok(Unit)
             ty1 is TyInteger && ty2 is TyInteger
                     && isCompatibleIntegers(ty1, ty2) -> Ok(Unit)
             ty1 is TyPrimitive && ty2 is TyPrimitive && ty1.name == ty2.name -> Ok(Unit)

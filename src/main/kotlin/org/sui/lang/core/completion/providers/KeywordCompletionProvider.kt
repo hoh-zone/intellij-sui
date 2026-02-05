@@ -15,6 +15,24 @@ import org.sui.lang.core.psi.ext.isWhitespace
 import org.sui.lang.core.psi.ext.rightSiblings
 
 /**
+ * When user has "use f" and invokes completion, offer "use fun" (lookup "fun")
+ * so selecting it replaces "f" with "fun" -> "use fun".
+ */
+class UseFunAfterUseProvider : CompletionProvider<CompletionParameters>() {
+    override fun addCompletions(
+        parameters: CompletionParameters,
+        context: ProcessingContext,
+        result: CompletionResultSet,
+    ) {
+        val builder = LookupElementBuilder.create("fun")
+            .withPresentableText("use fun")
+            .bold()
+        val withHandler = addInsertionHandler("fun", builder, parameters)
+        result.addElement(withHandler.withPriority(KEYWORD_PRIORITY))
+    }
+}
+
+/**
  * When user has "public s" and invokes completion, offer "public struct" (lookup "struct")
  * so selecting it replaces "s" with "struct" -> "public struct".
  */

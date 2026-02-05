@@ -7,6 +7,9 @@ import com.intellij.psi.PsiElement;
 
 public interface MvContinueExpr extends MvExpr {
 
+  @Nullable
+  MvLabelRef getLabelRef();
+
   @NotNull
   PsiElement getContinue();
 

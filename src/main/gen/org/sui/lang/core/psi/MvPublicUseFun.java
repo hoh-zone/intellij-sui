@@ -4,17 +4,21 @@ package org.sui.lang.core.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import org.sui.lang.core.psi.ext.MvDocAndAttributeOwner;
 
-public interface MvPublicUseFun extends MvElement {
+public interface MvPublicUseFun extends MvDocAndAttributeOwner {
+
+  @NotNull
+  List<MvAttr> getAttrList();
 
   @Nullable
   MvPath getPath();
 
-  @NotNull
+  @Nullable
   MvUseFunFirst getUseFunFirst();
 
   @Nullable
-  PsiElement getDot();
+  MvUseFunMethodAlias getUseFunMethodAlias();
 
   @Nullable
   PsiElement getSemicolon();

@@ -13,7 +13,7 @@ public interface MvIndexExpr extends MvExpr, MvAcquireTypesOwner {
   @NotNull
   PsiElement getLBrack();
 
-  @NotNull
+  @Nullable
   PsiElement getRBrack();
 
 }

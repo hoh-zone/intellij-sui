@@ -23,6 +23,7 @@ import org.sui.lang.core.MvPsiPattern.typeParameter
 import org.sui.lang.core.TYPES
 import org.sui.lang.core.completion.providers.KeywordCompletionProvider
 import org.sui.lang.core.completion.providers.PublicStructAfterPublicProvider
+import org.sui.lang.core.completion.providers.UseFunAfterUseProvider
 
 class KeywordCompletionContributor: CompletionContributor() {
     init {
@@ -38,7 +39,8 @@ class KeywordCompletionContributor: CompletionContributor() {
                 "public",
                 "fun",
                 "const",
-                "use"
+                "use",
+                "use fun"
             )
         )
         extend(
@@ -53,6 +55,7 @@ class KeywordCompletionContributor: CompletionContributor() {
                 "struct",
                 "const",
                 "use",
+                "use fun",
                 "spec",
                 "friend",
                 "enum",
@@ -88,6 +91,16 @@ class KeywordCompletionContributor: CompletionContributor() {
             CompletionType.BASIC,
             module().and(identifierStatementBeginningPattern("public")),
             PublicStructAfterPublicProvider()
+        )
+        extend(
+            CompletionType.BASIC,
+            module().and(identifierStatementBeginningPattern("use")),
+            UseFunAfterUseProvider()
+        )
+        extend(
+            CompletionType.BASIC,
+            script().and(identifierStatementBeginningPattern("use")),
+            UseFunAfterUseProvider()
         )
         extend(
             CompletionType.BASIC,

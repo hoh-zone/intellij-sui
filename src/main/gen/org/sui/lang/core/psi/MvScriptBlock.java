@@ -14,6 +14,9 @@ public interface MvScriptBlock extends MvElement {
   List<MvFunction> getFunctionList();
 
   @NotNull
+  List<MvPublicUseFun> getPublicUseFunList();
+
+  @NotNull
   List<MvUseStmt> getUseStmtList();
 
   @NotNull

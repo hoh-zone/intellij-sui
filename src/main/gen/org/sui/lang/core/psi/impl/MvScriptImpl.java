@@ -41,6 +41,12 @@ public class MvScriptImpl extends MvElementImpl implements MvScript {
 
   @Override
   @NotNull
+  public List<MvPublicUseFun> getPublicUseFunList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, MvPublicUseFun.class);
+  }
+
+  @Override
+  @NotNull
   public List<MvUseStmt> getUseStmtList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, MvUseStmt.class);
   }

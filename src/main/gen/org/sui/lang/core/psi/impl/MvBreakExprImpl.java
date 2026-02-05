@@ -28,6 +28,18 @@ public class MvBreakExprImpl extends MvExprImpl implements MvBreakExpr {
   }
 
   @Override
+  @Nullable
+  public MvExpr getExpr() {
+    return PsiTreeUtil.getChildOfType(this, MvExpr.class);
+  }
+
+  @Override
+  @Nullable
+  public MvLabelRef getLabelRef() {
+    return PsiTreeUtil.getChildOfType(this, MvLabelRef.class);
+  }
+
+  @Override
   @NotNull
   public PsiElement getBreak() {
     return notNullChild(findChildByType(BREAK));

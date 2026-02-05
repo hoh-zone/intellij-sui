@@ -45,4 +45,10 @@ public class MvForExprImpl extends MvExprImpl implements MvForExpr {
     return PsiTreeUtil.getChildOfType(this, MvInlineBlock.class);
   }
 
+  @Override
+  @Nullable
+  public MvLabelDecl getLabelDecl() {
+    return PsiTreeUtil.getChildOfType(this, MvLabelDecl.class);
+  }
+
 }
