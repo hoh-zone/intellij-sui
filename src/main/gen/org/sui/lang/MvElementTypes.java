@@ -145,6 +145,7 @@ public interface MvElementTypes {
   IElementType PAT_FIELD = new MvElementType("PAT_FIELD");
   IElementType PAT_FIELD_FULL = new MvElementType("PAT_FIELD_FULL");
   IElementType PAT_IDENT = new MvElementType("PAT_IDENT");
+  IElementType PAT_REST = new MvElementType("PAT_REST");
   IElementType PAT_STRUCT = new MvElementType("PAT_STRUCT");
   IElementType PAT_TUPLE = new MvElementType("PAT_TUPLE");
   IElementType PAT_WILD = new MvElementType("PAT_WILD");
@@ -205,7 +206,6 @@ public interface MvElementTypes {
   IElementType UNIT_TYPE = new MvElementType("UNIT_TYPE");
   IElementType UPDATE_SPEC_STMT = new MvElementType("UPDATE_SPEC_STMT");
   IElementType USE_ALIAS = new MvElementType("USE_ALIAS");
-  IElementType USE_FUN_FIRST = new MvElementType("USE_FUN_FIRST");
   IElementType USE_FUN_METHOD_ALIAS = new MvElementType("USE_FUN_METHOD_ALIAS");
   IElementType USE_GROUP = new MvElementType("USE_GROUP");
   IElementType USE_SPECK = new MvElementType("USE_SPECK");
@@ -736,6 +736,9 @@ public interface MvElementTypes {
       else if (type == PAT_IDENT) {
         return new MvPatIdentImpl(node);
       }
+      else if (type == PAT_REST) {
+        return new MvPatRestImpl(node);
+      }
       else if (type == PAT_STRUCT) {
         return new MvPatStructImpl(node);
       }
@@ -906,9 +909,6 @@ public interface MvElementTypes {
       }
       else if (type == USE_ALIAS) {
         return new MvUseAliasImpl(node);
-      }
-      else if (type == USE_FUN_FIRST) {
-        return new MvUseFunFirstImpl(node);
       }
       else if (type == USE_FUN_METHOD_ALIAS) {
         return new MvUseFunMethodAliasImpl(node);

@@ -605,6 +605,10 @@ public class MvVisitor extends PsiElementVisitor {
     visitElement(o);
   }
 
+  public void visitPatRest(@NotNull MvPatRest o) {
+    visitElement(o);
+  }
+
   public void visitPatStruct(@NotNull MvPatStruct o) {
     visitPat(o);
     // visitInferenceCachedPathElement(o);
@@ -891,10 +895,6 @@ public class MvVisitor extends PsiElementVisitor {
 
   public void visitUseAlias(@NotNull MvUseAlias o) {
     visitNameIdentifierOwner(o);
-  }
-
-  public void visitUseFunFirst(@NotNull MvUseFunFirst o) {
-    visitElement(o);
   }
 
   public void visitUseFunMethodAlias(@NotNull MvUseFunMethodAlias o) {

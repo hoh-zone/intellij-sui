@@ -13,4 +13,7 @@ public interface MvPatField extends MvElement {
   @Nullable
   MvPatFieldFull getPatFieldFull();
 
+  @Nullable
+  MvPatRest getPatRest();
+
 }

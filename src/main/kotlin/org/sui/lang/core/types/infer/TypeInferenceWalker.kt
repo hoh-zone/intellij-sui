@@ -240,8 +240,8 @@ class TypeInferenceWalker(
             is MvItemSpecBlockExpr -> expr.specBlock?.let { inferSpec(it) } ?: TyUnknown
 
             is MvCastExpr -> {
-                expr.expr.inferType()
-                val ty = expr.type.loweredType(msl)
+                expr.exprList.firstOrNull()?.inferType()
+                val ty = expr.type?.loweredType(msl) ?: TyUnknown
                 expected.onlyHasTy(this.ctx)?.let {
                     this.ctx.combineTypes(it, ty)
                 }

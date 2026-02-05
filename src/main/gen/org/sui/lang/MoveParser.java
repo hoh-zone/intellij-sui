@@ -3133,8 +3133,8 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // PublicUseFun
-  //                             | UseStmt
+  // UseStmt
+  //                             | PublicUseFun
   //                             | FriendDecl
   //                             | StructItem
   //                             | Enum
@@ -3148,8 +3148,8 @@ public class MoveParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(builder_, level_, "ModuleItem")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
-    result_ = PublicUseFun(builder_, level_ + 1);
-    if (!result_) result_ = UseStmt(builder_, level_ + 1);
+    result_ = UseStmt(builder_, level_ + 1);
+    if (!result_) result_ = PublicUseFun(builder_, level_ + 1);
     if (!result_) result_ = FriendDecl(builder_, level_ + 1);
     if (!result_) result_ = StructItem(builder_, level_ + 1);
     if (!result_) result_ = Enum(builder_, level_ + 1);
@@ -3996,13 +3996,14 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // PatFieldFull | PatBinding
+  // PatFieldFull | PatBinding | PatRest
   public static boolean PatField(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "PatField")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, PAT_FIELD, "<pat field>");
     result_ = PatFieldFull(builder_, level_ + 1);
     if (!result_) result_ = PatBinding(builder_, level_ + 1);
+    if (!result_) result_ = PatRest(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
@@ -4029,7 +4030,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !('}' |mut? IDENTIFIER)
+  // !('}' | DOT_DOT | mut? IDENTIFIER)
   static boolean PatField_recover(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "PatField_recover")) return false;
     boolean result_;
@@ -4039,31 +4040,32 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // '}' |mut? IDENTIFIER
+  // '}' | DOT_DOT | mut? IDENTIFIER
   private static boolean PatField_recover_0(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "PatField_recover_0")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
     result_ = consumeTokenFast(builder_, R_BRACE);
-    if (!result_) result_ = PatField_recover_0_1(builder_, level_ + 1);
+    if (!result_) result_ = consumeTokenFast(builder_, DOT_DOT);
+    if (!result_) result_ = PatField_recover_0_2(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
     return result_;
   }
 
   // mut? IDENTIFIER
-  private static boolean PatField_recover_0_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "PatField_recover_0_1")) return false;
+  private static boolean PatField_recover_0_2(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "PatField_recover_0_2")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
-    result_ = PatField_recover_0_1_0(builder_, level_ + 1);
+    result_ = PatField_recover_0_2_0(builder_, level_ + 1);
     result_ = result_ && consumeToken(builder_, IDENTIFIER);
     exit_section_(builder_, marker_, null, result_);
     return result_;
   }
 
   // mut?
-  private static boolean PatField_recover_0_1_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "PatField_recover_0_1_0")) return false;
+  private static boolean PatField_recover_0_2_0(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "PatField_recover_0_2_0")) return false;
     consumeTokenFast(builder_, MUT);
     return true;
   }
@@ -4121,6 +4123,18 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_, level_, _NONE_, PAT_IDENT, "<pat ident>");
     result_ = PatBinding(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
+    return result_;
+  }
+
+  /* ********************************************************** */
+  // DOT_DOT
+  public static boolean PatRest(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "PatRest")) return false;
+    if (!nextTokenIs(builder_, DOT_DOT)) return false;
+    boolean result_;
+    Marker marker_ = enter_section_(builder_);
+    result_ = consumeToken(builder_, DOT_DOT);
+    exit_section_(builder_, marker_, PAT_REST, result_);
     return result_;
   }
 
@@ -4218,9 +4232,14 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // PATH_MODE_IDENTIFIER
+  // PATH_MODE_IDENTIFIER | IDENTIFIER | QUOTE_IDENTIFIER
   static boolean PathIdent(PsiBuilder builder_, int level_) {
-    return PATH_MODE_IDENTIFIER(builder_, level_ + 1);
+    if (!recursion_guard_(builder_, level_, "PathIdent")) return false;
+    boolean result_;
+    result_ = PATH_MODE_IDENTIFIER(builder_, level_ + 1);
+    if (!result_) result_ = consumeToken(builder_, IDENTIFIER);
+    if (!result_) result_ = consumeToken(builder_, QUOTE_IDENTIFIER);
+    return result_;
   }
 
   /* ********************************************************** */
@@ -4487,16 +4506,16 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // Attr* 'public'? UseFunFirst PathImpl 'as' UseFunMethodAlias ';'
+  // Attr* 'public'? use fun PathImpl 'as' UseFunMethodAlias ';'
   public static boolean PublicUseFun(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "PublicUseFun")) return false;
     boolean result_, pinned_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, PUBLIC_USE_FUN, "<public use fun>");
     result_ = PublicUseFun_0(builder_, level_ + 1);
     result_ = result_ && PublicUseFun_1(builder_, level_ + 1);
-    pinned_ = result_; // pin = 2
-    result_ = result_ && report_error_(builder_, UseFunFirst(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, PathImpl(builder_, level_ + 1)) && result_;
+    result_ = result_ && consumeTokens(builder_, 1, USE, FUN);
+    pinned_ = result_; // pin = 3
+    result_ = result_ && report_error_(builder_, PathImpl(builder_, level_ + 1));
     result_ = pinned_ && report_error_(builder_, consumeToken(builder_, "as")) && result_;
     result_ = pinned_ && report_error_(builder_, UseFunMethodAlias(builder_, level_ + 1)) && result_;
     result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
@@ -5728,15 +5747,24 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // IDENTIFIER !('(' | '::' | '!' | '{')
+  // (IDENTIFIER | INTEGER_LITERAL) !('(' | '::' | '!' | '{')
   public static boolean StructDotField(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "StructDotField")) return false;
-    if (!nextTokenIs(builder_, IDENTIFIER)) return false;
+    if (!nextTokenIs(builder_, "<struct dot field>", IDENTIFIER, INTEGER_LITERAL)) return false;
     boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, IDENTIFIER);
+    Marker marker_ = enter_section_(builder_, level_, _NONE_, STRUCT_DOT_FIELD, "<struct dot field>");
+    result_ = StructDotField_0(builder_, level_ + 1);
     result_ = result_ && StructDotField_1(builder_, level_ + 1);
-    exit_section_(builder_, marker_, STRUCT_DOT_FIELD, result_);
+    exit_section_(builder_, level_, marker_, result_, false, null);
+    return result_;
+  }
+
+  // IDENTIFIER | INTEGER_LITERAL
+  private static boolean StructDotField_0(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "StructDotField_0")) return false;
+    boolean result_;
+    result_ = consumeToken(builder_, IDENTIFIER);
+    if (!result_) result_ = consumeToken(builder_, INTEGER_LITERAL);
     return result_;
   }
 
@@ -6622,17 +6650,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     pinned_ = result_; // pin = 1
     exit_section_(builder_, level_, marker_, result_, pinned_, null);
     return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // 'use fun'
-  public static boolean UseFunFirst(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "UseFunFirst")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, USE_FUN_FIRST, "<use fun first>");
-    result_ = consumeToken(builder_, "use fun");
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
   }
 
   /* ********************************************************** */

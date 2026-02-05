@@ -15,12 +15,15 @@ public interface MvPublicUseFun extends MvDocAndAttributeOwner {
   MvPath getPath();
 
   @Nullable
-  MvUseFunFirst getUseFunFirst();
-
-  @Nullable
   MvUseFunMethodAlias getUseFunMethodAlias();
 
   @Nullable
   PsiElement getSemicolon();
+
+  @Nullable
+  PsiElement getFun();
+
+  @NotNull
+  PsiElement getUse();
 
 }

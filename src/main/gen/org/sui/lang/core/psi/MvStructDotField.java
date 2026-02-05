@@ -8,7 +8,10 @@ import org.sui.lang.core.psi.ext.MvMethodOrField;
 
 public interface MvStructDotField extends MvMethodOrField {
 
-  @NotNull
+  @Nullable
   PsiElement getIdentifier();
+
+  @Nullable
+  PsiElement getIntegerLiteral();
 
 }

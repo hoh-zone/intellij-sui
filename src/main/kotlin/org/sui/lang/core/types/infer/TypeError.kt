@@ -50,7 +50,8 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
 
                     if (expr is MvParensExpr && expr.expr is MvCastExpr) {
                         val castExpr = expr.expr as MvCastExpr
-                        val originalTy = inference.getExprType(castExpr.expr) as? TyInteger ?: return null
+                        val inner = castExpr.exprList.firstOrNull() ?: return null
+                        val originalTy = inference.getExprType(inner) as? TyInteger ?: return null
                         if (originalTy == expectedTy) {
                             return IntegerCastFix.RemoveCast(castExpr)
                         } else {

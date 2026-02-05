@@ -27,7 +27,8 @@ sealed class IntegerCastFix<T: MvExpr>(expr: T) : DiagnosticFix<T>(expr) {
             val oldExpr = element.copy()
             val newParensExpr = element.replace(parensExpr) as MvParensExpr
 
-            val litExpr = (newParensExpr.expr as MvCastExpr).expr
+            val castExpr = newParensExpr.expr as? MvCastExpr ?: return
+            val litExpr = castExpr.exprList.firstOrNull() ?: return
             litExpr.replace(oldExpr)
         }
     }
@@ -60,7 +61,7 @@ sealed class IntegerCastFix<T: MvExpr>(expr: T) : DiagnosticFix<T>(expr) {
             element: MvCastExpr
         ) {
             val newType = project.psiFactory.type(castType.name())
-            element.type.replace(newType)
+            element.type?.replace(newType)
         }
     }
 }

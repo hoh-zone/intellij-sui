@@ -270,8 +270,8 @@ private ModuleItem_first ::= use | public | native | fun | CONST_KW | STRUCT_KW 
                             | Attr_first | "friend" | "entry" | "inline" | "enum" | MACRO_KW
 private TopLevel_first ::= MODULE_KW  //| SCRIPT_KW
 
-private ModuleItem ::=        PublicUseFun
-                            | UseStmt
+private ModuleItem ::=        UseStmt
+                            | PublicUseFun
                             | FriendDecl
                             | StructItem
                             | Enum
@@ -454,10 +454,9 @@ private TupleFieldDecl_recover ::= !(')' | Type )
 TupleFieldDecl ::= Type
 
 
-UseFunFirst ::= 'use fun'
 // use fun <function> as <type>.<method alias>;  (https://move-book.com/reference/method-syntax#use-fun-aliases)
-PublicUseFun ::= Attr* 'public'? UseFunFirst PathImpl 'as' UseFunMethodAlias ';' {
-    pin = 2
+PublicUseFun ::= Attr* 'public'? use fun PathImpl 'as' UseFunMethodAlias ';' {
+    pin = 3
     implements = [
         "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner"
     ]
@@ -808,7 +807,7 @@ private PatField_with_recover ::= !'}' PatField (',' | &'}')
     recoverWhile = PatField_recover
 
 }
-private PatField_recover ::= !('}' |mut? IDENTIFIER)
+private PatField_recover ::= !('}' | DOT_DOT | mut? IDENTIFIER)
 
 PatFieldFull ::=mut? IDENTIFIER ':' Pat
 {
@@ -820,7 +819,9 @@ PatFieldFull ::=mut? IDENTIFIER ':' Pat
 }
 FieldPatFull ::=mut? IDENTIFIER ':' Pat
 
-PatField ::= PatFieldFull | PatBinding
+PatRest ::= DOT_DOT { pin = 1 }
+
+PatField ::= PatFieldFull | PatBinding | PatRest
 FieldPat ::= PatFieldFull | PatBinding
 
 //FieldPat ::= (BindingPat !':') | (IDENTIFIER FieldPatBinding)
@@ -988,7 +989,7 @@ private AtomExpr ::=
                     | CodeBlockExpr
 
 
-CastExpr ::= Expr as Type
+left CastExpr ::= Expr as Type { pin = 2 }
 
 private AnnotatedExpPrefix ::= '(' Expr ':'
 AnnotatedExpr ::= AnnotatedExpPrefix Type ')' { pin = 1 }
@@ -1226,7 +1227,7 @@ private DotExpr_inner ::= '.' !('.' | VectorStart) (MethodCall | StructDotField)
 
 private VectorStart ::= (<<vectorIdent>> ('[' | '<'))
 
-StructDotField ::= IDENTIFIER !('(' | '::' | '!' | '{')
+StructDotField ::= (IDENTIFIER | INTEGER_LITERAL) !('(' | '::' | '!' | '{')
 {
     implements = ["org.sui.lang.core.psi.ext.MvMethodOrField"]
     mixin = "org.sui.lang.core.psi.ext.MvStructDotFieldMixin"
@@ -1294,7 +1295,7 @@ left PathSegment ::= '::' !'{' PathIdent TypeArgumentList? {
     elementType = Path
 }
 
-private PathIdent ::= PATH_MODE_IDENTIFIER
+private PathIdent ::= PATH_MODE_IDENTIFIER | IDENTIFIER | QUOTE_IDENTIFIER
 PathAddress ::= DIEM_ADDRESS
                 | INTEGER_LITERAL
                 | PLACEHOLDER_ADDRESS

@@ -69,4 +69,10 @@ public class MvPathImpl extends MvPathMixin implements MvPath {
     return findChildByType(MUL);
   }
 
+  @Override
+  @Nullable
+  public PsiElement getQuoteIdentifier() {
+    return findChildByType(QUOTE_IDENTIFIER);
+  }
+
 }

@@ -30,4 +30,7 @@ public interface MvPath extends MvNameAccessChainReferenceElement, MvMethodOrPat
   @Nullable
   PsiElement getMul();
 
+  @Nullable
+  PsiElement getQuoteIdentifier();
+
 }

@@ -41,12 +41,6 @@ public class MvPublicUseFunImpl extends MvElementImpl implements MvPublicUseFun 
 
   @Override
   @Nullable
-  public MvUseFunFirst getUseFunFirst() {
-    return PsiTreeUtil.getChildOfType(this, MvUseFunFirst.class);
-  }
-
-  @Override
-  @Nullable
   public MvUseFunMethodAlias getUseFunMethodAlias() {
     return PsiTreeUtil.getChildOfType(this, MvUseFunMethodAlias.class);
   }
@@ -55,6 +49,18 @@ public class MvPublicUseFunImpl extends MvElementImpl implements MvPublicUseFun 
   @Nullable
   public PsiElement getSemicolon() {
     return findChildByType(SEMICOLON);
+  }
+
+  @Override
+  @Nullable
+  public PsiElement getFun() {
+    return findChildByType(FUN);
+  }
+
+  @Override
+  @NotNull
+  public PsiElement getUse() {
+    return notNullChild(findChildByType(USE));
   }
 
 }

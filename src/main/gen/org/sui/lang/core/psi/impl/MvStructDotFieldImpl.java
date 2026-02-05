@@ -28,9 +28,15 @@ public class MvStructDotFieldImpl extends MvStructDotFieldMixin implements MvStr
   }
 
   @Override
-  @NotNull
+  @Nullable
   public PsiElement getIdentifier() {
-    return notNullChild(findChildByType(IDENTIFIER));
+    return findChildByType(IDENTIFIER);
+  }
+
+  @Override
+  @Nullable
+  public PsiElement getIntegerLiteral() {
+    return findChildByType(INTEGER_LITERAL);
   }
 
 }

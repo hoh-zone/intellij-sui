@@ -39,4 +39,10 @@ public class MvPatFieldImpl extends MvElementImpl implements MvPatField {
     return PsiTreeUtil.getChildOfType(this, MvPatFieldFull.class);
   }
 
+  @Override
+  @Nullable
+  public MvPatRest getPatRest() {
+    return PsiTreeUtil.getChildOfType(this, MvPatRest.class);
+  }
+
 }

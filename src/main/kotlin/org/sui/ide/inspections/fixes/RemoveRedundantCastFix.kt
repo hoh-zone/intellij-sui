@@ -15,8 +15,10 @@ class RemoveRedundantCastFix(castExpr: MvCastExpr) : DiagnosticFix<MvCastExpr>(c
 
     override fun stillApplicable(project: Project, file: PsiFile, element: MvCastExpr): Boolean {
         val inference = element.inference(false) ?: return false
-        val elementExprTy = inference.getExprType(element.expr)
-        val typeTy = element.type.loweredType(false)
+        val expr = element.exprList.firstOrNull() ?: return false
+        val type = element.type ?: return false
+        val elementExprTy = inference.getExprType(expr)
+        val typeTy = type.loweredType(false)
         return elementExprTy == typeTy
     }
 
@@ -29,7 +31,8 @@ class RemoveRedundantCastFix(castExpr: MvCastExpr) : DiagnosticFix<MvCastExpr>(c
 }
 
 fun MvCastExpr.replaceWithChildExpr() {
-    val newElement = this.replace(this.expr)
+    val expr = this.exprList.firstOrNull() ?: return
+    val newElement = this.replace(expr)
     val parent = newElement.parent
     if (parent is MvParensExpr) {
         RemoveRedundantParenthesesFix(parent).applyFix()

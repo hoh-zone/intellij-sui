@@ -11,20 +11,26 @@ import static org.sui.lang.MvElementTypes.*;
 import org.sui.lang.core.psi.MvElementImpl;
 import org.sui.lang.core.psi.*;
 
-public class MvUseFunFirstImpl extends MvElementImpl implements MvUseFunFirst {
+public class MvPatRestImpl extends MvElementImpl implements MvPatRest {
 
-  public MvUseFunFirstImpl(ASTNode node) {
+  public MvPatRestImpl(ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull MvVisitor visitor) {
-    visitor.visitUseFunFirst(this);
+    visitor.visitPatRest(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof MvVisitor) accept((MvVisitor)visitor);
     else super.accept(visitor);
+  }
+
+  @Override
+  @NotNull
+  public PsiElement getDotDot() {
+    return notNullChild(findChildByType(DOT_DOT));
   }
 
 }

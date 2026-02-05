@@ -26,14 +26,16 @@ class RedundantTypeCastInspection : MvLocalInspectionTool() {
             val inference = castExpr.inference(msl) ?: return
 
 //            val objectExpr = castExpr.expr
-            val objectExprTy = inference.getExprType(castExpr.expr)
+            val expr = castExpr.exprList.firstOrNull() ?: return
+            val objectExprTy = inference.getExprType(expr)
 //            val objectExprTy = inferExprTy(objectExpr, inferenceCtx)
             if (objectExprTy is TyUnknown) return
 
             // cannot be redundant cast for untyped integer
             if (objectExprTy is TyInteger && (objectExprTy.kind == TyInteger.DEFAULT_KIND)) return
 
-            val castTypeTy = castExpr.type.loweredType(msl)
+            val castType = castExpr.type ?: return
+            val castTypeTy = castType.loweredType(msl)
 //            val castTypeTy = itemContext.rawType(castExpr.type)
             if (castTypeTy is TyUnknown) return
 
@@ -42,7 +44,7 @@ class RedundantTypeCastInspection : MvLocalInspectionTool() {
                     castExpr,
                     "No cast needed",
                     ProblemHighlightType.LIKE_UNUSED_SYMBOL,
-                    TextRange.create(castExpr.`as`.startOffsetInParent, castExpr.type.endOffsetInParent),
+                    TextRange.create(castExpr.`as`.startOffsetInParent, castType.endOffsetInParent),
                     RemoveRedundantCastFix(castExpr)
                 )
             }

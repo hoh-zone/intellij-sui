@@ -5,6 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface MvUseFunFirst extends MvElement {
+public interface MvPatRest extends MvElement {
+
+  @NotNull
+  PsiElement getDotDot();
 
 }

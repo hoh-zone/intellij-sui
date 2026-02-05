@@ -61,10 +61,10 @@ class MoveToml(
             var packageTable: MoveTomlPackageTable? = null
             if (packageTomlTable != null) {
                 val name = packageTomlTable.findValue("name")?.stringValue()
-                val version = "" //packageTomlTable.findValue("version")?.stringValue()
-                val authors:List<String> =  emptyList()  //packageTomlTable.findValue("authors")?.arrayValue()
-//                        .orEmpty()
-//                        .mapNotNull { it.stringValue() }
+                val version = packageTomlTable.findValue("version")?.stringValue() ?: ""
+                val authors = packageTomlTable.findValue("authors")?.arrayValue()
+                    .orEmpty()
+                    .mapNotNull { it.stringValue() }
                 val license = packageTomlTable.findValue("license")?.stringValue()
                 packageTable = MoveTomlPackageTable(name, version, authors, license)
             }
