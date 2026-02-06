@@ -12,6 +12,9 @@ public interface MvCallExpr extends MvExpr, MvCallable, MvAcquireTypesOwner, Inf
   @NotNull
   MvPath getPath();
 
+  @Nullable
+  MvTypeArgumentList getTypeArgumentList();
+
   @NotNull
   MvValueArgumentList getValueArgumentList();
 

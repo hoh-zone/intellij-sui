@@ -380,15 +380,16 @@ class TypeInferenceWalker(
 
     private fun inferLambdaExpr(lambdaExpr: MvLambdaExpr, expected: Expectation): Ty {
         val bindings = lambdaExpr.patBindingList
-        val lambdaTy =
-            (expected.onlyHasTy(this.ctx) as? TyLambda) ?: TyLambda.unknown(bindings.size)
+        // Resolve type variables first, as the expected type might be a TyVar
+        val expectedTy = expected.onlyHasTy(this.ctx)?.let { ctx.resolveTypeVarsIfPossible(it) }
+        val lambdaTy = (expectedTy as? TyLambda) ?: TyLambda.unknown(bindings.size)
 
         for ((i, binding) in lambdaExpr.patBindingList.withIndex()) {
             val ty = lambdaTy.paramTypes.getOrElse(i) { TyUnknown }
             ctx.writePatTy(binding, ty)
         }
         lambdaExpr.bodyExpr?.inferTypeCoercableTo(lambdaTy.retType)
-        return TyUnknown
+        return lambdaTy
     }
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {

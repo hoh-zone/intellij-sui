@@ -488,6 +488,12 @@ class InferenceContext(
                     && ty1.types.size == ty2.types.size ->
                 combineTypePairs(ty1.types.zip(ty2.types))
 
+            // Lambda types: compare param types and return type
+            ty1 is TyLambda && ty2 is TyLambda
+                    && ty1.paramTypes.size == ty2.paramTypes.size ->
+                combineTypePairs(ty1.paramTypes.zip(ty2.paramTypes))
+                    .and { combineTypes(ty1.retType, ty2.retType) }
+
             else -> Err(CombineTypeError.TypeMismatch(ty1, ty2))
         }
     }

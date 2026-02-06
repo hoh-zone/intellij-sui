@@ -7513,19 +7513,19 @@ public class MoveParser implements PsiParser, LightPsiParser {
   // 2: ATOM(ForallQuantExpr)
   // 3: ATOM(ExistsQuantExpr)
   // 4: ATOM(ChooseQuantExpr)
-  // 5: POSTFIX(CastExpr)
-  // 6: BINARY(ImplyBinExpr) BINARY(PartialImplyBinExpr)
-  // 7: BINARY(OrBinExpr)
-  // 8: BINARY(AndBinExpr)
-  // 9: BINARY(EqualsBinExpr) BINARY(NotEqualsBinExpr) BINARY(LessEqualsBinExpr) BINARY(LessBinExpr)
+  // 5: BINARY(ImplyBinExpr) BINARY(PartialImplyBinExpr)
+  // 6: BINARY(OrBinExpr)
+  // 7: BINARY(AndBinExpr)
+  // 8: BINARY(EqualsBinExpr) BINARY(NotEqualsBinExpr) BINARY(LessEqualsBinExpr) BINARY(LessBinExpr)
   //    BINARY(GreaterEqualsBinExpr) BINARY(GreaterBinExpr)
-  // 10: BINARY(BitOrBinExpr)
-  // 11: BINARY(BitXorBinExpr)
-  // 12: BINARY(BitAndBinExpr)
-  // 13: BINARY(LeftShiftBinExpr)
-  // 14: BINARY(RightShiftBinExpr)
-  // 15: BINARY(PlusBinExpr) BINARY(MinusBinExpr)
-  // 16: BINARY(DivBinExpr) BINARY(MulBinExpr) BINARY(ModBinExpr)
+  // 9: BINARY(BitOrBinExpr)
+  // 10: BINARY(BitXorBinExpr)
+  // 11: BINARY(BitAndBinExpr)
+  // 12: BINARY(LeftShiftBinExpr)
+  // 13: BINARY(RightShiftBinExpr)
+  // 14: BINARY(PlusBinExpr) BINARY(MinusBinExpr)
+  // 15: BINARY(DivBinExpr) BINARY(MulBinExpr) BINARY(ModBinExpr)
+  // 16: POSTFIX(CastExpr)
   // 17: ATOM(IfExpr) ATOM(LoopExpr) ATOM(MatchExpr) ATOM(WhileExpr)
   //    ATOM(ForExpr) ATOM(LabeledBlockExpr)
   // 18: PREFIX(CopyExpr) PREFIX(MoveExpr) PREFIX(DerefExpr) PREFIX(BangExpr)
@@ -7588,89 +7588,89 @@ public class MoveParser implements PsiParser, LightPsiParser {
         result_ = Expr(builder_, level_, 1);
         exit_section_(builder_, level_, marker_, RANGE_EXPR, result_, true, null);
       }
-      else if (priority_ < 5 && CastExpr_0(builder_, level_ + 1)) {
-        result_ = true;
-        exit_section_(builder_, level_, marker_, CAST_EXPR, result_, true, null);
+      else if (priority_ < 5 && ImplyBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 5);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 6 && ImplyBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 5 && PartialImplyBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 5);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 6 && OrBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 6);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 6 && PartialImplyBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 6);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 7 && OrBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 7 && AndBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 7);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 8 && AndBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 8 && EqualsBinExpr_0(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 8);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 9 && EqualsBinExpr_0(builder_, level_ + 1)) {
+      else if (priority_ < 8 && NotEqualsBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 8);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 8 && LessEqualsBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 8);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 8 && LessBinExpr_0(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 8);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 8 && GreaterEqualsBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 8);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 8 && GreaterBinExpr_0(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 8);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 9 && BitOrBinExpr_0(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 9);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 9 && NotEqualsBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 9);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 9 && LessEqualsBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 9);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 9 && LessBinExpr_0(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 9);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 9 && GreaterEqualsBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 9);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 9 && GreaterBinExpr_0(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 9);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 10 && BitOrBinExpr_0(builder_, level_ + 1)) {
+      else if (priority_ < 10 && BitXorBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 10);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 11 && BitXorBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 11 && BitAndBinExpr_0(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 11);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 12 && BitAndBinExpr_0(builder_, level_ + 1)) {
+      else if (priority_ < 12 && LeftShiftBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 12);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 13 && LeftShiftBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 13 && RightShiftBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 13);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 14 && RightShiftBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 14 && PlusBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 14);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 15 && PlusBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 14 && MinusBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 14);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 15 && DivBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 15);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 15 && MinusBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 15 && MulBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 15);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 16 && DivBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 16);
+      else if (priority_ < 15 && ModBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 15);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 16 && MulBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 16);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 16 && ModBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 16);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      else if (priority_ < 16 && CastExpr_0(builder_, level_ + 1)) {
+        result_ = true;
+        exit_section_(builder_, level_, marker_, CAST_EXPR, result_, true, null);
       }
       else if (priority_ < 20 && DotExpr_inner(builder_, level_ + 1)) {
         result_ = true;
@@ -7758,17 +7758,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(builder_, level_, "ChooseQuantExpr_3")) return false;
     QuantWhere(builder_, level_ + 1);
     return true;
-  }
-
-  // as Type
-  private static boolean CastExpr_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "CastExpr_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeTokenSmart(builder_, AS);
-    result_ = result_ && Type(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
   }
 
   // !eqeq_gt EqualsBinOp
@@ -7882,6 +7871,17 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_, level_, _NOT_);
     result_ = !andand(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
+    return result_;
+  }
+
+  // as Type
+  private static boolean CastExpr_0(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "CastExpr_0")) return false;
+    boolean result_;
+    Marker marker_ = enter_section_(builder_);
+    result_ = consumeTokenSmart(builder_, AS);
+    result_ = result_ && Type(builder_, level_ + 1);
+    exit_section_(builder_, marker_, null, result_);
     return result_;
   }
 
@@ -8303,13 +8303,14 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // PathImpl'!'?  ValueArgumentList
+  // PathImpl '!'? TypeArgumentList? ValueArgumentList
   public static boolean CallExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "CallExpr")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, CALL_EXPR, "<expression>");
     result_ = PathImpl(builder_, level_ + 1);
     result_ = result_ && CallExpr_1(builder_, level_ + 1);
+    result_ = result_ && CallExpr_2(builder_, level_ + 1);
     result_ = result_ && ValueArgumentList(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
@@ -8319,6 +8320,13 @@ public class MoveParser implements PsiParser, LightPsiParser {
   private static boolean CallExpr_1(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "CallExpr_1")) return false;
     consumeTokenSmart(builder_, EXCL);
+    return true;
+  }
+
+  // TypeArgumentList?
+  private static boolean CallExpr_2(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "CallExpr_2")) return false;
+    TypeArgumentList(builder_, level_ + 1);
     return true;
   }
 

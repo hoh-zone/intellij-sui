@@ -69,13 +69,18 @@ class MvLocalBindingNamingInspection : MvNamingInspection("Local variable") {
             // match expr
             if (parent is MvMatchArm) return
 
-            //val ident = o.identifier
-            //
-            val ident = o.identifier?:o.marcoIdentifier!!
-            //val Marco = o.marcoIdentifier
+            val ident = o.identifier ?: o.marcoIdentifier ?: return
 
             val name = ident.text
-            val trimmed = name.trimStart('_')
+            // Macro parameters must start with $ (e.g., $start, $stop, $f)
+            // See: https://move-book.com/reference/functions/macros
+            val nameToCheck = if (name.startsWith('$')) {
+                // For macro parameters like $start, check the part after $
+                name.substring(1)
+            } else {
+                name
+            }
+            val trimmed = nameToCheck.trimStart('_')
             if (trimmed.isNotBlank() && !trimmed.startsWithLowerCaseLetter()) {
                 holder.registerProblem(
                     ident,

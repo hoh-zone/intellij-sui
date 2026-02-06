@@ -298,7 +298,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
                             .addToHolder(holder)
                     }
                 }
-                getMarcoFunctions(holder,qualItem,methodOrPath)
+                checkMacroCallSyntax(holder, qualItem, methodOrPath)
 
 //                val functions =
 //                    qualItem.module?.allFunctions() ?: qualItem.script?.functionList ?: emptyList()
@@ -455,17 +455,31 @@ private fun getDuplicates(elements: Sequence<MvNamedElement>): Set<MvNamedElemen
 
 
 
-private fun getMarcoFunctions(
+private fun checkMacroCallSyntax(
     holder: MvAnnotationHolder,
     fn: MvFunction,
     methodOrPath: MvMethodOrPath) {
-    val functions = fn.module?.allFunctions() ?: fn.script?.functionList ?: emptyList()
-    val mergeMarcoFunction = functions.filter { it.name.equals(fn.name)&&it.isMacro } ?: return
-    val hasMarcoFunction = mergeMarcoFunction.size.compareTo(0)!=0
-    if(!hasMarcoFunction &&methodOrPath.lastChild.text.equals("!"))
-        holder.createErrorAnnotation(methodOrPath, "macro function must be end with !")
-    else if(hasMarcoFunction &&!methodOrPath.lastChild.text.equals("!"))
-        holder.createErrorAnnotation(methodOrPath, "not macro function no end with !")
+    // Check if the call has the `!` token
+    // For CallExpr, the `!` is on the MvCallExpr parent, not on the path
+    // For MethodCall, the `!` is on the MvMethodCall itself
+    val hasExcl = when (methodOrPath) {
+        is MvPath -> {
+            // Check if the parent CallExpr has the excl
+            val callExpr = methodOrPath.parent as? MvCallExpr
+            callExpr?.excl != null || methodOrPath.excl != null
+        }
+        is MvMethodCall -> methodOrPath.excl != null
+        else -> false
+    }
+    
+    // If function is a macro but call doesn't have `!`
+    if (fn.isMacro && !hasExcl) {
+        holder.createErrorAnnotation(methodOrPath, "macro function call must end with !")
+    }
+    // If function is NOT a macro but call has `!`
+    else if (!fn.isMacro && hasExcl) {
+        holder.createErrorAnnotation(methodOrPath, "non-macro function call should not have !")
+    }
 }
 
 private fun getDuplicatedNamedChildren(namedChildren: Sequence<MvNamedElement>): Set<MvNamedElement> {

@@ -34,6 +34,12 @@ public class MvCallExprImpl extends MvExprImpl implements MvCallExpr {
   }
 
   @Override
+  @Nullable
+  public MvTypeArgumentList getTypeArgumentList() {
+    return PsiTreeUtil.getChildOfType(this, MvTypeArgumentList.class);
+  }
+
+  @Override
   @NotNull
   public MvValueArgumentList getValueArgumentList() {
     return notNullChild(PsiTreeUtil.getChildOfType(this, MvValueArgumentList.class));

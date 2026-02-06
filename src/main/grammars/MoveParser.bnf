@@ -930,7 +930,6 @@ private CodeBlock_items_recover ::= !('}' | <<eof>>)
 Expr ::= AssignmentExpr
         | RangeExpr
         | (ForallQuantExpr | ExistsQuantExpr | ChooseQuantExpr)
-        | CastExpr
         | ImplyBinExpr_items
         | OrBinExpr
         | AndBinExpr
@@ -941,6 +940,7 @@ Expr ::= AssignmentExpr
         | (LeftShiftBinExpr | RightShiftBinExpr)
         | AddExpr_items
         | MulExpr_items
+        | CastExpr
         | ControlFlowExpr_items
         | UnaryExpr
         | BorrowExpr
@@ -1148,7 +1148,7 @@ private AnyLitToken_first ::= HEX_INTEGER_LITERAL
 
 AddressLit ::= '@' AddressRef { pin = 1 }
 
-CallExpr ::= PathImpl'!'?  ValueArgumentList {
+CallExpr ::= PathImpl '!'? TypeArgumentList? ValueArgumentList {
 //    pin = 2
     implements = [
         "org.sui.lang.core.psi.ext.MvCallable"
