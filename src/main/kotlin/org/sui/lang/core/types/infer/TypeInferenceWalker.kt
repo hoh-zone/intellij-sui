@@ -186,6 +186,14 @@ class TypeInferenceWalker(
         return inferred
     }
 
+    /** For integer ops (bitwise, shift): in macro, type params (e.g. $T) are allowed; otherwise coerce to expected. */
+    private fun MvExpr.inferTypeCoercableToIntegerOrMacroParam(expected: Ty): Ty {
+        val inferred = this.inferType()
+        if (inferred.isMacroTypeParamForOps(this)) return inferred
+        coerce(this, inferred, expected)
+        return inferred
+    }
+
     // returns inferred
     private fun MvExpr.inferTypeCoercableTo(expected: Expectation): Ty {
         val expectedTy = expected.onlyHasTy(ctx)
@@ -266,7 +274,7 @@ class TypeInferenceWalker(
             is MvContinueExpr -> TyNever
             is MvBreakExpr -> TyNever
             is MvAbortExpr -> {
-                expr.expr?.inferTypeCoercableTo(TyInteger.DEFAULT)
+                expr.expr?.inferTypeCoercableToIntegerOrMacroParam(TyInteger.DEFAULT)
                 TyNever
             }
             is MvCodeBlockExpr -> expr.codeBlock.inferBlockType(expected, coerce = true)
@@ -279,7 +287,7 @@ class TypeInferenceWalker(
                 TyUnit
             }
             is MvAbortsWithSpecExpr -> {
-                expr.exprList.forEach { it.inferTypeCoercableTo(TyInteger.DEFAULT) }
+                expr.exprList.forEach { it.inferTypeCoercableToIntegerOrMacroParam(TyInteger.DEFAULT) }
                 TyUnit
             }
 
@@ -296,7 +304,7 @@ class TypeInferenceWalker(
     private fun inferBoolSpecExpr(expr: MvBoolSpecExpr): Ty {
         expr.expr?.inferTypeCoercableTo(TyBool)
         if (expr is MvAbortsIfSpecExpr) {
-            expr.abortsIfWith?.expr?.inferTypeCoercableTo(TyInteger.DEFAULT)
+            expr.abortsIfWith?.expr?.inferTypeCoercableToIntegerOrMacroParam(TyInteger.DEFAULT)
         }
         return TyUnit
     }
@@ -453,8 +461,11 @@ class TypeInferenceWalker(
         val tyAdt =
             receiverTy.derefIfNeeded() as? TyAdt ?: return TyUnknown
 
+        // MvStructDotField.getIdentifier() is @Nullable (e.g. integer literal or incomplete AST)
+        val fieldName = dotField.identifier?.text ?: dotField.integerLiteral?.text ?: return TyUnknown
+
         val field =
-            resolveSingleResolveVariant(dotField.referenceName) {
+            resolveSingleResolveVariant(fieldName) {
                 processNamedFieldVariants(dotField, tyAdt, msl, it)
             } as? MvNamedFieldDecl
         ctx.resolvedFields[dotField] = field
@@ -488,11 +499,19 @@ class TypeInferenceWalker(
             }
         val methodTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyCallable
 
+        // When method isn't resolved (e.g. map_ref! from external package), infer lambda param type
+        // from receiver. For &vector<T>, methods like map_ref! expect |&T| -> R.
+        val formalInputTys = improveFormalInputTysForVectorMethod(
+            methodTy.paramTypes,
+            receiverTy,
+            methodCall.argumentExprs
+        )
+
         val expectedInputTys =
-            expectedInputsForExpectedOutput(expected, methodTy.retType, methodTy.paramTypes)
+            expectedInputsForExpectedOutput(expected, methodTy.retType, formalInputTys)
 
         inferArgumentTypes(
-            methodTy.paramTypes,
+            formalInputTys,
             expectedInputTys,
             listOf(InferArg.SelfType(receiverTy))
                     + methodCall.argumentExprs.map { InferArg.ArgExpr(it) }
@@ -574,6 +593,38 @@ class TypeInferenceWalker(
             )
         }
         return TyUnit
+    }
+
+    /**
+     * When the method isn't resolved (e.g. map_ref! from external package), the formal param types
+     * are TyUnknown. For &vector<T> receiver and a single-lambda arg, infer |&T| -> _ as fallback.
+     */
+    private fun improveFormalInputTysForVectorMethod(
+        formalInputTys: List<Ty>,
+        receiverTy: Ty,
+        valueArgExprs: List<MvExpr?>,
+    ): List<Ty> {
+        if (valueArgExprs.size != 1) return formalInputTys
+        val lambdaExpr = valueArgExprs.singleOrNull() ?: return formalInputTys
+        if (lambdaExpr !is MvLambdaExpr) return formalInputTys
+
+        val innerTy = when (receiverTy) {
+            is TyReference -> receiverTy.referenced
+            else -> receiverTy
+        }
+        val vectorTy = innerTy as? TyVector ?: return formalInputTys
+
+        val formalLambdaTy = formalInputTys.getOrNull(1) ?: return formalInputTys
+        val needsImprovement = when (formalLambdaTy) {
+            is TyUnknown -> true
+            is TyLambda -> formalLambdaTy.paramTypes.all { it is TyUnknown }
+            else -> false
+        }
+        if (!needsImprovement) return formalInputTys
+
+        val lambdaParamTy = TyReference.ref(vectorTy.item, mut = false, msl = msl)
+        val improvedLambdaTy = TyLambda(listOf(lambdaParamTy), TyUnknown)
+        return formalInputTys.toMutableList().apply { set(1, improvedLambdaTy) }
     }
 
     /**
@@ -755,12 +806,13 @@ class TypeInferenceWalker(
         val derefTy = receiverTy.derefIfNeeded()
         return when {
             derefTy is TyVector -> {
-                // vector: single arg (TyInteger or TyRange)
+                // vector: single arg (TyInteger or TyRange); in macro, type param (e.g. $T) allowed
                 val argTy = firstArg.inferType()
                 when (argTy) {
                     is TyRange -> derefTy
                     is TyInteger, is TyInfer.IntVar, is TyNum -> derefTy.item
-                    else -> {
+                    else -> if (argTy.isMacroTypeParamForOps(firstArg)) derefTy.item
+                    else {
                         coerce(firstArg, argTy, if (ctx.msl) TyNum else TyInteger.DEFAULT)
                         TyUnknown
                     }
@@ -835,13 +887,13 @@ class TypeInferenceWalker(
         var typeErrorEncountered = false
         val leftTy = leftExpr.inferType()
 //        val leftTy = leftExpr.inferType()
-        if (!leftTy.supportsArithmeticOp()) {
+        if (!leftTy.supportsArithmeticOpInContext(leftExpr)) {
             ctx.reportTypeError(TypeError.UnsupportedBinaryOp(leftExpr, leftTy, op))
             typeErrorEncountered = true
         }
         if (rightExpr != null) {
             val rightTy = rightExpr.inferType()
-            if (!rightTy.supportsArithmeticOp()) {
+            if (!rightTy.supportsArithmeticOpInContext(rightExpr)) {
                 ctx.reportTypeError(TypeError.UnsupportedBinaryOp(rightExpr, rightTy, op))
                 typeErrorEncountered = true
             }
@@ -896,13 +948,13 @@ class TypeInferenceWalker(
 
         var typeErrorEncountered = false
         val leftTy = leftExpr.inferType()
-        if (!leftTy.supportsOrdering()) {
+        if (!leftTy.supportsOrderingInContext(leftExpr)) {
             ctx.reportTypeError(TypeError.UnsupportedBinaryOp(leftExpr, leftTy, op))
             typeErrorEncountered = true
         }
         if (rightExpr != null) {
             val rightTy = rightExpr.inferType()
-            if (!rightTy.supportsOrdering()) {
+            if (!rightTy.supportsOrderingInContext(rightExpr)) {
                 ctx.reportTypeError(TypeError.UnsupportedBinaryOp(rightExpr, rightTy, op))
                 typeErrorEncountered = true
             }
@@ -928,9 +980,9 @@ class TypeInferenceWalker(
         val leftExpr = binaryExpr.left
         val rightExpr = binaryExpr.right
 
-        val leftTy = leftExpr.inferTypeCoercableTo(TyInteger.DEFAULT)
+        val leftTy = leftExpr.inferTypeCoercableToIntegerOrMacroParam(TyInteger.DEFAULT)
         if (rightExpr != null) {
-            rightExpr.inferTypeCoercableTo(leftTy)
+            rightExpr.inferTypeCoercableToIntegerOrMacroParam(leftTy)
         }
         return leftTy
     }
@@ -939,9 +991,9 @@ class TypeInferenceWalker(
         val leftExpr = binaryExpr.left
         val rightExpr = binaryExpr.right
 
-        val leftTy = leftExpr.inferTypeCoercableTo(TyInteger.DEFAULT)
+        val leftTy = leftExpr.inferTypeCoercableToIntegerOrMacroParam(TyInteger.DEFAULT)
         if (rightExpr != null) {
-            rightExpr.inferTypeCoercableTo(TyInteger.U8)
+            rightExpr.inferTypeCoercableToIntegerOrMacroParam(TyInteger.U8)
         }
         return leftTy
     }
@@ -957,6 +1009,12 @@ class TypeInferenceWalker(
                 || ty is TyNever
     }
 
+    /** In macro functions, type params (e.g. $T) and TyVar(origin=TyTypeParameter) are allowed in arithmetic. */
+    private fun Ty.supportsArithmeticOpInContext(element: PsiElement): Boolean {
+        if (isMacroTypeParamForOps(element)) return true
+        return supportsArithmeticOp()
+    }
+
     private fun Ty.supportsOrdering(): Boolean {
         val ty = resolveTypeVarsIfPossible(this)
         return ty is TyInteger
@@ -964,6 +1022,18 @@ class TypeInferenceWalker(
                 || ty is TyInfer.IntVar
                 || ty is TyUnknown
                 || ty is TyNever
+    }
+
+    /** In macro functions, type params (e.g. $T) and TyVar(origin=TyTypeParameter) are allowed in ordering. */
+    private fun Ty.supportsOrderingInContext(element: PsiElement): Boolean {
+        if (isMacroTypeParamForOps(element)) return true
+        return supportsOrdering()
+    }
+
+    private fun Ty.isMacroTypeParamForOps(element: PsiElement): Boolean {
+        if ((element as? MvElement)?.containingFunction?.isMacro != true) return false
+        val ty = resolveTypeVarsIfPossible(this)
+        return ty is TyTypeParameter || (ty is TyInfer.TyVar && ty.origin is TyTypeParameter)
     }
 
     private fun inferDerefExprTy(derefExpr: MvDerefExpr): Ty {

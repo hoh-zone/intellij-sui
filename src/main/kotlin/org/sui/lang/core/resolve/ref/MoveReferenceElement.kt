@@ -45,7 +45,8 @@ interface MvMandatoryReferenceElement : MvReferenceElement {
 
     override val referenceNameElement: PsiElement get() = identifier
 
-    override val referenceName: String get() = referenceNameElement.text
+    // referenceNameElement can be null at runtime (e.g. MvStructDotField.getIdentifier() is @Nullable)
+    override val referenceName: String get() = referenceNameElement?.text ?: ""
 
     override fun getReference(): MvPolyVariantReference
 }

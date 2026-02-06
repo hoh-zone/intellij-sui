@@ -44,7 +44,8 @@ fun Project.gitTimestamp(): String {
 val shortPlatformVersion = prop("shortPlatformVersion")
 val useInstaller = prop("useInstaller").toBooleanStrict()
 val codeVersion = "2.0"
-var pluginVersion = "$codeVersion.$shortPlatformVersion"
+val buildNumber = (extra.properties["buildNumber"] as? String)?.toIntOrNull() ?: 1
+var pluginVersion = "$codeVersion.$shortPlatformVersion.$buildNumber"
 if (publishingChannel != "default") {
     // timestamp of the commit with this eaps addition
     val start = 1714498465
