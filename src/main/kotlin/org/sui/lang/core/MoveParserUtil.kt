@@ -66,7 +66,13 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     fun lteqeqgtImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, LT_EQ_EQ_GT, LT, EQ_EQ, GT)
 
     @JvmStatic
-    fun dotdotImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, DOT_DOT, DOT, DOT)
+    fun dotdotImpl(b: PsiBuilder, level: Int): Boolean {
+        if (b.tokenType == DOT_DOT) {
+            b.advanceLexer()
+            return true
+        }
+        return collapse(b, DOT_DOT, DOT, DOT)
+    }
 
     @JvmStatic
     private fun collapse(b: PsiBuilder, tokenType: IElementType, vararg parts: IElementType): Boolean {

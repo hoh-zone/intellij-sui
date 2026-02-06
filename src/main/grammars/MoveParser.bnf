@@ -430,7 +430,7 @@ EnumBody ::= '{' (EnumVariant ','?)* '}'
    pin = 1
  }
 
-EnumVariant ::= Attr* IDENTIFIER BlockFields?
+EnumVariant ::= Attr* IDENTIFIER ( BlockFields | TupleFields )?
 {
   pin = 2
     implements = [
@@ -617,11 +617,13 @@ FriendDecl ::= Attr* friend PathImpl ';'
     implements = [ "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
 
-UseStmt ::= Attr* use UseSpeck ';' {
+UseStmt ::= Attr* 'public'? use ( UseFunAlias | UseSpeck ) ';' {
     pin = "use"
     extends = Stmt
     implements = [ "org.sui.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
+UseFunAlias ::= fun PathImpl 'as' UseFunMethodAlias { pin = 1 }
+UseFunMethodAlias ::= IDENTIFIER
 UseSpeck ::= PathImpl ( UseAlias | ('::' UseGroup) )?
 
 UseGroup ::= '{' UseSpeck_with_recover* '}'
@@ -970,16 +972,17 @@ private LogicalEqExpr_items ::= EqualsBinExpr | NotEqualsBinExpr | LessEqualsBin
 private ControlFlowExpr_items ::= IfExpr | LoopExpr | MatchExpr | WhileExpr | ForExpr | LabeledBlockExpr
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
+// TupleLitOrParenExpr before AnnotatedExpr so (a, b) and (a.length(), b.length()) parse as tuple
 private AtomExpr ::=
-                    AnnotatedExpr
+                    TupleLitOrParenExpr
+                    | AnnotatedExpr
                     | UnitLitExpr
-                    | TupleLitOrParenExpr
                     | StructLitExpr
-                    | VectorLitExpr
-                    | DotExpr
-                    | IndexExpr
                     | PathExpr
                     | CallExpr
+                    | DotExpr
+                    | IndexExpr
+                    | VectorLitExpr
                     | AssertMacroExpr
 //                    | (CallExpr | AssertExpr)
 //                    | RefExpr
@@ -1062,7 +1065,7 @@ MoveExpr ::= move Expr
 
 ReturnExpr ::= return LabelRef? Expr?
 
-AbortExpr ::= abort Expr
+AbortExpr ::= abort Expr?
 // break value | break 'label value | break 'label
 BreakExpr ::= break LabelRef? Expr?
 ContinueExpr ::= continue LabelRef?
@@ -1282,9 +1285,10 @@ fake Path ::= (Path '::')? (PathIdent | PathAddress) TypeArgumentList?
 }
 
 private PathImpl ::= PathStart PathSegment*
-private Path_first ::= PATH_MODE_IDENTIFIER | DIEM_ADDRESS | INTEGER_LITERAL
+private Path_first ::= PATH_MODE_IDENTIFIER | DIEM_ADDRESS | INTEGER_LITERAL | '::'
 
-PathStart ::= ((PathAddress &'::') | PathIdent) TypeArgumentList?
+// Optional leading '::' for e.g. attribute expected_failure(abort_code = ::sui_system::...)
+PathStart ::= '::'? ((PathAddress &'::') | PathIdent) TypeArgumentList?
 {
     name = "path"
     elementType = Path
@@ -1295,7 +1299,8 @@ left PathSegment ::= '::' !'{' PathIdent TypeArgumentList? {
     elementType = Path
 }
 
-private PathIdent ::= PATH_MODE_IDENTIFIER | IDENTIFIER | QUOTE_IDENTIFIER
+// IDENTIFIER first so expression context (e.g. (a.length(), b.length())) always accepts identifiers
+private PathIdent ::= IDENTIFIER | QUOTE_IDENTIFIER | PATH_MODE_IDENTIFIER
 PathAddress ::= DIEM_ADDRESS
                 | INTEGER_LITERAL
                 | PLACEHOLDER_ADDRESS

@@ -101,6 +101,7 @@ IDENTIFIER=(\$)?[_a-zA-Z][_a-zA-Z0-9]* | `type`
       ":"        { return COLON; }
       ";"        { return SEMICOLON; }
       ","        { return COMMA; }
+      ".."       { return DOT_DOT; }
       "."        { return DOT; }
       "="        { return EQ; }
       "=="       { return EQ_EQ; }
