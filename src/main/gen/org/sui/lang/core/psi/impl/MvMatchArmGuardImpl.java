@@ -1,0 +1,42 @@
+// This is a generated file. Not intended for manual editing.
+package org.sui.lang.core.psi.impl;
+
+import java.util.List;
+import org.jetbrains.annotations.*;
+import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.util.PsiTreeUtil;
+import static org.sui.lang.MvElementTypes.*;
+import org.sui.lang.core.psi.MvElementImpl;
+import org.sui.lang.core.psi.*;
+
+public class MvMatchArmGuardImpl extends MvElementImpl implements MvMatchArmGuard {
+
+  public MvMatchArmGuardImpl(ASTNode node) {
+    super(node);
+  }
+
+  public void accept(@NotNull MvVisitor visitor) {
+    visitor.visitMatchArmGuard(this);
+  }
+
+  @Override
+  public void accept(@NotNull PsiElementVisitor visitor) {
+    if (visitor instanceof MvVisitor) accept((MvVisitor)visitor);
+    else super.accept(visitor);
+  }
+
+  @Override
+  @NotNull
+  public MvExpr getExpr() {
+    return notNullChild(PsiTreeUtil.getChildOfType(this, MvExpr.class));
+  }
+
+  @Override
+  @NotNull
+  public PsiElement getIf() {
+    return notNullChild(findChildByType(IF));
+  }
+
+}

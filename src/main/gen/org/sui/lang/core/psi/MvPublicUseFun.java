@@ -1,0 +1,29 @@
+// This is a generated file. Not intended for manual editing.
+package org.sui.lang.core.psi;
+
+import java.util.List;
+import org.jetbrains.annotations.*;
+import com.intellij.psi.PsiElement;
+import org.sui.lang.core.psi.ext.MvDocAndAttributeOwner;
+
+public interface MvPublicUseFun extends MvDocAndAttributeOwner {
+
+  @NotNull
+  List<MvAttr> getAttrList();
+
+  @Nullable
+  MvPath getPath();
+
+  @Nullable
+  MvUseFunMethodAlias getUseFunMethodAlias();
+
+  @Nullable
+  PsiElement getSemicolon();
+
+  @Nullable
+  PsiElement getFun();
+
+  @NotNull
+  PsiElement getUse();
+
+}

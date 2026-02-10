@@ -1,0 +1,270 @@
+<idea-plugin
+        require-restart="true"
+>
+    <id>org.sui.lang</id>
+    <name>Sui Move Language</name>
+
+    <vendor>HOH</vendor>
+
+    <description>
+        <![CDATA[
+
+            <p>This IntelliJ IDEA plugin streamlines your Sui Move development workflow.</p>
+
+            <h3>Boost your productivity with:</h3>
+
+            <ul>
+              <li><strong>LSP diagnostics:</strong> Get errors and warnings from <code>move-analyzer</code>.</li>
+              <li><strong>LSP navigation:</strong> Use go-to-definition and symbol navigation powered by language server.</li>
+              <li><strong>Syntax support:</strong> Edit <code>.move</code> and <code>Move.toml</code> files with project-aware tooling.</li>
+              <li><strong>Custom commands:</strong> Tailor commands to your project's needs.</li>
+              <li><strong>Quick access buttons:</strong> Speed up common development tasks.</li>
+              <li><strong>Sui binary integration:</strong> Interact seamlessly with Sui Move tools.</li>
+            </ul>
+
+            <h3>Effortlessly manage your project:</h3>
+
+            <ul>
+              <li><strong>Customizable environment:</strong> Set your Sui CLI path for a personalized setup.</li>
+              <li><strong>Dedicated ToolWindow:</strong> Refresh your project, manage accounts, switch networks, and more – all in one place.</li>
+            </ul>
+
+            <h3>Get started:</h3>
+
+            <ol>
+              <li><strong>Install the plugin:</strong> Find it on the IntelliJ IDEA plugin marketplace.</li>
+              <li><strong>Set your Sui CLI path:</strong> Go to <em>Settings > Languages & Frameworks > Sui Move Language</em>.</li>
+              <li><strong>Explore the ToolWindow:</strong> Access powerful features to manage your project.</li>
+              <li><strong>Define custom commands:</strong> Configure and run project-specific commands with ease.</li>
+            </ol>
+
+            <h3>Need help?</h3>
+
+            <p>Visit our GitHub repository: <a href="https://github.com/movefuns/intellij-move">https://github.com/movefuns/intellij-move</a></p>
+        ]]>
+    </description>
+
+    <resource-bundle>messages.MvBundle</resource-bundle>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>org.toml.lang</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+
+        <fileType name="SUI_BYTECODE"
+                  extensions="mv"
+                  implementationClass="org.sui.bytecode.SuiBytecodeFileType"
+                  fieldName="INSTANCE"/>
+        <filetype.decompiler filetype="SUI_BYTECODE"
+                             implementationClass="org.sui.bytecode.SuiBytecodeDecompiler"/>
+        <editorNotificationProvider implementation="org.sui.bytecode.SuiBytecodeNotificationProvider"/>
+
+        <platform.lsp.serverSupportProvider implementation="org.sui.ide.lsp.MvSuiLspServerSupportProvider"/>
+
+        <fileType name="Sui Move"
+                  language="Sui Move"
+                  extensions="move"
+                  implementationClass="org.sui.lang.MoveFileType"
+                  fieldName="INSTANCE"/>
+        <lang.syntaxHighlighterFactory
+                language="Sui Move"
+                implementationClass="org.sui.lang.highlighting.MvSyntaxHighlighterFactory"/>
+        <annotator
+                language="Sui Move"
+                implementationClass="org.sui.lang.highlighting.MvSemanticHighlightingAnnotator"/>
+        <gotoDeclarationHandler implementation="org.sui.ide.navigation.MvGotoDeclarationHandler"/>
+
+        <!-- LSP-only mode -->
+
+        <projectService serviceImplementation="org.sui.cli.settings.MvProjectSettingsService"/>
+
+        <!--specificallytosupportnamedaddressesintests,doesnothinginnon-testenvironment-->
+        <projectService serviceInterface="org.sui.cli.tests.NamedAddressService"
+                        serviceImplementation="org.sui.cli.tests.NamedAddressServiceImpl"
+                        testServiceImplementation="org.sui.cli.tests.NamedAddressServiceTestImpl"/>
+
+        <configurationType
+                implementation="org.sui.cli.runConfigurations.sui.SuiCommandConfigurationType"/>
+        <!--        <configurationType-->
+        <!--                implementation="org.sui.cli.runConfigurations.sui.SuiTransactionConfigurationType"/>-->
+        <runConfigurationProducer
+                implementation="org.sui.cli.runConfigurations.producers.sui.SuiTestCommandConfigurationProducer"/>
+        <!--        <runConfigurationProducer-->
+        <!--                implementation="org.sui.cli.runConfigurations.producers.sui.RunCommandConfigurationProducer"/>-->
+        <!--        <runConfigurationProducer-->
+        <!--                implementation="org.sui.cli.runConfigurations.producers.sui.ViewCommandConfigurationProducer"/>-->
+        <completion.contributor language="TOML"
+                                implementationClass="org.sui.toml.completion.MoveTomlCompletionContributor"/>
+        <weigher key="completion"
+                 implementationClass="com.intellij.codeInsight.completion.PriorityWeigher"
+                 id="priority"
+                 order="first"/>
+
+        <psi.referenceContributor language="TOML"
+                                  implementation="org.sui.toml.MoveTomlReferenceContributor"/>
+        <annotator language="TOML"
+                   implementationClass="org.sui.toml.MoveTomlErrorAnnotator"/>
+
+        <toolWindow id="Sui"
+                    anchor="right"
+                    factoryClass="org.sui.cli.toolwindow.SuiToolWindowFactory"
+                    icon="/icons/sui.svg"/>
+
+        <!--        <statusBarWidgetFactory id="moveExternalLinterWidget"-->
+        <!--                                implementation="org.sui.cli.externalLinter.RsExternalLinterWidgetFactory"-->
+        <!--                                order="first"/>-->
+
+
+
+        <projectTaskRunner implementation="org.sui.cli.runConfigurations.SuiBuildTaskRunner"/>
+
+        <!--ProjectCreation-->
+        <projectOpenProcessor id="Sui Move" implementation="org.sui.ide.newProject.MoveLangProjectOpenProcessor"/>
+        <directoryProjectGenerator implementation="org.sui.ide.newProject.MoveProjectGenerator"/>
+
+        <postStartupActivity
+                implementation="org.sui.ide.newProject.projectActivity.AlwaysRefreshProjectsAfterOpen"/>
+        <!--        <postStartupActivity implementation="org.sui.ide.newProject.projectActivity.PreImportedModuleStartupActivity"/>-->
+        <!--     background = 5 seconds delayed  -->
+        <!--    <postStartupActivity-->
+        <!--        implementation="org.sui.cli.openProject.CreateDefaultCompileRunConfiguration" />-->
+
+
+        <projectConfigurable instance="org.sui.cli.settings.PerProjectSuiConfigurable"
+                             displayName="Sui Move Language"
+                             groupId="language"
+                             id="language.sui.move"/>
+
+
+        <!--        <projectConfigurable instance="org.sui.cli.externalLinter.MvExternalLinterConfigurable"-->
+        <!--                             parentId="language.move"-->
+        <!--                             id="language.move.compiler.check"-->
+        <!--                             displayName="ExternalLinters"/>-->
+
+        <projectService serviceInterface="org.sui.utils.SuiProjectRootService"
+                        serviceImplementation="org.sui.utils.SuiProjectRootServiceImpl"
+                        testServiceImplementation="org.sui.utils.TestProjectRootServiceImpl"/>
+
+        <projectService serviceImplementation="org.sui.cli.MoveProjectsService"/>
+        <!--        <projectService serviceImplementation="org.move.cli.packages.MovePackageService"/>-->
+
+        <!--        <projectService serviceInterface="com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker"-->
+        <!--                        serviceImplementation="org.move.cli.externalSystem.MoveExternalSystemProjectAware"-->
+        <!--                        overrides="true" />-->
+        <!--<applicationServiceserviceImplementation="org.sui.openapiext.OpenSSLInfoService"/>-->
+
+        <additionalLibraryRootsProvider implementation="org.sui.cli.BuildLibraryRootsProvider"/>
+
+        <!-- Notifications -->
+        <notificationGroup id="MOVE_ON_SUI" displayType="BALLOON"/>
+
+        <notificationGroup id="Move Compile Log" displayType="NONE"/>
+        <editorNotificationProvider
+                implementation="org.sui.ide.notifications.InvalidBlockchainCliConfiguration"/>
+        <editorNotificationProvider
+                implementation="org.sui.ide.notifications.NoMoveProjectDetectedNotificationProvider"/>
+
+
+        <errorHandler implementation="org.sui.cli.sentryReporter.SentryErrorReporter"/>
+
+        <registryKey key="org.sui.debug.enabled"
+                     defaultValue="false"
+                     restartRequired="false"
+                     description="Enable debug mode for Move"/>
+        <registryKey key="org.move.sui.bundled.force.supported"
+                     defaultValue="false"
+                     restartRequired="false"
+                     description="Force-enable support for pre-compiled bundled Sui CLI(imitate non-MacOS)"/>
+        <registryKey key="org.move.sui.bundled.force.unsupported"
+                     defaultValue="false"
+                     restartRequired="false"
+                     description="Force-disable support for pre-compiled bundled Sui CLI(imitate MacOS)"/>
+
+        <advancedSetting
+                id="org.move.sui.test.tool.window"
+                default="false"
+                groupKey="advanced.setting.sui.group"
+                descriptionKey="advanced.setting.org.move.sui.test.tool.window.description"
+        />
+    </extensions>
+
+    <projectListeners>
+        <listener class="org.sui.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
+                  topic="org.sui.cli.settings.MvProjectSettingsServiceBase$MoveSettingsListener"
+                  activeInTestMode="false"/>
+        <!--        <listener class="org.sui.cli.externalLinter.RsExternalLinterWidgetUpdater"-->
+        <!--                  topic="org.sui.cli.MoveProjectsService$MoveProjectsListener"/>-->
+    </projectListeners>
+    <actions>
+        <action id="Sui.NewMoveFile"
+                class="org.sui.ide.actions.CreateMoveFileAction"
+                text="Sui Move File"
+                description="Create new Move file">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
+        </action>
+        <action id="Sui.RefreshAllProjects"
+                description="Update Move project information"
+                text="Update Move Projects"
+                class="org.sui.ide.actions.RefreshMoveProjectsAction"
+                icon="AllIcons.Actions.Refresh"/>
+        <action id="Sui.DownloadSui"
+                text="Download Sui CLI"
+                description="Download sui-cli executable from Github"
+                class="org.sui.ide.actions.DownloadSuiSDKAction"
+                icon="AllIcons.Actions.Download"/>
+
+        <action id="Sui.ShowSettings"
+                class="org.sui.ide.actions.MoveEditSettingsAction"
+                icon="AllIcons.General.Settings">
+        </action>
+        <action id="Sui.FetchSuiPackage"
+                class="org.sui.bytecode.FetchSuiPackageAction"
+                icon="AllIcons.Actions.Download">
+        </action>
+
+        <action id="Sui.DecompileSuiMvFile"
+                class="org.sui.bytecode.DecompileSuiMvFileAction">
+            <add-to-group group-id="ProjectViewPopupMenu"/>
+        </action>
+
+        <action id="Sui.GetActiveAddress"
+                description="Get active address"
+                text="Get Active Address"
+                class="org.sui.ide.actions.GetActiveAddressAction"
+                icon="AllIcons.Actions.PreserveCaseSelected"/>
+        <action id="Sui.GetGas"
+                description="Get gas"
+                text="Get Gas"
+                class="org.sui.ide.actions.GetGasAction"
+                icon="AllIcons.Actions.PreserveCase"/>
+        <action id="Sui.OpenAddressDialog"
+                description="Open address dialog"
+                text="Open Address Dialog"
+                class="org.sui.ide.actions.OpenSwitchAddressDialogAction"
+                icon="AllIcons.Actions.ListChanges"/>
+        <action id="Sui.OpenEnvsDialog"
+                description="Open envs dialog"
+                text="Open Envs Dialog"
+                class="org.sui.ide.actions.OpenSwitchEnvsDialogAction"
+                icon="AllIcons.Actions.DiffWithClipboard"/>
+        <action id="Sui.OpenObjectDialog"
+                description="Open objects dialog"
+                text="Open Objects Dialog"
+                class="org.sui.ide.actions.OpenObjectListAction"
+                icon="AllIcons.Actions.GroupByPrefix"/>
+
+        <group id="Move.Sui">
+            <reference id="Sui.RefreshAllProjects"/>
+            <separator/>
+            <reference id="ExpandAll"/>
+            <reference id="CollapseAll"/>
+            <separator/>
+            <reference id="Sui.ShowSettings"/>
+            <separator/>
+            <reference id="Sui.GetActiveAddress"/>
+            <reference id="Sui.OpenAddressDialog"/>
+            <reference id="Sui.OpenEnvsDialog"/>
+            <reference id="Sui.OpenObjectDialog"/>
+        </group>
+    </actions>
+</idea-plugin>

@@ -1,0 +1,25 @@
+// This is a generated file. Not intended for manual editing.
+package org.sui.lang.core.psi;
+
+import java.util.List;
+import org.jetbrains.annotations.*;
+import com.intellij.psi.PsiElement;
+
+public interface MvPathAddress extends MvElement {
+
+  @Nullable
+  PsiElement getBech32Address();
+
+  @Nullable
+  PsiElement getIntegerLiteral();
+
+  @Nullable
+  PsiElement getPlaceholderAddress();
+
+  @Nullable
+  PsiElement getPolkadotAddress();
+
+  @Nullable
+  PsiElement getSuiAddress();
+
+}

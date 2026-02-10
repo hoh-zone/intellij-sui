@@ -1,0 +1,22 @@
+// This is a generated file. Not intended for manual editing.
+package org.sui.lang.core.psi;
+
+import java.util.List;
+import org.jetbrains.annotations.*;
+import com.intellij.psi.PsiElement;
+
+public interface MvLoopExpr extends MvExpr, MvLoopLike {
+
+  @Nullable
+  MvCodeBlock getCodeBlock();
+
+  @Nullable
+  MvInlineBlock getInlineBlock();
+
+  @Nullable
+  MvLabelDecl getLabelDecl();
+
+  @NotNull
+  PsiElement getLoop();
+
+}
