@@ -2,8 +2,6 @@ package org.sui.lang.core.psi.ext
 
 import com.intellij.icons.AllIcons
 import com.intellij.lang.ASTNode
-import com.intellij.psi.PsiReference
-import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
 import org.sui.lang.core.psi.MvElementImpl
 import org.sui.lang.core.psi.MvNamedAddress
 import org.sui.lang.core.resolve.ref.NamedAddressReference
@@ -26,9 +24,5 @@ abstract class MvNamedAddressMixin(node: ASTNode) : MvElementImpl(node),
 
     override fun getIcon(flags: Int) = AllIcons.Nodes.Annotationtype
 
-    override fun getReferences(): Array<PsiReference> {
-        return ReferenceProvidersRegistry.getReferencesFromProviders(this)
-    }
-
-    override fun getReference(): NamedAddressReference = references.last() as NamedAddressReference
+    override fun getReference(): NamedAddressReference = NamedAddressReference(this)
 }

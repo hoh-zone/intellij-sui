@@ -72,9 +72,9 @@
         <annotator
                 language="Sui Move"
                 implementationClass="org.sui.lang.highlighting.MvSemanticHighlightingAnnotator"/>
-        <gotoDeclarationHandler implementation="org.sui.ide.navigation.MvGotoDeclarationHandler"/>
 
-        <!-- LSP-only mode -->
+        <!-- LSP-only mode: navigation, completion, diagnostics, rename are
+             delegated to move-analyzer. No in-process gotoDeclarationHandler. -->
 
         <projectService serviceImplementation="org.sui.cli.settings.MvProjectSettingsService"/>
 
@@ -85,14 +85,8 @@
 
         <configurationType
                 implementation="org.sui.cli.runConfigurations.sui.SuiCommandConfigurationType"/>
-        <!--        <configurationType-->
-        <!--                implementation="org.sui.cli.runConfigurations.sui.SuiTransactionConfigurationType"/>-->
         <runConfigurationProducer
                 implementation="org.sui.cli.runConfigurations.producers.sui.SuiTestCommandConfigurationProducer"/>
-        <!--        <runConfigurationProducer-->
-        <!--                implementation="org.sui.cli.runConfigurations.producers.sui.RunCommandConfigurationProducer"/>-->
-        <!--        <runConfigurationProducer-->
-        <!--                implementation="org.sui.cli.runConfigurations.producers.sui.ViewCommandConfigurationProducer"/>-->
         <completion.contributor language="TOML"
                                 implementationClass="org.sui.toml.completion.MoveTomlCompletionContributor"/>
         <weigher key="completion"
@@ -124,7 +118,6 @@
 
         <postStartupActivity
                 implementation="org.sui.ide.newProject.projectActivity.AlwaysRefreshProjectsAfterOpen"/>
-        <!--        <postStartupActivity implementation="org.sui.ide.newProject.projectActivity.PreImportedModuleStartupActivity"/>-->
         <!--     background = 5 seconds delayed  -->
         <!--    <postStartupActivity-->
         <!--        implementation="org.sui.cli.openProject.CreateDefaultCompileRunConfiguration" />-->

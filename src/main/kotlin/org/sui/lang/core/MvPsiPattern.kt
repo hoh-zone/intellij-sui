@@ -52,8 +52,6 @@ object MvPsiPattern {
 
     fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvPatBinding>()
 
-    fun namedAddress(): PsiElementPattern.Capture<MvNamedAddress> = psiElement<MvNamedAddress>()
-
     fun typeParameter(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvTypeParameter>()
 
