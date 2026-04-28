@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement;
 import org.sui.lang.core.psi.ext.MvCallable;
 import org.sui.lang.core.resolve2.ref.InferenceCachedPathElement;
 
-public interface MvCallExpr extends MvExpr, MvCallable, MvAcquireTypesOwner, InferenceCachedPathElement {
+public interface MvCallExpr extends MvExpr, MvCallable, InferenceCachedPathElement {
 
   @NotNull
   MvPath getPath();

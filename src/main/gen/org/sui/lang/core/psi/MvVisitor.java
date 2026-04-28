@@ -3,24 +3,19 @@ package org.sui.lang.core.psi;
 
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElementVisitor;
+import org.sui.lang.core.psi.ext.MvStructOrEnumItemElement;
 import org.sui.lang.core.psi.ext.MvCallable;
 import org.sui.lang.core.resolve2.ref.InferenceCachedPathElement;
 import org.sui.lang.core.resolve.ref.MvReferenceElement;
-import org.sui.lang.core.psi.ext.MvItemsOwner;
-import org.sui.lang.core.psi.ext.MvQuantExpr;
-import org.sui.lang.core.psi.ext.MvDocAndAttributeOwner;
-import org.sui.lang.core.types.infer.MvInferenceContextOwner;
-import org.sui.lang.core.psi.ext.MvItemElement;
-import org.sui.lang.core.resolve.ref.MvNameAccessChainReferenceElement;
-import org.sui.lang.core.psi.ext.MvMethodOrPath;
-import org.sui.lang.core.psi.ext.MvFieldsOwner;
-import org.sui.lang.core.psi.ext.MvMethodOrField;
-import org.sui.lang.core.psi.ext.MvStructOrEnumItemElement;
 import org.sui.lang.core.resolve.ref.MvMandatoryReferenceElement;
+import org.sui.lang.core.psi.ext.MvItemsOwner;
+import org.sui.lang.core.psi.ext.MvDocAndAttributeOwner;
 import org.sui.lang.core.resolve.ref.NamedAddressReferenceElement;
-import org.sui.lang.core.psi.ext.MvQuantBindingsOwner;
-import org.sui.lang.core.resolve.ref.MvItemSpecParameterReferenceElement;
-import org.sui.lang.core.resolve.ref.MvSchemaRefFieldReferenceElement;
+import org.sui.lang.core.psi.ext.MvMethodOrField;
+import org.sui.lang.core.psi.ext.MvMethodOrPath;
+import org.sui.lang.core.resolve.ref.MvNameAccessChainReferenceElement;
+import org.sui.lang.core.psi.ext.MvFieldsOwner;
+import org.sui.lang.core.psi.ext.MvItemElement;
 
 public class MvVisitor extends PsiElementVisitor {
 
@@ -34,33 +29,6 @@ public class MvVisitor extends PsiElementVisitor {
 
   public void visitAbortExpr(@NotNull MvAbortExpr o) {
     visitExpr(o);
-  }
-
-  public void visitAbortsIfSpecExpr(@NotNull MvAbortsIfSpecExpr o) {
-    visitExpr(o);
-    // visitBoolSpecExpr(o);
-    // visitMslOnlyElement(o);
-  }
-
-  public void visitAbortsIfWith(@NotNull MvAbortsIfWith o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitAbortsWithSpecExpr(@NotNull MvAbortsWithSpecExpr o) {
-    visitExpr(o);
-    // visitMslOnlyElement(o);
-  }
-
-  public void visitAccessSpecifier(@NotNull MvAccessSpecifier o) {
-    visitElement(o);
-  }
-
-  public void visitAccessSpecifierList(@NotNull MvAccessSpecifierList o) {
-    visitElement(o);
-  }
-
-  public void visitAcquiresType(@NotNull MvAcquiresType o) {
-    visitElement(o);
   }
 
   public void visitAddressBlock(@NotNull MvAddressBlock o) {
@@ -79,45 +47,8 @@ public class MvVisitor extends PsiElementVisitor {
     visitElement(o);
   }
 
-  public void visitAddressSpecifier(@NotNull MvAddressSpecifier o) {
-    visitElement(o);
-  }
-
-  public void visitAddressSpecifierArg(@NotNull MvAddressSpecifierArg o) {
-    visitElement(o);
-  }
-
-  public void visitAddressSpecifierCallParam(@NotNull MvAddressSpecifierCallParam o) {
-    visitElement(o);
-  }
-
-  public void visitAddressSpecifierLit(@NotNull MvAddressSpecifierLit o) {
-    visitElement(o);
-  }
-
-  public void visitAndIncludeItem(@NotNull MvAndIncludeItem o) {
-    visitIncludeItem(o);
-  }
-
   public void visitAnnotatedExpr(@NotNull MvAnnotatedExpr o) {
     visitExpr(o);
-  }
-
-  public void visitApplyExcept(@NotNull MvApplyExcept o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitApplySchemaNameAttribute(@NotNull MvApplySchemaNameAttribute o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitApplySchemaStmt(@NotNull MvApplySchemaStmt o) {
-    visitStmt(o);
-    // visitMslOnlyElement(o);
-  }
-
-  public void visitApplyTo(@NotNull MvApplyTo o) {
-    visitMslOnlyElement(o);
   }
 
   public void visitAssertBangExpr(@NotNull MvAssertBangExpr o) {
@@ -129,20 +60,8 @@ public class MvVisitor extends PsiElementVisitor {
     // visitCallable(o);
   }
 
-  public void visitAssertSpecExpr(@NotNull MvAssertSpecExpr o) {
-    visitExpr(o);
-    // visitBoolSpecExpr(o);
-    // visitMslOnlyElement(o);
-  }
-
   public void visitAssignmentExpr(@NotNull MvAssignmentExpr o) {
     visitExpr(o);
-  }
-
-  public void visitAssumeSpecExpr(@NotNull MvAssumeSpecExpr o) {
-    visitExpr(o);
-    // visitBoolSpecExpr(o);
-    // visitMslOnlyElement(o);
   }
 
   public void visitAttr(@NotNull MvAttr o) {
@@ -159,13 +78,6 @@ public class MvVisitor extends PsiElementVisitor {
 
   public void visitAttrItemList(@NotNull MvAttrItemList o) {
     visitElement(o);
-  }
-
-  public void visitAxiomSpecExpr(@NotNull MvAxiomSpecExpr o) {
-    visitExpr(o);
-    // visitBoolSpecExpr(o);
-    // visitTypeParametersOwner(o);
-    // visitMslOnlyElement(o);
   }
 
   public void visitBangExpr(@NotNull MvBangExpr o) {
@@ -195,18 +107,11 @@ public class MvVisitor extends PsiElementVisitor {
   public void visitCallExpr(@NotNull MvCallExpr o) {
     visitExpr(o);
     // visitCallable(o);
-    // visitAcquireTypesOwner(o);
     // visitInferenceCachedPathElement(o);
   }
 
   public void visitCastExpr(@NotNull MvCastExpr o) {
     visitExpr(o);
-  }
-
-  public void visitChooseQuantExpr(@NotNull MvChooseQuantExpr o) {
-    visitExpr(o);
-    // visitQuantBindingsOwner(o);
-    // visitMslOnlyElement(o);
   }
 
   public void visitCodeBlock(@NotNull MvCodeBlock o) {
@@ -240,11 +145,6 @@ public class MvVisitor extends PsiElementVisitor {
     visitExpr(o);
   }
 
-  public void visitDecreasesSpecExpr(@NotNull MvDecreasesSpecExpr o) {
-    visitExpr(o);
-    // visitMslOnlyElement(o);
-  }
-
   public void visitDerefExpr(@NotNull MvDerefExpr o) {
     visitExpr(o);
   }
@@ -255,21 +155,6 @@ public class MvVisitor extends PsiElementVisitor {
 
   public void visitElseBlock(@NotNull MvElseBlock o) {
     visitElement(o);
-  }
-
-  public void visitEmitsCondition(@NotNull MvEmitsCondition o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitEmitsSpecExpr(@NotNull MvEmitsSpecExpr o) {
-    visitExpr(o);
-    // visitMslOnlyElement(o);
-  }
-
-  public void visitEnsuresSpecExpr(@NotNull MvEnsuresSpecExpr o) {
-    visitExpr(o);
-    // visitBoolSpecExpr(o);
-    // visitMslOnlyElement(o);
   }
 
   public void visitEnum(@NotNull MvEnum o) {
@@ -289,12 +174,6 @@ public class MvVisitor extends PsiElementVisitor {
 
   public void visitEnumVariantPat(@NotNull MvEnumVariantPat o) {
     visitElement(o);
-  }
-
-  public void visitExistsQuantExpr(@NotNull MvExistsQuantExpr o) {
-    visitExpr(o);
-    // visitQuantExpr(o);
-    // visitMslOnlyElement(o);
   }
 
   public void visitExpr(@NotNull MvExpr o) {
@@ -326,12 +205,6 @@ public class MvVisitor extends PsiElementVisitor {
     visitElement(o);
   }
 
-  public void visitForallQuantExpr(@NotNull MvForallQuantExpr o) {
-    visitExpr(o);
-    // visitQuantExpr(o);
-    // visitMslOnlyElement(o);
-  }
-
   public void visitFriendDecl(@NotNull MvFriendDecl o) {
     visitDocAndAttributeOwner(o);
   }
@@ -340,7 +213,6 @@ public class MvVisitor extends PsiElementVisitor {
     visitQualNamedElement(o);
     // visitFunctionLike(o);
     // visitItemElement(o);
-    // visitInferenceContextOwner(o);
     // visitModificationTrackerOwner(o);
   }
 
@@ -352,42 +224,12 @@ public class MvVisitor extends PsiElementVisitor {
     visitElement(o);
   }
 
-  public void visitFunctionPattern(@NotNull MvFunctionPattern o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitGlobalVariableStmt(@NotNull MvGlobalVariableStmt o) {
-    visitStmt(o);
-    // visitNameIdentifierOwner(o);
-    // visitTypeAnnotationOwner(o);
-    // visitMslOnlyElement(o);
-    // visitItemElement(o);
-  }
-
-  public void visitIfElseIncludeItem(@NotNull MvIfElseIncludeItem o) {
-    visitIncludeItem(o);
-  }
-
   public void visitIfExpr(@NotNull MvIfExpr o) {
     visitExpr(o);
   }
 
-  public void visitImplyIncludeItem(@NotNull MvImplyIncludeItem o) {
-    visitIncludeItem(o);
-  }
-
-  public void visitIncludeItem(@NotNull MvIncludeItem o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitIncludeStmt(@NotNull MvIncludeStmt o) {
-    visitStmt(o);
-    // visitMslOnlyElement(o);
-  }
-
   public void visitIndexExpr(@NotNull MvIndexExpr o) {
     visitExpr(o);
-    // visitAcquireTypesOwner(o);
   }
 
   public void visitInitializer(@NotNull MvInitializer o) {
@@ -395,48 +237,6 @@ public class MvVisitor extends PsiElementVisitor {
   }
 
   public void visitInlineBlock(@NotNull MvInlineBlock o) {
-    visitElement(o);
-  }
-
-  public void visitInvariantSpecExpr(@NotNull MvInvariantSpecExpr o) {
-    visitExpr(o);
-    // visitBoolSpecExpr(o);
-    // visitMslOnlyElement(o);
-  }
-
-  public void visitItemSpec(@NotNull MvItemSpec o) {
-    visitInferenceContextOwner(o);
-    // visitModificationTrackerOwner(o);
-    // visitScopeMslOnlyElement(o);
-  }
-
-  public void visitItemSpecBlockExpr(@NotNull MvItemSpecBlockExpr o) {
-    visitExpr(o);
-    // visitScopeMslOnlyElement(o);
-  }
-
-  public void visitItemSpecFunctionParameter(@NotNull MvItemSpecFunctionParameter o) {
-    visitItemSpecParameterReferenceElement(o);
-    // visitTypeAnnotationOwner(o);
-  }
-
-  public void visitItemSpecFunctionParameterList(@NotNull MvItemSpecFunctionParameterList o) {
-    visitElement(o);
-  }
-
-  public void visitItemSpecRef(@NotNull MvItemSpecRef o) {
-    visitMandatoryReferenceElement(o);
-  }
-
-  public void visitItemSpecSignature(@NotNull MvItemSpecSignature o) {
-    visitElement(o);
-  }
-
-  public void visitItemSpecTypeParameter(@NotNull MvItemSpecTypeParameter o) {
-    visitItemSpecParameterReferenceElement(o);
-  }
-
-  public void visitItemSpecTypeParameterList(@NotNull MvItemSpecTypeParameterList o) {
     visitElement(o);
   }
 
@@ -519,12 +319,6 @@ public class MvVisitor extends PsiElementVisitor {
     visitMethodOrField(o);
     // visitMethodOrPath(o);
     // visitCallable(o);
-    // visitAcquireTypesOwner(o);
-  }
-
-  public void visitModifiesSpecExpr(@NotNull MvModifiesSpecExpr o) {
-    visitExpr(o);
-    // visitMslOnlyElement(o);
   }
 
   public void visitModule(@NotNull MvModule o) {
@@ -536,21 +330,6 @@ public class MvVisitor extends PsiElementVisitor {
 
   public void visitModuleBlock(@NotNull MvModuleBlock o) {
     visitItemsOwner(o);
-  }
-
-  public void visitModuleItemSpec(@NotNull MvModuleItemSpec o) {
-    visitInferenceContextOwner(o);
-    // visitScopeMslOnlyElement(o);
-  }
-
-  public void visitModuleSpec(@NotNull MvModuleSpec o) {
-    visitElement(o);
-  }
-
-  public void visitModuleSpecBlock(@NotNull MvModuleSpecBlock o) {
-    visitItemsOwner(o);
-    // visitScopeMslOnlyElement(o);
-    // visitAnyBlock(o);
   }
 
   public void visitMoveExpr(@NotNull MvMoveExpr o) {
@@ -644,15 +423,6 @@ public class MvVisitor extends PsiElementVisitor {
     visitType(o);
   }
 
-  public void visitPragmaAttribute(@NotNull MvPragmaAttribute o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitPragmaSpecStmt(@NotNull MvPragmaSpecStmt o) {
-    visitStmt(o);
-    // visitMslOnlyElement(o);
-  }
-
   public void visitPublicUseFun(@NotNull MvPublicUseFun o) {
     visitDocAndAttributeOwner(o);
   }
@@ -661,24 +431,8 @@ public class MvVisitor extends PsiElementVisitor {
     visitElement(o);
   }
 
-  public void visitQuantBinding(@NotNull MvQuantBinding o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitQuantBindings(@NotNull MvQuantBindings o) {
-    visitElement(o);
-  }
-
-  public void visitQuantWhere(@NotNull MvQuantWhere o) {
-    visitMslOnlyElement(o);
-  }
-
   public void visitRangeExpr(@NotNull MvRangeExpr o) {
     visitExpr(o);
-  }
-
-  public void visitRangeQuantBinding(@NotNull MvRangeQuantBinding o) {
-    visitQuantBinding(o);
   }
 
   public void visitRefExpr(@NotNull MvRefExpr o) {
@@ -693,107 +447,12 @@ public class MvVisitor extends PsiElementVisitor {
     visitElement(o);
   }
 
-  public void visitRequiresSpecExpr(@NotNull MvRequiresSpecExpr o) {
-    visitExpr(o);
-    // visitBoolSpecExpr(o);
-    // visitMslOnlyElement(o);
-  }
-
-  public void visitResourceAccessItem(@NotNull MvResourceAccessItem o) {
-    visitElement(o);
-  }
-
-  public void visitResourceAccessItemList(@NotNull MvResourceAccessItemList o) {
-    visitElement(o);
-  }
-
   public void visitReturnExpr(@NotNull MvReturnExpr o) {
     visitExpr(o);
   }
 
   public void visitReturnType(@NotNull MvReturnType o) {
     visitElement(o);
-  }
-
-  public void visitSchema(@NotNull MvSchema o) {
-    visitTypeParametersOwner(o);
-    // visitQualNamedElement(o);
-    // visitInferenceContextOwner(o);
-    // visitScopeMslOnlyElement(o);
-    // visitItemElement(o);
-  }
-
-  public void visitSchemaFieldStmt(@NotNull MvSchemaFieldStmt o) {
-    visitStmt(o);
-    // visitTypeAnnotationOwner(o);
-    // visitMslOnlyElement(o);
-  }
-
-  public void visitSchemaFieldsBlock(@NotNull MvSchemaFieldsBlock o) {
-    visitElement(o);
-  }
-
-  public void visitSchemaIncludeItem(@NotNull MvSchemaIncludeItem o) {
-    visitIncludeItem(o);
-  }
-
-  public void visitSchemaLit(@NotNull MvSchemaLit o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitSchemaLitField(@NotNull MvSchemaLitField o) {
-    visitSchemaRefFieldReferenceElement(o);
-    // visitMslOnlyElement(o);
-  }
-
-  public void visitSchemaRef(@NotNull MvSchemaRef o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitScript(@NotNull MvScript o) {
-    visitItemsOwner(o);
-  }
-
-  public void visitScriptBlock(@NotNull MvScriptBlock o) {
-    visitElement(o);
-  }
-
-  public void visitSpecCodeBlock(@NotNull MvSpecCodeBlock o) {
-    visitItemsOwner(o);
-    // visitAnyBlock(o);
-    // visitMslOnlyElement(o);
-  }
-
-  public void visitSpecExprStmt(@NotNull MvSpecExprStmt o) {
-    visitStmt(o);
-  }
-
-  public void visitSpecFunction(@NotNull MvSpecFunction o) {
-    visitQualNamedElement(o);
-    // visitFunctionLike(o);
-    // visitItemElement(o);
-    // visitInferenceContextOwner(o);
-    // visitScopeMslOnlyElement(o);
-  }
-
-  public void visitSpecInlineFunction(@NotNull MvSpecInlineFunction o) {
-    visitFunctionLike(o);
-    // visitInferenceContextOwner(o);
-    // visitItemElement(o);
-    // visitScopeMslOnlyElement(o);
-  }
-
-  public void visitSpecInlineFunctionStmt(@NotNull MvSpecInlineFunctionStmt o) {
-    visitStmt(o);
-    // visitMslOnlyElement(o);
-  }
-
-  public void visitSpecProperty(@NotNull MvSpecProperty o) {
-    visitMslOnlyElement(o);
-  }
-
-  public void visitSpecPropertyList(@NotNull MvSpecPropertyList o) {
-    visitMslOnlyElement(o);
   }
 
   public void visitStmt(@NotNull MvStmt o) {
@@ -876,21 +535,12 @@ public class MvVisitor extends PsiElementVisitor {
     visitElement(o);
   }
 
-  public void visitTypeQuantBinding(@NotNull MvTypeQuantBinding o) {
-    visitQuantBinding(o);
-  }
-
   public void visitUnitLitExpr(@NotNull MvUnitLitExpr o) {
     visitExpr(o);
   }
 
   public void visitUnitType(@NotNull MvUnitType o) {
     visitType(o);
-  }
-
-  public void visitUpdateSpecStmt(@NotNull MvUpdateSpecStmt o) {
-    visitStmt(o);
-    // visitMslOnlyElement(o);
   }
 
   public void visitUseAlias(@NotNull MvUseAlias o) {
@@ -951,14 +601,6 @@ public class MvVisitor extends PsiElementVisitor {
     visitType(o);
   }
 
-  public void visitMslOnlyElement(@NotNull MslOnlyElement o) {
-    visitElement(o);
-  }
-
-  public void visitFunctionLike(@NotNull MvFunctionLike o) {
-    visitElement(o);
-  }
-
   public void visitMandatoryNameIdentifierOwner(@NotNull MvMandatoryNameIdentifierOwner o) {
     visitElement(o);
   }
@@ -991,10 +633,6 @@ public class MvVisitor extends PsiElementVisitor {
     visitElement(o);
   }
 
-  public void visitItemSpecParameterReferenceElement(@NotNull MvItemSpecParameterReferenceElement o) {
-    visitElement(o);
-  }
-
   public void visitMandatoryReferenceElement(@NotNull MvMandatoryReferenceElement o) {
     visitElement(o);
   }
@@ -1007,15 +645,7 @@ public class MvVisitor extends PsiElementVisitor {
     visitElement(o);
   }
 
-  public void visitSchemaRefFieldReferenceElement(@NotNull MvSchemaRefFieldReferenceElement o) {
-    visitElement(o);
-  }
-
   public void visitNamedAddressReferenceElement(@NotNull NamedAddressReferenceElement o) {
-    visitElement(o);
-  }
-
-  public void visitInferenceContextOwner(@NotNull MvInferenceContextOwner o) {
     visitElement(o);
   }
 

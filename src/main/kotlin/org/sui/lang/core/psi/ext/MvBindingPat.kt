@@ -18,7 +18,6 @@ val MvPatBinding.owner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
         it is MvLetStmt
                 || it is MvFunctionParameter
-                || it is MvSchemaFieldStmt
     }
 
 
@@ -58,20 +57,12 @@ abstract class MvPatBindingMixin(node: ASTNode) : MvMandatoryNameIdentifierOwner
         return when (this.owner) {
             is MvFunctionParameter -> {
                 val function = this.ancestorStrict<MvFunction>() ?: return super.getUseScope()
-                var combinedScope: SearchScope = LocalSearchScope(function)
-                for (itemSpec in function.innerItemSpecs()) {
-                    combinedScope = combinedScope.union(LocalSearchScope(itemSpec))
-                }
-                for (itemSpec in function.outerItemSpecs()) {
-                    combinedScope = combinedScope.union(LocalSearchScope(itemSpec))
-                }
-                combinedScope
+                LocalSearchScope(function)
             }
             is MvLetStmt -> {
                 val function = this.ancestorStrict<MvFunction>() ?: return super.getUseScope()
                 LocalSearchScope(function)
             }
-            is MvSchemaFieldStmt -> super.getUseScope()
             is MvConst -> super.getUseScope()
             else -> super.getUseScope()
         }

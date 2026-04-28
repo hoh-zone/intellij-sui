@@ -21,7 +21,6 @@ class MvSyntaxHighlighter : SyntaxHighlighterBase() {
         val key = when {
             tokenType in DECLARATION_KEYWORDS -> DECLARATION_KEYWORD
             tokenType in CONTROL_KEYWORDS -> CONTROL_KEYWORD
-            tokenType in SPEC_KEYWORDS -> SPEC_KEYWORD
             tokenType in MOVE_KEYWORDS -> KEYWORD
             tokenType == MoveParserDefinition.EOL_DOC_COMMENT -> DOC_COMMENT
             tokenType in MOVE_COMMENTS -> COMMENT
@@ -51,8 +50,6 @@ class MvSyntaxHighlighter : SyntaxHighlighterBase() {
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.DECLARATION_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
         val CONTROL_KEYWORD: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.CONTROL_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
-        val SPEC_KEYWORD: TextAttributesKey =
-            TextAttributesKey.createTextAttributesKey("SUI_MOVE.SPEC_KEYWORD", DefaultLanguageHighlighterColors.METADATA)
         val ABILITY: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.ABILITY", DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL)
         val PRIMITIVE_TYPE: TextAttributesKey =
@@ -117,11 +114,7 @@ class MvSyntaxHighlighter : SyntaxHighlighterBase() {
             MvElementTypes.ENTRY,
             MvElementTypes.NATIVE,
             MvElementTypes.PUBLIC,
-            MvElementTypes.INLINE,
-            MvElementTypes.SCRIPT_KW,
-            MvElementTypes.SPEC,
-            MvElementTypes.SCHEMA_KW,
-            MvElementTypes.MACRO_KW
+            MvElementTypes.INLINE
         )
 
         private val CONTROL_KEYWORDS = TokenSet.create(
@@ -136,25 +129,6 @@ class MvSyntaxHighlighter : SyntaxHighlighterBase() {
             MvElementTypes.RETURN,
             MvElementTypes.ABORT,
             MvElementTypes.LET
-        )
-
-        private val SPEC_KEYWORDS = TokenSet.create(
-            MvElementTypes.ASSUME,
-            MvElementTypes.ASSERT,
-            MvElementTypes.REQUIRES,
-            MvElementTypes.ENSURES,
-            MvElementTypes.INVARIANT,
-            MvElementTypes.MODIFIES,
-            MvElementTypes.PRAGMA,
-            MvElementTypes.INCLUDE,
-            MvElementTypes.ABORTS_IF,
-            MvElementTypes.ABORTS_WITH,
-            MvElementTypes.UPDATE,
-            MvElementTypes.DECREASES,
-            MvElementTypes.EMITS,
-            MvElementTypes.FORALL,
-            MvElementTypes.EXISTS,
-            MvElementTypes.WHERE
         )
 
         private val NUMBER_LITERALS = TokenSet.create(
@@ -212,9 +186,7 @@ class MvSyntaxHighlighter : SyntaxHighlighterBase() {
             MvElementTypes.GT_EQ,
             MvElementTypes.LT_LT,
             MvElementTypes.GT_GT,
-            MvElementTypes.FAT_ARROW,
-            MvElementTypes.EQ_EQ_GT,
-            MvElementTypes.LT_EQ_EQ_GT
+            MvElementTypes.FAT_ARROW
         )
     }
 }

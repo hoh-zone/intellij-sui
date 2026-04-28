@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface MvIndexExpr extends MvExpr, MvAcquireTypesOwner {
+public interface MvIndexExpr extends MvExpr {
 
   @NotNull
   List<MvExpr> getExprList();

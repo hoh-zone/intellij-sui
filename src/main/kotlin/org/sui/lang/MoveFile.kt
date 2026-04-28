@@ -63,16 +63,12 @@ class MoveFile(fileViewProvider: FileViewProvider) : MoveFileBase(fileViewProvid
         return defs.mapNotNull { it.addressBlock }.toList()
     }
 
-    fun scripts(): List<MvScript> = this.childrenOfType<MvScript>()
-
     fun modules(): Sequence<MvModule> {
         return getProjectPsiDependentCache(this) {
             it.childrenOfType<MvModule>()
                 .chain(it.childrenOfType<MvAddressDef>().flatMap { a -> a.modules() })
         }
     }
-
-    fun moduleSpecs(): List<MvModuleSpec> = this.childrenOfType()
 
     fun preloadModules(): Sequence<MvModule> {
         return getProjectPsiDependentCache(this) { it ->

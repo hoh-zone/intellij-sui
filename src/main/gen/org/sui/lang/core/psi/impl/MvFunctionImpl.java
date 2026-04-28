@@ -34,12 +34,6 @@ public class MvFunctionImpl extends MvFunctionMixin implements MvFunction {
   }
 
   @Override
-  @Nullable
-  public MvAcquiresType getAcquiresType() {
-    return PsiTreeUtil.getChildOfType(this, MvAcquiresType.class);
-  }
-
-  @Override
   @NotNull
   public List<MvAttr> getAttrList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, MvAttr.class);
@@ -55,12 +49,6 @@ public class MvFunctionImpl extends MvFunctionMixin implements MvFunction {
   @Nullable
   public MvFunctionParameterList getFunctionParameterList() {
     return PsiTreeUtil.getChildOfType(this, MvFunctionParameterList.class);
-  }
-
-  @Override
-  @Nullable
-  public MvResourceAccessItemList getResourceAccessItemList() {
-    return PsiTreeUtil.getChildOfType(this, MvResourceAccessItemList.class);
   }
 
   @Override

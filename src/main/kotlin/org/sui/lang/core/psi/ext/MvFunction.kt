@@ -4,7 +4,6 @@ import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.sui.cli.MoveProject
 import org.sui.ide.MoveIcons
 import org.sui.lang.core.BUILTIN_FUNCTIONS
@@ -58,62 +57,12 @@ val MvFunction.outerFileName: String
             this.containingFile?.name.orEmpty()
         }
 
-fun MvFunction.innerItemSpecs(): List<MvItemSpec> {
-    val functionName = this.name ?: return emptyList()
-    val itemSpecs = this.module?.itemSpecList.orEmpty()
-    return itemSpecs
-        .filter { it.itemSpecRef?.referenceName == functionName }
-}
-
-fun MvFunction.outerItemSpecs(): List<MvItemSpec> {
-    val functionName = this.name ?: return emptyList()
-    val moduleSpecs = this.module?.allModuleSpecs().orEmpty()
-    return moduleSpecs
-        .flatMap { it.moduleSpecBlock?.itemSpecList.orEmpty() }
-        .filter { it.itemSpecRef?.referenceName == functionName }
-}
-
 val MvFunction.transactionParameters: List<MvFunctionParameter> get() = this.parameters.drop(1)
-
-//fun MvFunctionLike.declaredType(msl: Boolean): TyFunction2 {
-//    val subst = typeParameters ?: this.instantiateTypeParameters()
-//    val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
-//    val acquiresTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
-//    val retType = rawReturnType(msl)
-//    return TyFunction2(subst, paramTypes, acquiresTypes, retType)
-//}
 
 fun MvFunctionLike.rawReturnType(msl: Boolean): Ty {
     val retType = returnType ?: return TyUnit
     return retType.type?.loweredType(msl) ?: TyUnknown
 }
-
-val MvFunction.specFunctionResultParameters: List<MvFunctionParameter>
-    get() {
-        return getProjectPsiDependentCache(this) {
-            val retType = it.returnType
-            val psiFactory = it.project.psiFactory
-            if (retType == null) {
-                emptyList()
-            } else {
-                val retTypeType = retType.type
-                when (retTypeType) {
-                    null -> emptyList()
-                    is MvTupleType -> {
-                        retTypeType.typeList
-                            .mapIndexed { i, type ->
-                                psiFactory.specFunctionParameter(it, "result_${i + 1}", type.text)
-                            }
-                    }
-                    else -> {
-                        listOf(
-                            psiFactory.specFunctionParameter(it, "result", retTypeType.text)
-                        )
-                    }
-                }
-            }
-        }
-    }
 
 abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
                                  MvFunction {

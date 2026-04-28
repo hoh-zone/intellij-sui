@@ -40,10 +40,6 @@ object MvPsiPattern {
 
     fun function(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvFunction>()
 
-    fun script(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvScript>()
-
-    fun moduleSpecBlock(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvModuleSpecBlock>()
-
     fun codeStatementPattern(): PsiElementPattern.Capture<PsiElement> =
         psiElement()
             .inside(psiElement<MvCodeBlock>())
@@ -53,12 +49,6 @@ object MvPsiPattern {
             //  STRUCT_PAT[FIELD_PAT[BINDING[IDENTIFIER]]]
             //  ^ 3         ^ 2           ^ 1       ^ 0
             .andNot(psiElement().withSuperParent(3, MvPatStruct::class.java))
-
-    fun anySpecStart() = psiElementInside<MvItemSpec>().and(onStatementBeginning("spec"))
-
-    fun itemSpecStmt(): PsiElementPattern.Capture<PsiElement> = psiElementInside<MvSpecCodeBlock>()
-
-    fun itemSpecRef(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvItemSpecRef>()
 
     fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvPatBinding>()
 
@@ -86,21 +76,9 @@ object MvPsiPattern {
         path()
             .withSuperParent<MvPathType>(2)
 
-    fun schemaLit(): PsiElementPattern.Capture<PsiElement> =
-        path()
-            .withSuperParent<MvSchemaLit>(2)
-
-    fun pathInsideIncludeStmt(): PsiElementPattern.Capture<PsiElement> =
-        path()
-            .withAncestor(5, psiElement<MvIncludeStmt>())
-
     fun nameTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
         pathType()
             .withCond("FirstChild") { it.prevSibling == null }
-
-    fun specIdentifier(): PsiElementPattern.Capture<PsiElement> =
-        psiElement()
-            .withParent<MvItemSpecRef>()
 
     private fun whitespaceAndErrors() = psiElement().whitespaceCommentEmptyOrError()
 

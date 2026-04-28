@@ -76,7 +76,7 @@ HEX_INTEGER_LITERAL=0x[0-9a-fA-F][0-9a-fA-F_]*({INT_SUFFIX})?
 HEX_STRING_LITERAL=x\" ( [0-9a-zA-Z]* ) (\")?
 BYTE_STRING_LITERAL=b\" ( [^\\\"\n] | \\[^] )* (\")?
 
-IDENTIFIER=(\$)?[_a-zA-Z][_a-zA-Z0-9]* | `type`
+IDENTIFIER=(\$)?[_a-zA-Z][_a-zA-Z0-9]*
 
 
 %%
@@ -125,14 +125,12 @@ IDENTIFIER=(\$)?[_a-zA-Z][_a-zA-Z0-9]* | `type`
       "=>"       { return FAT_ARROW; }
       "`"        { return BACKTICK;}
 
-      // keywords
-      "script"         { return SCRIPT_KW; }
+      // keywords (Sui Move 2024; no Move-1 global storage / script / spec)
       "module"         { return MODULE_KW; }
       "const"          { return CONST_KW; }
       "native"         { return NATIVE; }
       "public"         { return PUBLIC; }
       "fun"            { return FUN; }
-      "acquires"       { return ACQUIRES; }
       "struct"         { return STRUCT_KW; }
       "use"            { return USE; }
       "as"             { return AS; }
@@ -149,9 +147,6 @@ IDENTIFIER=(\$)?[_a-zA-Z][_a-zA-Z0-9]* | `type`
       "while"          { return WHILE; }
       "let"            { return LET; }
       "phantom"        { return PHANTOM; }
-      "spec"           { return SPEC; }
-      "type"           { return TYPE_KW; }
-      "`type`"         { return IDENTIFIER; }
       "`for`"          { return IDENTIFIER; }
       "macro"          { return MACRO_KW; }
 

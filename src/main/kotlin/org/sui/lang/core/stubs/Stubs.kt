@@ -218,36 +218,6 @@ class MvFunctionStub(
     }
 }
 
-class MvSpecFunctionStub(
-    parent: StubElement<*>?,
-    elementType: IStubElementType<*, *>,
-    override val name: String?,
-): StubBase<MvSpecFunction>(parent, elementType), MvNamedStub {
-
-    object Type: MvStubElementType<MvSpecFunctionStub, MvSpecFunction>("SPEC_FUNCTION") {
-        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
-            MvSpecFunctionStub(
-                parentStub,
-                this,
-                dataStream.readNameAsString(),
-            )
-
-        override fun serialize(stub: MvSpecFunctionStub, dataStream: StubOutputStream) =
-            with(dataStream) {
-                writeName(stub.name)
-            }
-
-        override fun createPsi(stub: MvSpecFunctionStub): MvSpecFunction =
-            MvSpecFunctionImpl(stub, this)
-
-        override fun createStub(psi: MvSpecFunction, parentStub: StubElement<*>?): MvSpecFunctionStub {
-            return MvSpecFunctionStub(parentStub, this, psi.name)
-        }
-
-        override fun indexStub(stub: MvSpecFunctionStub, sink: IndexSink) = sink.indexSpecFunctionStub(stub)
-    }
-}
-
 class MvStructStub(
     parent: StubElement<*>?,
     elementType: IStubElementType<*, *>,
@@ -347,36 +317,6 @@ class MvEnumVariantStub(
     }
 }
 
-class MvSchemaStub(
-    parent: StubElement<*>?,
-    elementType: IStubElementType<*, *>,
-    override val name: String?
-): StubBase<MvSchema>(parent, elementType), MvNamedStub {
-
-    object Type: MvStubElementType<MvSchemaStub, MvSchema>("SCHEMA") {
-        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
-            MvSchemaStub(
-                parentStub,
-                this,
-                dataStream.readNameAsString()
-            )
-
-        override fun serialize(stub: MvSchemaStub, dataStream: StubOutputStream) =
-            with(dataStream) {
-                writeName(stub.name)
-            }
-
-        override fun createPsi(stub: MvSchemaStub): MvSchema =
-            MvSchemaImpl(stub, this)
-
-        override fun createStub(psi: MvSchema, parentStub: StubElement<*>?): MvSchemaStub {
-            return MvSchemaStub(parentStub, this, psi.name)
-        }
-
-        override fun indexStub(stub: MvSchemaStub, sink: IndexSink) = sink.indexSchemaStub(stub)
-    }
-}
-
 class MvConstStub(
     parent: StubElement<*>?,
     elementType: IStubElementType<*, *>,
@@ -407,47 +347,13 @@ class MvConstStub(
     }
 }
 
-class MvModuleSpecStub(
-    parent: StubElement<*>?,
-    elementType: IStubElementType<*, *>,
-    val moduleName: String?,
-): StubBase<MvModuleSpec>(parent, elementType) {
-
-    object Type: MvStubElementType<MvModuleSpecStub, MvModuleSpec>("MODULE_SPEC") {
-        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
-            MvModuleSpecStub(
-                parentStub,
-                this,
-                dataStream.readUTFFastAsNullable()
-            )
-
-        override fun serialize(stub: MvModuleSpecStub, dataStream: StubOutputStream) =
-            with(dataStream) {
-                writeUTFFastAsNullable(stub.moduleName)
-            }
-
-        override fun createPsi(stub: MvModuleSpecStub): MvModuleSpec =
-            MvModuleSpecImpl(stub, this)
-
-        override fun createStub(psi: MvModuleSpec, parentStub: StubElement<*>?): MvModuleSpecStub {
-            return MvModuleSpecStub(parentStub, this, psi.path?.referenceName)
-        }
-
-        override fun indexStub(stub: MvModuleSpecStub, sink: IndexSink) = sink.indexModuleSpecStub(stub)
-    }
-}
-
-
 fun factory(name: String): MvStubElementType<*, *> = when (name) {
     "MODULE" -> MvModuleStub.Type
     "FUNCTION" -> MvFunctionStub.Type
-    "SPEC_FUNCTION" -> MvSpecFunctionStub.Type
     "STRUCT" -> MvStructStub.Type
     "ENUM" -> MvEnumStub.Type
     "ENUM_VARIANT" -> MvEnumVariantStub.Type
-    "SCHEMA" -> MvSchemaStub.Type
     "CONST" -> MvConstStub.Type
-    "MODULE_SPEC" -> MvModuleSpecStub.Type
 
     else -> error("Unknown element $name")
 }

@@ -37,14 +37,12 @@ enum class MvColor(default: TextAttributesKey) {
     KEYWORD(Default.KEYWORD),
     DECLARATION_KEYWORD(Default.KEYWORD),
     CONTROL_KEYWORD(Default.KEYWORD),
-    SPEC_KEYWORD(Default.METADATA),
 
     // ----- single-token keywords with their own scopes in VS Code -----
     KEYWORD_AS(Default.KEYWORD),
     KEYWORD_MUT(Default.KEYWORD),
     KEYWORD_PHANTOM(Default.KEYWORD),
     KEYWORD_HAS(Default.KEYWORD),
-    KEYWORD_ACQUIRES(Default.KEYWORD),
     KEYWORD_MOVE_COPY(Default.KEYWORD),
     MATCH_ARROW(Default.OPERATION_SIGN),
 
@@ -55,7 +53,6 @@ enum class MvColor(default: TextAttributesKey) {
     VIS_INLINE(Default.KEYWORD),
     VIS_PUBLIC_PACKAGE(Default.KEYWORD),
     VIS_PUBLIC_FRIEND(Default.KEYWORD),
-    VIS_PUBLIC_SCRIPT(Default.KEYWORD),
 
     // ----- names -----
     FUNCTION_DECL(Default.FUNCTION_DECLARATION),

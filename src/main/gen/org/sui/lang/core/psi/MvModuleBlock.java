@@ -21,19 +21,7 @@ public interface MvModuleBlock extends MvItemsOwner {
   List<MvFunction> getFunctionList();
 
   @NotNull
-  List<MvItemSpec> getItemSpecList();
-
-  @NotNull
-  List<MvModuleItemSpec> getModuleItemSpecList();
-
-  @NotNull
   List<MvPublicUseFun> getPublicUseFunList();
-
-  @NotNull
-  List<MvSchema> getSchemaList();
-
-  @NotNull
-  List<MvSpecFunction> getSpecFunctionList();
 
   @NotNull
   List<MvStruct> getStructList();

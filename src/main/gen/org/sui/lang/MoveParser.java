@@ -44,29 +44,20 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   public static final TokenSet[] EXTENDS_SETS_ = new TokenSet[] {
-    create_token_set_(QUANT_BINDING, RANGE_QUANT_BINDING, TYPE_QUANT_BINDING),
-    create_token_set_(AND_INCLUDE_ITEM, IF_ELSE_INCLUDE_ITEM, IMPLY_INCLUDE_ITEM, INCLUDE_ITEM,
-      SCHEMA_INCLUDE_ITEM),
+    create_token_set_(EXPR_STMT, LET_STMT, STMT, USE_STMT),
     create_token_set_(PAT, PAT_BINDING, PAT_CONST, PAT_STRUCT,
       PAT_TUPLE, PAT_WILD),
     create_token_set_(LAMBDA_TYPE, PARENS_TYPE, PATH_TYPE, REF_TYPE,
       TUPLE_TYPE, TYPE, UNIT_TYPE, WILD_TYPE),
-    create_token_set_(APPLY_SCHEMA_STMT, EXPR_STMT, GLOBAL_VARIABLE_STMT, INCLUDE_STMT,
-      LET_STMT, PRAGMA_SPEC_STMT, SCHEMA_FIELD_STMT, SPEC_EXPR_STMT,
-      SPEC_INLINE_FUNCTION_STMT, STMT, UPDATE_SPEC_STMT, USE_STMT),
-    create_token_set_(ABORTS_IF_SPEC_EXPR, ABORTS_WITH_SPEC_EXPR, ABORT_EXPR, ANNOTATED_EXPR,
-      ASSERT_BANG_EXPR, ASSERT_MACRO_EXPR, ASSERT_SPEC_EXPR, ASSIGNMENT_EXPR,
-      ASSUME_SPEC_EXPR, AXIOM_SPEC_EXPR, BANG_EXPR, BINARY_EXPR,
-      BORROW_EXPR, BREAK_EXPR, CALL_EXPR, CAST_EXPR,
-      CHOOSE_QUANT_EXPR, CODE_BLOCK_EXPR, CONTINUE_EXPR, COPY_EXPR,
-      DECREASES_SPEC_EXPR, DEREF_EXPR, DOT_EXPR, EMITS_SPEC_EXPR,
-      ENSURES_SPEC_EXPR, EXISTS_QUANT_EXPR, EXPR, FORALL_QUANT_EXPR,
-      FOR_EXPR, IF_EXPR, INDEX_EXPR, INVARIANT_SPEC_EXPR,
-      ITEM_SPEC_BLOCK_EXPR, LABELED_BLOCK_EXPR, LAMBDA_EXPR, LIT_EXPR,
-      LOOP_EXPR, MATCH_EXPR, MODIFIES_SPEC_EXPR, MOVE_EXPR,
-      PARENS_EXPR, PATH_EXPR, RANGE_EXPR, REF_EXPR,
-      REQUIRES_SPEC_EXPR, RETURN_EXPR, STRUCT_LIT_EXPR, TUPLE_LIT_EXPR,
-      UNIT_LIT_EXPR, VECTOR_LIT_EXPR, WHILE_EXPR),
+    create_token_set_(ABORT_EXPR, ANNOTATED_EXPR, ASSERT_BANG_EXPR, ASSERT_MACRO_EXPR,
+      ASSIGNMENT_EXPR, BANG_EXPR, BINARY_EXPR, BORROW_EXPR,
+      BREAK_EXPR, CALL_EXPR, CAST_EXPR, CODE_BLOCK_EXPR,
+      CONTINUE_EXPR, COPY_EXPR, DEREF_EXPR, DOT_EXPR,
+      EXPR, FOR_EXPR, IF_EXPR, INDEX_EXPR,
+      LABELED_BLOCK_EXPR, LAMBDA_EXPR, LIT_EXPR, LOOP_EXPR,
+      MATCH_EXPR, MOVE_EXPR, PARENS_EXPR, PATH_EXPR,
+      RANGE_EXPR, REF_EXPR, RETURN_EXPR, STRUCT_LIT_EXPR,
+      TUPLE_LIT_EXPR, UNIT_LIT_EXPR, VECTOR_LIT_EXPR, WHILE_EXPR),
   };
 
   /* ********************************************************** */
@@ -92,144 +83,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     result_ = consumeToken(builder_, COPY);
     if (!result_) result_ = consumeToken(builder_, IDENTIFIER);
     exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // aborts_if SpecPropertyList? Expr AbortsIfWith?
-  public static boolean AbortsIfSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AbortsIfSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, ABORTS_IF_SPEC_EXPR, "<expression>");
-    result_ = aborts_if(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, AbortsIfSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, Expr(builder_, level_ + 1, -1)) && result_;
-    result_ = pinned_ && AbortsIfSpecExpr_3(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecPropertyList?
-  private static boolean AbortsIfSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AbortsIfSpecExpr_1")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
-  }
-
-  // AbortsIfWith?
-  private static boolean AbortsIfSpecExpr_3(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AbortsIfSpecExpr_3")) return false;
-    AbortsIfWith(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // with Expr
-  public static boolean AbortsIfWith(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AbortsIfWith")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ABORTS_IF_WITH, "<aborts if with>");
-    result_ = with(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && Expr(builder_, level_ + 1, -1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // aborts_with SpecPropertyList? <<non_empty_comma_sep_items Expr>>
-  public static boolean AbortsWithSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AbortsWithSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, ABORTS_WITH_SPEC_EXPR, "<expression>");
-    result_ = aborts_with(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, AbortsWithSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && non_empty_comma_sep_items(builder_, level_ + 1, Expr_parser_) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecPropertyList?
-  private static boolean AbortsWithSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AbortsWithSpecExpr_1")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // <<pathMode 'WILDCARD' PathImpl>> AddressSpecifier?
-  public static boolean AccessSpecifier(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AccessSpecifier")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ACCESS_SPECIFIER, "<access specifier>");
-    result_ = pathMode(builder_, level_ + 1, WILDCARD, MoveParser::PathImpl);
-    result_ = result_ && AccessSpecifier_1(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // AddressSpecifier?
-  private static boolean AccessSpecifier_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AccessSpecifier_1")) return false;
-    AddressSpecifier(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // <<non_empty_comma_sep_items AccessSpecifier>>
-  public static boolean AccessSpecifierList(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AccessSpecifierList")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ACCESS_SPECIFIER_LIST, "<access specifier list>");
-    result_ = non_empty_comma_sep_items(builder_, level_ + 1, MoveParser::AccessSpecifier);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // acquires AcquiresType_items
-  public static boolean AcquiresType(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AcquiresType")) return false;
-    if (!nextTokenIs(builder_, ACQUIRES)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ACQUIRES_TYPE, null);
-    result_ = consumeToken(builder_, ACQUIRES);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && AcquiresType_items(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // <<non_empty_comma_sep_items PathType>>
-  static boolean AcquiresType_items(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AcquiresType_items")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_);
-    result_ = non_empty_comma_sep_items(builder_, level_ + 1, MoveParser::PathType);
-    exit_section_(builder_, level_, marker_, result_, false, MoveParser::AcquiresType_items_recover);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !(';' | '{')
-  static boolean AcquiresType_items_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AcquiresType_items_recover")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !AcquiresType_items_recover_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ';' | '{'
-  private static boolean AcquiresType_items_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AcquiresType_items_recover_0")) return false;
-    boolean result_;
-    result_ = consumeTokenFast(builder_, SEMICOLON);
-    if (!result_) result_ = consumeTokenFast(builder_, L_BRACE);
     return result_;
   }
 
@@ -323,105 +176,12 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '('AddressSpecifierArg')'
-  public static boolean AddressSpecifier(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AddressSpecifier")) return false;
-    if (!nextTokenIs(builder_, L_PAREN)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ADDRESS_SPECIFIER, null);
-    result_ = consumeToken(builder_, L_PAREN);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, AddressSpecifierArg(builder_, level_ + 1));
-    result_ = pinned_ && consumeToken(builder_, R_PAREN) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // '*'
-  // |AddressSpecifierLit
-  //                         | <<pathMode 'VALUE' (PathImpl '(' AddressSpecifierCallParam ')')>>
-  // |IDENTIFIER
-  public static boolean AddressSpecifierArg(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AddressSpecifierArg")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ADDRESS_SPECIFIER_ARG, "<address specifier arg>");
-    result_ = consumeToken(builder_, MUL);
-    if (!result_) result_ = AddressSpecifierLit(builder_, level_ + 1);
-    if (!result_) result_ = pathMode(builder_, level_ + 1, VALUE, MoveParser::AddressSpecifierArg_2_1);
-    if (!result_) result_ = consumeToken(builder_, IDENTIFIER);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // PathImpl '(' AddressSpecifierCallParam ')'
-  private static boolean AddressSpecifierArg_2_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AddressSpecifierArg_2_1")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = PathImpl(builder_, level_ + 1);
-    result_ = result_ && consumeToken(builder_, L_PAREN);
-    result_ = result_ && AddressSpecifierCallParam(builder_, level_ + 1);
-    result_ = result_ && consumeToken(builder_, R_PAREN);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // AddressSpecifierCallParamImpl
-  public static boolean AddressSpecifierCallParam(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AddressSpecifierCallParam")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ADDRESS_SPECIFIER_CALL_PARAM, "<address specifier call param>");
-    result_ = AddressSpecifierCallParamImpl(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // PathIdent
-  public static boolean AddressSpecifierCallParamImpl(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AddressSpecifierCallParamImpl")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, PATH, "<address specifier call param impl>");
-    result_ = PathIdent(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // SUI_ADDRESS|INTEGER_LITERAL
-  public static boolean AddressSpecifierLit(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AddressSpecifierLit")) return false;
-    if (!nextTokenIs(builder_, "<address specifier lit>", INTEGER_LITERAL, SUI_ADDRESS)) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ADDRESS_SPECIFIER_LIT, "<address specifier lit>");
-    result_ = consumeToken(builder_, SUI_ADDRESS);
-    if (!result_) result_ = consumeToken(builder_, INTEGER_LITERAL);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
   // andand
   public static boolean AndBinOp(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "AndBinOp")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, BINARY_OP, "<operator>");
     result_ = andand(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // SchemaLit AndBinOp SchemaLit
-  public static boolean AndIncludeItem(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AndIncludeItem")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, AND_INCLUDE_ITEM, "<and include item>");
-    result_ = SchemaLit(builder_, level_ + 1);
-    result_ = result_ && AndBinOp(builder_, level_ + 1);
-    result_ = result_ && SchemaLit(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
@@ -471,68 +231,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // except <<non_empty_comma_sep_items FunctionPattern>>
-  public static boolean ApplyExcept(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ApplyExcept")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, APPLY_EXCEPT, "<apply except>");
-    result_ = except(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && non_empty_comma_sep_items(builder_, level_ + 1, MoveParser::FunctionPattern);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // IDENTIFIER ':' Expr
-  public static boolean ApplySchemaNameAttribute(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ApplySchemaNameAttribute")) return false;
-    if (!nextTokenIs(builder_, IDENTIFIER)) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeTokens(builder_, 0, IDENTIFIER, COLON);
-    result_ = result_ && Expr(builder_, level_ + 1, -1);
-    exit_section_(builder_, marker_, APPLY_SCHEMA_NAME_ATTRIBUTE, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // apply SchemaRef ApplyTo ApplyExcept? ';'
-  public static boolean ApplySchemaStmt(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ApplySchemaStmt")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, APPLY_SCHEMA_STMT, "<apply schema stmt>");
-    result_ = apply(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, SchemaRef(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, ApplyTo(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, ApplySchemaStmt_3(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // ApplyExcept?
-  private static boolean ApplySchemaStmt_3(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ApplySchemaStmt_3")) return false;
-    ApplyExcept(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // to <<non_empty_comma_sep_items FunctionPattern>>
-  public static boolean ApplyTo(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ApplyTo")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, APPLY_TO, "<apply to>");
-    result_ = to(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && non_empty_comma_sep_items(builder_, level_ + 1, MoveParser::FunctionPattern);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
   // <<assertIdent>> '!' ValueArgumentList
   public static boolean AssertBangExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "AssertBangExpr")) return false;
@@ -543,48 +241,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     result_ = result_ && ValueArgumentList(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
-  }
-
-  /* ********************************************************** */
-  // assert SpecPropertyList? Expr
-  public static boolean AssertSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AssertSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, ASSERT_SPEC_EXPR, "<expression>");
-    result_ = assert_$(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, AssertSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && Expr(builder_, level_ + 1, -1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecPropertyList?
-  private static boolean AssertSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AssertSpecExpr_1")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // assume SpecPropertyList? Expr
-  public static boolean AssumeSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AssumeSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, ASSUME_SPEC_EXPR, "<expression>");
-    result_ = assume(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, AssumeSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && Expr(builder_, level_ + 1, -1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecPropertyList?
-  private static boolean AssumeSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AssumeSpecExpr_1")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
   }
 
   /* ********************************************************** */
@@ -677,35 +333,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   // '#'
   static boolean AttrsAndVis_first(PsiBuilder builder_, int level_) {
     return consumeTokenFast(builder_, HASH);
-  }
-
-  /* ********************************************************** */
-  // axiom TypeParameterList? SpecPropertyList? Expr
-  public static boolean AxiomSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AxiomSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, AXIOM_SPEC_EXPR, "<expression>");
-    result_ = axiom(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, AxiomSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, AxiomSpecExpr_2(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && Expr(builder_, level_ + 1, -1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // TypeParameterList?
-  private static boolean AxiomSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AxiomSpecExpr_1")) return false;
-    TypeParameterList(builder_, level_ + 1);
-    return true;
-  }
-
-  // SpecPropertyList?
-  private static boolean AxiomSpecExpr_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "AxiomSpecExpr_2")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
   }
 
   /* ********************************************************** */
@@ -959,27 +586,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // decreases SpecPropertyList? Expr
-  public static boolean DecreasesSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "DecreasesSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, DECREASES_SPEC_EXPR, "<expression>");
-    result_ = decreases(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, DecreasesSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && Expr(builder_, level_ + 1, -1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecPropertyList?
-  private static boolean DecreasesSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "DecreasesSpecExpr_1")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
   // '/'
   public static boolean DivBinOp(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "DivBinOp")) return false;
@@ -1046,72 +652,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     result_ = result_ && AnyBlock(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, pinned_, null);
     return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // if Expr
-  public static boolean EmitsCondition(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "EmitsCondition")) return false;
-    if (!nextTokenIs(builder_, IF)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, EMITS_CONDITION, null);
-    result_ = consumeToken(builder_, IF);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && Expr(builder_, level_ + 1, -1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // emits SpecPropertyList? Expr to Expr EmitsCondition?
-  public static boolean EmitsSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "EmitsSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, EMITS_SPEC_EXPR, "<expression>");
-    result_ = emits(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, EmitsSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, Expr(builder_, level_ + 1, -1)) && result_;
-    result_ = pinned_ && report_error_(builder_, to(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, Expr(builder_, level_ + 1, -1)) && result_;
-    result_ = pinned_ && EmitsSpecExpr_5(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecPropertyList?
-  private static boolean EmitsSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "EmitsSpecExpr_1")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
-  }
-
-  // EmitsCondition?
-  private static boolean EmitsSpecExpr_5(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "EmitsSpecExpr_5")) return false;
-    EmitsCondition(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // ensures SpecPropertyList? SpecExpr
-  public static boolean EnsuresSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "EnsuresSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, ENSURES_SPEC_EXPR, "<expression>");
-    result_ = ensures(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, EnsuresSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && SpecExpr(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecPropertyList?
-  private static boolean EnsuresSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "EnsuresSpecExpr_1")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
   }
 
   /* ********************************************************** */
@@ -1311,19 +851,18 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // ItemSpecBlockExpr | Expr
+  // Expr
   static boolean ExprStmt_expr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ExprStmt_expr")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_);
-    result_ = ItemSpecBlockExpr(builder_, level_ + 1);
-    if (!result_) result_ = Expr(builder_, level_ + 1, -1);
+    result_ = Expr(builder_, level_ + 1, -1);
     exit_section_(builder_, level_, marker_, result_, false, MoveParser::ExprStmt_recover);
     return result_;
   }
 
   /* ********************************************************** */
-  // !(';' | '}' | <<mslOnly SpecExpr_first>> | Expr_first)
+  // !(';' | '}' | Expr_first)
   static boolean ExprStmt_recover(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ExprStmt_recover")) return false;
     boolean result_;
@@ -1333,23 +872,19 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // ';' | '}' | <<mslOnly SpecExpr_first>> | Expr_first
+  // ';' | '}' | Expr_first
   private static boolean ExprStmt_recover_0(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ExprStmt_recover_0")) return false;
     boolean result_;
-    Marker marker_ = enter_section_(builder_);
     result_ = consumeTokenFast(builder_, SEMICOLON);
     if (!result_) result_ = consumeTokenFast(builder_, R_BRACE);
-    if (!result_) result_ = mslOnly(builder_, level_ + 1, MoveParser::SpecExpr_first);
     if (!result_) result_ = Expr_first(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
     return result_;
   }
 
   /* ********************************************************** */
-  // let | if | while | loop | continue | break | return | spec
+  // let | if | while | loop | continue | break | return
   //                         | copy | move | abort
-  // //                        | (<<VECTOR_IDENTIFIER>> ('<' | '['))
   //                         | IDENTIFIER
   //                         | QUOTE_IDENTIFIER
   //                         | '*' | '&' | '!' | '|' | '{' | '('
@@ -1366,7 +901,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     if (!result_) result_ = consumeTokenFast(builder_, CONTINUE);
     if (!result_) result_ = consumeTokenFast(builder_, BREAK);
     if (!result_) result_ = consumeTokenFast(builder_, RETURN);
-    if (!result_) result_ = consumeTokenFast(builder_, SPEC);
     if (!result_) result_ = consumeTokenFast(builder_, COPY);
     if (!result_) result_ = consumeTokenFast(builder_, MOVE);
     if (!result_) result_ = consumeTokenFast(builder_, ABORT);
@@ -1379,14 +913,14 @@ public class MoveParser implements PsiParser, LightPsiParser {
     if (!result_) result_ = consumeTokenFast(builder_, L_BRACE);
     if (!result_) result_ = consumeTokenFast(builder_, L_PAREN);
     if (!result_) result_ = AnyLitToken_first(builder_, level_ + 1);
-    if (!result_) result_ = Expr_first_20(builder_, level_ + 1);
+    if (!result_) result_ = Expr_first_19(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
     return result_;
   }
 
   // AddressRef '::'
-  private static boolean Expr_first_20(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "Expr_first_20")) return false;
+  private static boolean Expr_first_19(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "Expr_first_19")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
     result_ = AddressRef(builder_, level_ + 1);
@@ -1723,34 +1257,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // PatternVis? PatternIdent TypeParameterList?
-  public static boolean FunctionPattern(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "FunctionPattern")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, FUNCTION_PATTERN, "<function pattern>");
-    result_ = FunctionPattern_0(builder_, level_ + 1);
-    result_ = result_ && PatternIdent(builder_, level_ + 1);
-    pinned_ = result_; // pin = 2
-    result_ = result_ && FunctionPattern_2(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // PatternVis?
-  private static boolean FunctionPattern_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "FunctionPattern_0")) return false;
-    PatternVis(builder_, level_ + 1);
-    return true;
-  }
-
-  // TypeParameterList?
-  private static boolean FunctionPattern_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "FunctionPattern_2")) return false;
-    TypeParameterList(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
   // IDENTIFIER TypeParameterList?
   //                                     FunctionParameterList ReturnType?
   static boolean FunctionSignatureInner(PsiBuilder builder_, int level_) {
@@ -1805,60 +1311,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // Attr* global IDENTIFIER TypeParameterList? TypeAnnotation ('=' Expr)? ';'
-  public static boolean GlobalVariableStmt(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "GlobalVariableStmt")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, GLOBAL_VARIABLE_STMT, "<global variable stmt>");
-    result_ = GlobalVariableStmt_0(builder_, level_ + 1);
-    result_ = result_ && global(builder_, level_ + 1);
-    pinned_ = result_; // pin = 2
-    result_ = result_ && report_error_(builder_, consumeToken(builder_, IDENTIFIER));
-    result_ = pinned_ && report_error_(builder_, GlobalVariableStmt_3(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, TypeAnnotation(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, GlobalVariableStmt_5(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // Attr*
-  private static boolean GlobalVariableStmt_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "GlobalVariableStmt_0")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!Attr(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "GlobalVariableStmt_0", pos_)) break;
-    }
-    return true;
-  }
-
-  // TypeParameterList?
-  private static boolean GlobalVariableStmt_3(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "GlobalVariableStmt_3")) return false;
-    TypeParameterList(builder_, level_ + 1);
-    return true;
-  }
-
-  // ('=' Expr)?
-  private static boolean GlobalVariableStmt_5(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "GlobalVariableStmt_5")) return false;
-    GlobalVariableStmt_5_0(builder_, level_ + 1);
-    return true;
-  }
-
-  // '=' Expr
-  private static boolean GlobalVariableStmt_5_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "GlobalVariableStmt_5_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, EQ);
-    result_ = result_ && Expr(builder_, level_ + 1, -1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
   // '>'
   public static boolean GreaterBinOp(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "GreaterBinOp")) return false;
@@ -1885,83 +1337,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   // <<hexIntegerLiteral>>
   static boolean HEX_INTEGER_LITERAL(PsiBuilder builder_, int level_) {
     return hexIntegerLiteral(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // if Condition SchemaLit else SchemaLit
-  public static boolean IfElseIncludeItem(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "IfElseIncludeItem")) return false;
-    if (!nextTokenIs(builder_, IF)) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, IF);
-    result_ = result_ && Condition(builder_, level_ + 1);
-    result_ = result_ && SchemaLit(builder_, level_ + 1);
-    result_ = result_ && consumeToken(builder_, ELSE);
-    result_ = result_ && SchemaLit(builder_, level_ + 1);
-    exit_section_(builder_, marker_, IF_ELSE_INCLUDE_ITEM, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // <<includeStmtModeFalse>> <<mslOnly eqeq_gt>>
-  public static boolean ImplyBinOp(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ImplyBinOp")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, BINARY_OP, "<operator>");
-    result_ = includeStmtModeFalse(builder_, level_ + 1);
-    result_ = result_ && mslOnly(builder_, level_ + 1, MoveParser::eqeq_gt);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // <<includeStmtMode Expr>> ImplyBinOp SchemaLit
-  public static boolean ImplyIncludeItem(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ImplyIncludeItem")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, IMPLY_INCLUDE_ITEM, "<imply include item>");
-    result_ = includeStmtMode(builder_, level_ + 1, Expr_parser_);
-    result_ = result_ && ImplyBinOp(builder_, level_ + 1);
-    result_ = result_ && SchemaLit(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // SchemaIncludeItem | AndIncludeItem | IfElseIncludeItem | ImplyIncludeItem
-  public static boolean IncludeItem(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "IncludeItem")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, INCLUDE_ITEM, "<include item>");
-    result_ = SchemaIncludeItem(builder_, level_ + 1);
-    if (!result_) result_ = AndIncludeItem(builder_, level_ + 1);
-    if (!result_) result_ = IfElseIncludeItem(builder_, level_ + 1);
-    if (!result_) result_ = ImplyIncludeItem(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // include SpecPropertyList? IncludeItem ';'
-  public static boolean IncludeStmt(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "IncludeStmt")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, INCLUDE_STMT, "<include stmt>");
-    result_ = include(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, IncludeStmt_1(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, IncludeItem(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecPropertyList?
-  private static boolean IncludeStmt_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "IncludeStmt_1")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
   }
 
   /* ********************************************************** */
@@ -2049,452 +1424,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, INLINE_BLOCK, "<inline block>");
     result_ = Expr(builder_, level_ + 1, -1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // invariant TypeParameterList? update? SpecPropertyList? Expr
-  public static boolean InvariantSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "InvariantSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, INVARIANT_SPEC_EXPR, "<expression>");
-    result_ = invariant(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, InvariantSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, InvariantSpecExpr_2(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, InvariantSpecExpr_3(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && Expr(builder_, level_ + 1, -1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // TypeParameterList?
-  private static boolean InvariantSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "InvariantSpecExpr_1")) return false;
-    TypeParameterList(builder_, level_ + 1);
-    return true;
-  }
-
-  // update?
-  private static boolean InvariantSpecExpr_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "InvariantSpecExpr_2")) return false;
-    update(builder_, level_ + 1);
-    return true;
-  }
-
-  // SpecPropertyList?
-  private static boolean InvariantSpecExpr_3(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "InvariantSpecExpr_3")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // (spec !MODULE_KW) ItemSpecRef ItemSpecSignature? <<msl SpecCodeBlock>>
-  public static boolean ItemSpec(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpec")) return false;
-    if (!nextTokenIs(builder_, SPEC)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ITEM_SPEC, null);
-    result_ = ItemSpec_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, ItemSpecRef(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, ItemSpec_2(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && msl(builder_, level_ + 1, MoveParser::SpecCodeBlock) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // spec !MODULE_KW
-  private static boolean ItemSpec_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpec_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, SPEC);
-    result_ = result_ && ItemSpec_0_1(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // !MODULE_KW
-  private static boolean ItemSpec_0_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpec_0_1")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !consumeToken(builder_, MODULE_KW);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ItemSpecSignature?
-  private static boolean ItemSpec_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpec_2")) return false;
-    ItemSpecSignature(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // spec <<msl SpecCodeBlock>>
-  public static boolean ItemSpecBlockExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecBlockExpr")) return false;
-    if (!nextTokenIsFast(builder_, SPEC)) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ITEM_SPEC_BLOCK_EXPR, "<expression>");
-    result_ = consumeTokenFast(builder_, SPEC);
-    result_ = result_ && msl(builder_, level_ + 1, MoveParser::SpecCodeBlock);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_expr)?
-  static boolean ItemSpecBlock_items(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecBlock_items")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_);
-    result_ = ItemSpecBlock_items_0(builder_, level_ + 1);
-    result_ = result_ && ItemSpecBlock_items_1(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, MoveParser::ItemSpecBlock_items_recover);
-    return result_;
-  }
-
-  // (SpecStmt | ExprStmt)*
-  private static boolean ItemSpecBlock_items_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecBlock_items_0")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!ItemSpecBlock_items_0_0(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "ItemSpecBlock_items_0", pos_)) break;
-    }
-    return true;
-  }
-
-  // SpecStmt | ExprStmt
-  private static boolean ItemSpecBlock_items_0_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecBlock_items_0_0")) return false;
-    boolean result_;
-    result_ = SpecStmt(builder_, level_ + 1);
-    if (!result_) result_ = ExprStmt(builder_, level_ + 1);
-    return result_;
-  }
-
-  // (SpecExprStmt_items | ExprStmt_expr)?
-  private static boolean ItemSpecBlock_items_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecBlock_items_1")) return false;
-    ItemSpecBlock_items_1_0(builder_, level_ + 1);
-    return true;
-  }
-
-  // SpecExprStmt_items | ExprStmt_expr
-  private static boolean ItemSpecBlock_items_1_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecBlock_items_1_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = SpecExprStmt_items(builder_, level_ + 1);
-    if (!result_) result_ = ExprStmt_expr(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !('}' | <<eof>>)
-  static boolean ItemSpecBlock_items_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecBlock_items_recover")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !ItemSpecBlock_items_recover_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // '}' | <<eof>>
-  private static boolean ItemSpecBlock_items_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecBlock_items_recover_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeTokenFast(builder_, R_BRACE);
-    if (!result_) result_ = eof(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // 'mut'? IDENTIFIER TypeAnnotation
-  public static boolean ItemSpecFunctionParameter(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameter")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ITEM_SPEC_FUNCTION_PARAMETER, "<item spec function parameter>");
-    result_ = ItemSpecFunctionParameter_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, consumeToken(builder_, IDENTIFIER));
-    result_ = pinned_ && TypeAnnotation(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // 'mut'?
-  private static boolean ItemSpecFunctionParameter_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameter_0")) return false;
-    consumeToken(builder_, "mut");
-    return true;
-  }
-
-  /* ********************************************************** */
-  // '(' ItemSpecFunctionParameter_with_recover* ')'
-  public static boolean ItemSpecFunctionParameterList(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameterList")) return false;
-    if (!nextTokenIs(builder_, L_PAREN)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ITEM_SPEC_FUNCTION_PARAMETER_LIST, null);
-    result_ = consumeToken(builder_, L_PAREN);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, ItemSpecFunctionParameterList_1(builder_, level_ + 1));
-    result_ = pinned_ && consumeToken(builder_, R_PAREN) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // ItemSpecFunctionParameter_with_recover*
-  private static boolean ItemSpecFunctionParameterList_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameterList_1")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!ItemSpecFunctionParameter_with_recover(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "ItemSpecFunctionParameterList_1", pos_)) break;
-    }
-    return true;
-  }
-
-  /* ********************************************************** */
-  // !(')' | '{' | ';' | IDENTIFIER)
-  static boolean ItemSpecFunctionParameter_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameter_recover")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !ItemSpecFunctionParameter_recover_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ')' | '{' | ';' | IDENTIFIER
-  private static boolean ItemSpecFunctionParameter_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameter_recover_0")) return false;
-    boolean result_;
-    result_ = consumeTokenFast(builder_, R_PAREN);
-    if (!result_) result_ = consumeTokenFast(builder_, L_BRACE);
-    if (!result_) result_ = consumeTokenFast(builder_, SEMICOLON);
-    if (!result_) result_ = consumeTokenFast(builder_, IDENTIFIER);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !(')' | '{' | ';') ItemSpecFunctionParameter (',' | &')')
-  static boolean ItemSpecFunctionParameter_with_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameter_with_recover")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_);
-    result_ = ItemSpecFunctionParameter_with_recover_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, ItemSpecFunctionParameter(builder_, level_ + 1));
-    result_ = pinned_ && ItemSpecFunctionParameter_with_recover_2(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, MoveParser::ItemSpecFunctionParameter_recover);
-    return result_ || pinned_;
-  }
-
-  // !(')' | '{' | ';')
-  private static boolean ItemSpecFunctionParameter_with_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameter_with_recover_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !ItemSpecFunctionParameter_with_recover_0_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ')' | '{' | ';'
-  private static boolean ItemSpecFunctionParameter_with_recover_0_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameter_with_recover_0_0")) return false;
-    boolean result_;
-    result_ = consumeToken(builder_, R_PAREN);
-    if (!result_) result_ = consumeToken(builder_, L_BRACE);
-    if (!result_) result_ = consumeToken(builder_, SEMICOLON);
-    return result_;
-  }
-
-  // ',' | &')'
-  private static boolean ItemSpecFunctionParameter_with_recover_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameter_with_recover_2")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, COMMA);
-    if (!result_) result_ = ItemSpecFunctionParameter_with_recover_2_1(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // &')'
-  private static boolean ItemSpecFunctionParameter_with_recover_2_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecFunctionParameter_with_recover_2_1")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _AND_);
-    result_ = consumeToken(builder_, R_PAREN);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // IDENTIFIER
-  public static boolean ItemSpecRef(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecRef")) return false;
-    if (!nextTokenIs(builder_, IDENTIFIER)) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, IDENTIFIER);
-    exit_section_(builder_, marker_, ITEM_SPEC_REF, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // ItemSpecTypeParameterList? ItemSpecFunctionParameterList ReturnType?
-  public static boolean ItemSpecSignature(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecSignature")) return false;
-    if (!nextTokenIs(builder_, "<function signature>", LT, L_PAREN)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ITEM_SPEC_SIGNATURE, "<function signature>");
-    result_ = ItemSpecSignature_0(builder_, level_ + 1);
-    result_ = result_ && ItemSpecFunctionParameterList(builder_, level_ + 1);
-    pinned_ = result_; // pin = ItemSpecFunctionParameterList
-    result_ = result_ && ItemSpecSignature_2(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // ItemSpecTypeParameterList?
-  private static boolean ItemSpecSignature_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecSignature_0")) return false;
-    ItemSpecTypeParameterList(builder_, level_ + 1);
-    return true;
-  }
-
-  // ReturnType?
-  private static boolean ItemSpecSignature_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecSignature_2")) return false;
-    ReturnType(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // IDENTIFIER TypeParamBound?
-  public static boolean ItemSpecTypeParameter(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecTypeParameter")) return false;
-    if (!nextTokenIs(builder_, IDENTIFIER)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ITEM_SPEC_TYPE_PARAMETER, null);
-    result_ = consumeToken(builder_, IDENTIFIER);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && ItemSpecTypeParameter_1(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // TypeParamBound?
-  private static boolean ItemSpecTypeParameter_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecTypeParameter_1")) return false;
-    TypeParamBound(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // '<' ItemSpecTypeParameter_with_recover* '>'
-  public static boolean ItemSpecTypeParameterList(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecTypeParameterList")) return false;
-    if (!nextTokenIs(builder_, LT)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, ITEM_SPEC_TYPE_PARAMETER_LIST, null);
-    result_ = consumeToken(builder_, LT);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, ItemSpecTypeParameterList_1(builder_, level_ + 1));
-    result_ = pinned_ && consumeToken(builder_, GT) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // ItemSpecTypeParameter_with_recover*
-  private static boolean ItemSpecTypeParameterList_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecTypeParameterList_1")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!ItemSpecTypeParameter_with_recover(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "ItemSpecTypeParameterList_1", pos_)) break;
-    }
-    return true;
-  }
-
-  /* ********************************************************** */
-  // !('>' | '(' | '{' | phantom | IDENTIFIER)
-  static boolean ItemSpecTypeParameter_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecTypeParameter_recover")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !ItemSpecTypeParameter_recover_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // '>' | '(' | '{' | phantom | IDENTIFIER
-  private static boolean ItemSpecTypeParameter_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecTypeParameter_recover_0")) return false;
-    boolean result_;
-    result_ = consumeTokenFast(builder_, GT);
-    if (!result_) result_ = consumeTokenFast(builder_, L_PAREN);
-    if (!result_) result_ = consumeTokenFast(builder_, L_BRACE);
-    if (!result_) result_ = consumeTokenFast(builder_, PHANTOM);
-    if (!result_) result_ = consumeTokenFast(builder_, IDENTIFIER);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !'>' ItemSpecTypeParameter (',' | &'>')
-  static boolean ItemSpecTypeParameter_with_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecTypeParameter_with_recover")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_);
-    result_ = ItemSpecTypeParameter_with_recover_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, ItemSpecTypeParameter(builder_, level_ + 1));
-    result_ = pinned_ && ItemSpecTypeParameter_with_recover_2(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, MoveParser::ItemSpecTypeParameter_recover);
-    return result_ || pinned_;
-  }
-
-  // !'>'
-  private static boolean ItemSpecTypeParameter_with_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecTypeParameter_with_recover_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !consumeToken(builder_, GT);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ',' | &'>'
-  private static boolean ItemSpecTypeParameter_with_recover_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecTypeParameter_with_recover_2")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, COMMA);
-    if (!result_) result_ = ItemSpecTypeParameter_with_recover_2_1(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // &'>'
-  private static boolean ItemSpecTypeParameter_with_recover_2_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ItemSpecTypeParameter_with_recover_2_1")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _AND_);
-    result_ = consumeToken(builder_, GT);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
@@ -2735,63 +1664,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   // Initializer?
   private static boolean LetMoveStmt_4(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "LetMoveStmt_4")) return false;
-    Initializer(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // (let post? ) mut? Pat TypeAnnotation? Initializer? ';'
-  public static boolean LetMslStmt(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "LetMslStmt")) return false;
-    if (!nextTokenIs(builder_, LET)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, LET_STMT, null);
-    result_ = LetMslStmt_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, LetMslStmt_1(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, Pat(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, LetMslStmt_3(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, LetMslStmt_4(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // let post?
-  private static boolean LetMslStmt_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "LetMslStmt_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, LET);
-    result_ = result_ && LetMslStmt_0_1(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // post?
-  private static boolean LetMslStmt_0_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "LetMslStmt_0_1")) return false;
-    post(builder_, level_ + 1);
-    return true;
-  }
-
-  // mut?
-  private static boolean LetMslStmt_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "LetMslStmt_1")) return false;
-    consumeToken(builder_, MUT);
-    return true;
-  }
-
-  // TypeAnnotation?
-  private static boolean LetMslStmt_3(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "LetMslStmt_3")) return false;
-    TypeAnnotation(builder_, level_ + 1);
-    return true;
-  }
-
-  // Initializer?
-  private static boolean LetMslStmt_4(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "LetMslStmt_4")) return false;
     Initializer(builder_, level_ + 1);
     return true;
   }
@@ -3048,27 +1920,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // modifies SpecPropertyList? Expr
-  public static boolean ModifiesSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModifiesSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, MODIFIES_SPEC_EXPR, "<expression>");
-    result_ = modifies(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, ModifiesSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && Expr(builder_, level_ + 1, -1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecPropertyList?
-  private static boolean ModifiesSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModifiesSpecExpr_1")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
   // Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ';'? '{'? ModuleItem_with_recover* '}'?
   public static boolean Module(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "Module")) return false;
@@ -3183,11 +2034,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
   //                             | StructItem
   //                             | Enum
   //                             | FunctionItem
-  //                             | SpecFunctionItem
   //                             | Const
-  //                             | Schema
-  //                             | ModuleItemSpec
-  //                             | ItemSpec
   static boolean ModuleItem(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ModuleItem")) return false;
     boolean result_;
@@ -3198,31 +2045,13 @@ public class MoveParser implements PsiParser, LightPsiParser {
     if (!result_) result_ = StructItem(builder_, level_ + 1);
     if (!result_) result_ = Enum(builder_, level_ + 1);
     if (!result_) result_ = FunctionItem(builder_, level_ + 1);
-    if (!result_) result_ = SpecFunctionItem(builder_, level_ + 1);
     if (!result_) result_ = Const(builder_, level_ + 1);
-    if (!result_) result_ = Schema(builder_, level_ + 1);
-    if (!result_) result_ = ModuleItemSpec(builder_, level_ + 1);
-    if (!result_) result_ = ItemSpec(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
     return result_;
   }
 
   /* ********************************************************** */
-  // spec MODULE_KW <<msl SpecCodeBlock>>
-  public static boolean ModuleItemSpec(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleItemSpec")) return false;
-    if (!nextTokenIs(builder_, SPEC)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, MODULE_ITEM_SPEC, null);
-    result_ = consumeTokens(builder_, 2, SPEC, MODULE_KW);
-    pinned_ = result_; // pin = 2
-    result_ = result_ && msl(builder_, level_ + 1, MoveParser::SpecCodeBlock);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // use | public | native | fun | CONST_KW | STRUCT_KW | spec
+  // use | public | native | fun | CONST_KW | STRUCT_KW
   //                             | Attr_first | "friend" | "entry" | "inline" | "enum" | MACRO_KW
   static boolean ModuleItem_first(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ModuleItem_first")) return false;
@@ -3233,7 +2062,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     if (!result_) result_ = consumeTokenFast(builder_, FUN);
     if (!result_) result_ = consumeTokenFast(builder_, CONST_KW);
     if (!result_) result_ = consumeTokenFast(builder_, STRUCT_KW);
-    if (!result_) result_ = consumeTokenFast(builder_, SPEC);
     if (!result_) result_ = Attr_first(builder_, level_ + 1);
     if (!result_) result_ = consumeTokenFast(builder_, "friend");
     if (!result_) result_ = consumeTokenFast(builder_, "entry");
@@ -3290,133 +2118,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   // '}' | <<eof>>
   private static boolean ModuleItem_with_recover_0_0(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ModuleItem_with_recover_0_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, R_BRACE);
-    if (!result_) result_ = eof(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // Attr* spec PathImpl ModuleSpecBlock
-  public static boolean ModuleSpec(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleSpec")) return false;
-    if (!nextTokenIs(builder_, "<module spec declaration>", HASH, SPEC)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, MODULE_SPEC, "<module spec declaration>");
-    result_ = ModuleSpec_0(builder_, level_ + 1);
-    result_ = result_ && consumeToken(builder_, SPEC);
-    pinned_ = result_; // pin = spec
-    result_ = result_ && report_error_(builder_, PathImpl(builder_, level_ + 1));
-    result_ = pinned_ && ModuleSpecBlock(builder_, level_ + 1) && result_;
-    register_hook_(builder_, LEFT_BINDER, ADJACENT_LINE_COMMENTS);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // Attr*
-  private static boolean ModuleSpec_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleSpec_0")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!Attr(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "ModuleSpec_0", pos_)) break;
-    }
-    return true;
-  }
-
-  /* ********************************************************** */
-  // '{' ModuleSpecBlock_item_with_recover* '}'
-  public static boolean ModuleSpecBlock(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleSpecBlock")) return false;
-    if (!nextTokenIs(builder_, L_BRACE)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, MODULE_SPEC_BLOCK, null);
-    result_ = consumeToken(builder_, L_BRACE);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, ModuleSpecBlock_1(builder_, level_ + 1));
-    result_ = pinned_ && consumeToken(builder_, R_BRACE) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // ModuleSpecBlock_item_with_recover*
-  private static boolean ModuleSpecBlock_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleSpecBlock_1")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!ModuleSpecBlock_item_with_recover(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "ModuleSpecBlock_1", pos_)) break;
-    }
-    return true;
-  }
-
-  /* ********************************************************** */
-  // UseStmt | SpecFunctionItem | Schema | ModuleItemSpec | ItemSpec
-  static boolean ModuleSpecBlock_item(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleSpecBlock_item")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = UseStmt(builder_, level_ + 1);
-    if (!result_) result_ = SpecFunctionItem(builder_, level_ + 1);
-    if (!result_) result_ = Schema(builder_, level_ + 1);
-    if (!result_) result_ = ModuleItemSpec(builder_, level_ + 1);
-    if (!result_) result_ = ItemSpec(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !('}' | <<eof>> | spec | use)
-  static boolean ModuleSpecBlock_item_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleSpecBlock_item_recover")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !ModuleSpecBlock_item_recover_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // '}' | <<eof>> | spec | use
-  private static boolean ModuleSpecBlock_item_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleSpecBlock_item_recover_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeTokenFast(builder_, R_BRACE);
-    if (!result_) result_ = eof(builder_, level_ + 1);
-    if (!result_) result_ = consumeTokenFast(builder_, SPEC);
-    if (!result_) result_ = consumeTokenFast(builder_, USE);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !('}' | <<eof>>) ModuleSpecBlock_item
-  static boolean ModuleSpecBlock_item_with_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleSpecBlock_item_with_recover")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_);
-    result_ = ModuleSpecBlock_item_with_recover_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && ModuleSpecBlock_item(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, MoveParser::ModuleSpecBlock_item_recover);
-    return result_ || pinned_;
-  }
-
-  // !('}' | <<eof>>)
-  private static boolean ModuleSpecBlock_item_with_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleSpecBlock_item_with_recover_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !ModuleSpecBlock_item_with_recover_0_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // '}' | <<eof>>
-  private static boolean ModuleSpecBlock_item_with_recover_0_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ModuleSpecBlock_item_with_recover_0_0")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
     result_ = consumeToken(builder_, R_BRACE);
@@ -3619,105 +2320,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   // <<nativeFunctionModifierSet VisibilityModifier>>
   static boolean NativeFunctionModifierSetInner(PsiBuilder builder_, int level_) {
     return nativeFunctionModifierSet(builder_, level_ + 1, MoveParser::VisibilityModifier);
-  }
-
-  /* ********************************************************** */
-  // Attr* spec (native fun) IDENTIFIER TypeParameterList?
-  //                              FunctionParameterList ReturnType? ';'
-  public static boolean NativeSpecFunctionInner(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "NativeSpecFunctionInner")) return false;
-    if (!nextTokenIs(builder_, "<native spec function inner>", HASH, SPEC)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SPEC_FUNCTION, "<native spec function inner>");
-    result_ = NativeSpecFunctionInner_0(builder_, level_ + 1);
-    result_ = result_ && consumeToken(builder_, SPEC);
-    result_ = result_ && NativeSpecFunctionInner_2(builder_, level_ + 1);
-    pinned_ = result_; // pin = 3
-    result_ = result_ && report_error_(builder_, consumeToken(builder_, IDENTIFIER));
-    result_ = pinned_ && report_error_(builder_, NativeSpecFunctionInner_4(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, FunctionParameterList(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, NativeSpecFunctionInner_6(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // Attr*
-  private static boolean NativeSpecFunctionInner_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "NativeSpecFunctionInner_0")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!Attr(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "NativeSpecFunctionInner_0", pos_)) break;
-    }
-    return true;
-  }
-
-  // native fun
-  private static boolean NativeSpecFunctionInner_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "NativeSpecFunctionInner_2")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeTokens(builder_, 0, NATIVE, FUN);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // TypeParameterList?
-  private static boolean NativeSpecFunctionInner_4(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "NativeSpecFunctionInner_4")) return false;
-    TypeParameterList(builder_, level_ + 1);
-    return true;
-  }
-
-  // ReturnType?
-  private static boolean NativeSpecFunctionInner_6(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "NativeSpecFunctionInner_6")) return false;
-    ReturnType(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // (native fun) IDENTIFIER TypeParameterList?
-  //                                   FunctionParameterList ReturnType? ';'
-  public static boolean NativeSpecInlineFunctionInner(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "NativeSpecInlineFunctionInner")) return false;
-    if (!nextTokenIs(builder_, NATIVE)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SPEC_INLINE_FUNCTION, null);
-    result_ = NativeSpecInlineFunctionInner_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, consumeToken(builder_, IDENTIFIER));
-    result_ = pinned_ && report_error_(builder_, NativeSpecInlineFunctionInner_2(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, FunctionParameterList(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, NativeSpecInlineFunctionInner_4(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // native fun
-  private static boolean NativeSpecInlineFunctionInner_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "NativeSpecInlineFunctionInner_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeTokens(builder_, 0, NATIVE, FUN);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // TypeParameterList?
-  private static boolean NativeSpecInlineFunctionInner_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "NativeSpecInlineFunctionInner_2")) return false;
-    TypeParameterList(builder_, level_ + 1);
-    return true;
-  }
-
-  // ReturnType?
-  private static boolean NativeSpecInlineFunctionInner_4(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "NativeSpecInlineFunctionInner_4")) return false;
-    ReturnType(builder_, level_ + 1);
-    return true;
   }
 
   /* ********************************************************** */
@@ -3955,17 +2557,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NOT_);
     result_ = !consumeToken(builder_, COMMA);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // <<mslOnly lt_eqeq_gt>>
-  public static boolean PartialImplyBinOp(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "PartialImplyBinOp")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, BINARY_OP, "<operator>");
-    result_ = mslOnly(builder_, level_ + 1, MoveParser::lt_eqeq_gt);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
@@ -4443,18 +3034,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<patternIdent>>
-  static boolean PatternIdent(PsiBuilder builder_, int level_) {
-    return patternIdent(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<patternVisibility>>
-  static boolean PatternVis(PsiBuilder builder_, int level_) {
-    return patternVisibility(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
   // phantom IDENTIFIER TypeParamBound?
   public static boolean PhantomTypeParameter(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "PhantomTypeParameter")) return false;
@@ -4506,51 +3085,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     result_ = consumeToken(builder_, PLUS);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
-  }
-
-  /* ********************************************************** */
-  // IDENTIFIER ('=' Expr)?
-  public static boolean PragmaAttribute(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "PragmaAttribute")) return false;
-    if (!nextTokenIs(builder_, IDENTIFIER)) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, IDENTIFIER);
-    result_ = result_ && PragmaAttribute_1(builder_, level_ + 1);
-    exit_section_(builder_, marker_, PRAGMA_ATTRIBUTE, result_);
-    return result_;
-  }
-
-  // ('=' Expr)?
-  private static boolean PragmaAttribute_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "PragmaAttribute_1")) return false;
-    PragmaAttribute_1_0(builder_, level_ + 1);
-    return true;
-  }
-
-  // '=' Expr
-  private static boolean PragmaAttribute_1_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "PragmaAttribute_1_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, EQ);
-    result_ = result_ && Expr(builder_, level_ + 1, -1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // pragma <<non_empty_comma_sep_items PragmaAttribute>> ';'
-  public static boolean PragmaSpecStmt(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "PragmaSpecStmt")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, PRAGMA_SPEC_STMT, "<pragma spec stmt>");
-    result_ = pragma(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, non_empty_comma_sep_items(builder_, level_ + 1, MoveParser::PragmaAttribute));
-    result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
   }
 
   /* ********************************************************** */
@@ -4607,56 +3141,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // RangeQuantBinding | TypeQuantBinding
-  public static boolean QuantBinding(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "QuantBinding")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, QUANT_BINDING, "<quant binding>");
-    result_ = RangeQuantBinding(builder_, level_ + 1);
-    if (!result_) result_ = TypeQuantBinding(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // <<non_empty_comma_sep_items QuantBinding>>
-  public static boolean QuantBindings(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "QuantBindings")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, QUANT_BINDINGS, "<quant bindings>");
-    result_ = non_empty_comma_sep_items(builder_, level_ + 1, MoveParser::QuantBinding);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // where Expr
-  public static boolean QuantWhere(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "QuantWhere")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, QUANT_WHERE, "<quant where>");
-    result_ = where(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && Expr(builder_, level_ + 1, -1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // PatBinding in Expr
-  public static boolean RangeQuantBinding(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "RangeQuantBinding")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, RANGE_QUANT_BINDING, "<range quant binding>");
-    result_ = PatBinding(builder_, level_ + 1);
-    result_ = result_ && in(builder_, level_ + 1);
-    pinned_ = result_; // pin = 2
-    result_ = result_ && Expr(builder_, level_ + 1, -1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
   // PathImpl
   public static boolean RefExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "RefExpr")) return false;
@@ -4698,91 +3182,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   private static boolean RefTypeStart_1(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "RefTypeStart_1")) return false;
     consumeToken(builder_, MUT);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // requires SpecPropertyList? Expr
-  public static boolean RequiresSpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "RequiresSpecExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, REQUIRES_SPEC_EXPR, "<expression>");
-    result_ = requires(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, RequiresSpecExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && Expr(builder_, level_ + 1, -1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecPropertyList?
-  private static boolean RequiresSpecExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "RequiresSpecExpr_1")) return false;
-    SpecPropertyList(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // pure|(('!')?(acquires|reads|writes)AccessSpecifierList)
-  public static boolean ResourceAccessItem(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ResourceAccessItem")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, RESOURCE_ACCESS_ITEM, "<resource access item>");
-    result_ = pure(builder_, level_ + 1);
-    if (!result_) result_ = ResourceAccessItem_1(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ('!')?(acquires|reads|writes)AccessSpecifierList
-  private static boolean ResourceAccessItem_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ResourceAccessItem_1")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = ResourceAccessItem_1_0(builder_, level_ + 1);
-    result_ = result_ && ResourceAccessItem_1_1(builder_, level_ + 1);
-    result_ = result_ && AccessSpecifierList(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // ('!')?
-  private static boolean ResourceAccessItem_1_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ResourceAccessItem_1_0")) return false;
-    consumeToken(builder_, EXCL);
-    return true;
-  }
-
-  // acquires|reads|writes
-  private static boolean ResourceAccessItem_1_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ResourceAccessItem_1_1")) return false;
-    boolean result_;
-    result_ = consumeToken(builder_, ACQUIRES);
-    if (!result_) result_ = reads(builder_, level_ + 1);
-    if (!result_) result_ = writes(builder_, level_ + 1);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // <<isResourceAccessEnabled>>ResourceAccessItem*
-  public static boolean ResourceAccessItemList(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ResourceAccessItemList")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, RESOURCE_ACCESS_ITEM_LIST, "<resource access item list>");
-    result_ = isResourceAccessEnabled(builder_, level_ + 1);
-    result_ = result_ && ResourceAccessItemList_1(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ResourceAccessItem*
-  private static boolean ResourceAccessItemList_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ResourceAccessItemList_1")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!ResourceAccessItem(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "ResourceAccessItemList_1", pos_)) break;
-    }
     return true;
   }
 
@@ -4840,891 +3239,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, BINARY_OP, "<operator>");
     result_ = gtgt(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // Attr* (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock>>
-  public static boolean Schema(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "Schema")) return false;
-    if (!nextTokenIs(builder_, "<schema>", HASH, SPEC)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SCHEMA, "<schema>");
-    result_ = Schema_0(builder_, level_ + 1);
-    result_ = result_ && Schema_1(builder_, level_ + 1);
-    pinned_ = result_; // pin = 2
-    result_ = result_ && report_error_(builder_, consumeToken(builder_, IDENTIFIER));
-    result_ = pinned_ && report_error_(builder_, Schema_3(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && msl(builder_, level_ + 1, MoveParser::SpecCodeBlock) && result_;
-    register_hook_(builder_, LEFT_BINDER, ADJACENT_LINE_COMMENTS);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // Attr*
-  private static boolean Schema_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "Schema_0")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!Attr(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "Schema_0", pos_)) break;
-    }
-    return true;
-  }
-
-  // spec schema
-  private static boolean Schema_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "Schema_1")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, SPEC);
-    result_ = result_ && schema(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // TypeParameterList?
-  private static boolean Schema_3(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "Schema_3")) return false;
-    TypeParameterList(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // SchemaFieldStmt_local | SchemaFieldStmt_simple
-  static boolean SchemaFieldStmtImpl(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaFieldStmtImpl")) return false;
-    boolean result_;
-    result_ = SchemaFieldStmt_local(builder_, level_ + 1);
-    if (!result_) result_ = SchemaFieldStmt_simple(builder_, level_ + 1);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // local PatBinding TypeAnnotation ';'
-  public static boolean SchemaFieldStmt_local(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaFieldStmt_local")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, SCHEMA_FIELD_STMT, "<schema field stmt local>");
-    result_ = local(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, PatBinding(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, TypeAnnotation(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // PatBinding TypeAnnotation ';'
-  public static boolean SchemaFieldStmt_simple(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaFieldStmt_simple")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SCHEMA_FIELD_STMT, "<schema field stmt simple>");
-    result_ = PatBinding(builder_, level_ + 1);
-    result_ = result_ && TypeAnnotation(builder_, level_ + 1);
-    pinned_ = result_; // pin = 2
-    result_ = result_ && consumeToken(builder_, SEMICOLON);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // !('}' | IDENTIFIER)
-  static boolean SchemaField_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaField_recover")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !SchemaField_recover_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // '}' | IDENTIFIER
-  private static boolean SchemaField_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaField_recover_0")) return false;
-    boolean result_;
-    result_ = consumeTokenFast(builder_, R_BRACE);
-    if (!result_) result_ = consumeTokenFast(builder_, IDENTIFIER);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !'}' SchemaLitField (',' | &'}')
-  static boolean SchemaField_with_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaField_with_recover")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_);
-    result_ = SchemaField_with_recover_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, SchemaLitField(builder_, level_ + 1));
-    result_ = pinned_ && SchemaField_with_recover_2(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, MoveParser::SchemaField_recover);
-    return result_ || pinned_;
-  }
-
-  // !'}'
-  private static boolean SchemaField_with_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaField_with_recover_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !consumeToken(builder_, R_BRACE);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ',' | &'}'
-  private static boolean SchemaField_with_recover_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaField_with_recover_2")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, COMMA);
-    if (!result_) result_ = SchemaField_with_recover_2_1(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // &'}'
-  private static boolean SchemaField_with_recover_2_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaField_with_recover_2_1")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _AND_);
-    result_ = consumeToken(builder_, R_BRACE);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // '{' SchemaField_with_recover* '}'
-  public static boolean SchemaFieldsBlock(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaFieldsBlock")) return false;
-    if (!nextTokenIs(builder_, L_BRACE)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SCHEMA_FIELDS_BLOCK, null);
-    result_ = consumeToken(builder_, L_BRACE);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, SchemaFieldsBlock_1(builder_, level_ + 1));
-    result_ = pinned_ && consumeToken(builder_, R_BRACE) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SchemaField_with_recover*
-  private static boolean SchemaFieldsBlock_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaFieldsBlock_1")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!SchemaField_with_recover(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "SchemaFieldsBlock_1", pos_)) break;
-    }
-    return true;
-  }
-
-  /* ********************************************************** */
-  // SchemaLit &(';' | '}' | SpecExprStmt_first)
-  public static boolean SchemaIncludeItem(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaIncludeItem")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SCHEMA_INCLUDE_ITEM, "<schema include item>");
-    result_ = SchemaLit(builder_, level_ + 1);
-    result_ = result_ && SchemaIncludeItem_1(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // &(';' | '}' | SpecExprStmt_first)
-  private static boolean SchemaIncludeItem_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaIncludeItem_1")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _AND_);
-    result_ = SchemaIncludeItem_1_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ';' | '}' | SpecExprStmt_first
-  private static boolean SchemaIncludeItem_1_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaIncludeItem_1_0")) return false;
-    boolean result_;
-    result_ = consumeToken(builder_, SEMICOLON);
-    if (!result_) result_ = consumeToken(builder_, R_BRACE);
-    if (!result_) result_ = SpecExprStmt_first(builder_, level_ + 1);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // PathImpl SchemaFieldsBlock?
-  public static boolean SchemaLit(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaLit")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SCHEMA_LIT, "<schema lit>");
-    result_ = PathImpl(builder_, level_ + 1);
-    result_ = result_ && SchemaLit_1(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // SchemaFieldsBlock?
-  private static boolean SchemaLit_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaLit_1")) return false;
-    SchemaFieldsBlock(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // IDENTIFIER SchemaLitFieldInit?
-  public static boolean SchemaLitField(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaLitField")) return false;
-    if (!nextTokenIs(builder_, IDENTIFIER)) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, IDENTIFIER);
-    result_ = result_ && SchemaLitField_1(builder_, level_ + 1);
-    exit_section_(builder_, marker_, SCHEMA_LIT_FIELD, result_);
-    return result_;
-  }
-
-  // SchemaLitFieldInit?
-  private static boolean SchemaLitField_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaLitField_1")) return false;
-    SchemaLitFieldInit(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // ':' Expr
-  static boolean SchemaLitFieldInit(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaLitFieldInit")) return false;
-    if (!nextTokenIs(builder_, COLON)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_);
-    result_ = consumeToken(builder_, COLON);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && Expr(builder_, level_ + 1, -1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // PathImpl ('{' <<non_empty_comma_sep_items ApplySchemaNameAttribute>> '}')?
-  public static boolean SchemaRef(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaRef")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SCHEMA_REF, "<schema ref>");
-    result_ = PathImpl(builder_, level_ + 1);
-    result_ = result_ && SchemaRef_1(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ('{' <<non_empty_comma_sep_items ApplySchemaNameAttribute>> '}')?
-  private static boolean SchemaRef_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaRef_1")) return false;
-    SchemaRef_1_0(builder_, level_ + 1);
-    return true;
-  }
-
-  // '{' <<non_empty_comma_sep_items ApplySchemaNameAttribute>> '}'
-  private static boolean SchemaRef_1_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SchemaRef_1_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, L_BRACE);
-    result_ = result_ && non_empty_comma_sep_items(builder_, level_ + 1, MoveParser::ApplySchemaNameAttribute);
-    result_ = result_ && consumeToken(builder_, R_BRACE);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // SCRIPT_KW '{' ScriptItem_with_recover* '}'
-  public static boolean Script(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "Script")) return false;
-    if (!nextTokenIs(builder_, SCRIPT_KW)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SCRIPT, null);
-    result_ = consumeTokens(builder_, 1, SCRIPT_KW, L_BRACE);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, Script_2(builder_, level_ + 1));
-    result_ = pinned_ && consumeToken(builder_, R_BRACE) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // ScriptItem_with_recover*
-  private static boolean Script_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "Script_2")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!ScriptItem_with_recover(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "Script_2", pos_)) break;
-    }
-    return true;
-  }
-
-  /* ********************************************************** */
-  // '{' ScriptItem_with_recover* '}' {
-  // //    pin = 1
-  // //    implements = [
-  // //        "org.move.lang.core.psi.ext.MvItemsOwner"
-  // //    ]
-  // }
-  public static boolean ScriptBlock(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ScriptBlock")) return false;
-    if (!nextTokenIs(builder_, L_BRACE)) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, L_BRACE);
-    result_ = result_ && ScriptBlock_1(builder_, level_ + 1);
-    result_ = result_ && consumeToken(builder_, R_BRACE);
-    result_ = result_ && ScriptBlock_3(builder_, level_ + 1);
-    exit_section_(builder_, marker_, SCRIPT_BLOCK, result_);
-    return result_;
-  }
-
-  // ScriptItem_with_recover*
-  private static boolean ScriptBlock_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ScriptBlock_1")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!ScriptItem_with_recover(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "ScriptBlock_1", pos_)) break;
-    }
-    return true;
-  }
-
-  // {
-  // //    pin = 1
-  // //    implements = [
-  // //        "org.move.lang.core.psi.ext.MvItemsOwner"
-  // //    ]
-  // }
-  private static boolean ScriptBlock_3(PsiBuilder builder_, int level_) {
-    return true;
-  }
-
-  /* ********************************************************** */
-  // PublicUseFun | UseStmt | Const | FunctionInner
-  static boolean ScriptItem(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ScriptItem")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = PublicUseFun(builder_, level_ + 1);
-    if (!result_) result_ = UseStmt(builder_, level_ + 1);
-    if (!result_) result_ = Const(builder_, level_ + 1);
-    if (!result_) result_ = FunctionInner(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // use | CONST_KW | fun
-  static boolean ScriptItem_first(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ScriptItem_first")) return false;
-    boolean result_;
-    result_ = consumeTokenFast(builder_, USE);
-    if (!result_) result_ = consumeTokenFast(builder_, CONST_KW);
-    if (!result_) result_ = consumeTokenFast(builder_, FUN);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !('}' | ScriptItem_first | TopLevel_first)
-  static boolean ScriptItem_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ScriptItem_recover")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !ScriptItem_recover_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // '}' | ScriptItem_first | TopLevel_first
-  private static boolean ScriptItem_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ScriptItem_recover_0")) return false;
-    boolean result_;
-    result_ = consumeTokenFast(builder_, R_BRACE);
-    if (!result_) result_ = ScriptItem_first(builder_, level_ + 1);
-    if (!result_) result_ = TopLevel_first(builder_, level_ + 1);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !('}' | <<eof>>) ScriptItem
-  static boolean ScriptItem_with_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ScriptItem_with_recover")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_);
-    result_ = ScriptItem_with_recover_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && ScriptItem(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, MoveParser::ScriptItem_recover);
-    return result_ || pinned_;
-  }
-
-  // !('}' | <<eof>>)
-  private static boolean ScriptItem_with_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ScriptItem_with_recover_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !ScriptItem_with_recover_0_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // '}' | <<eof>>
-  private static boolean ScriptItem_with_recover_0_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ScriptItem_with_recover_0_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, R_BRACE);
-    if (!result_) result_ = eof(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // '{' ItemSpecBlock_items '}'
-  public static boolean SpecCodeBlock(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecCodeBlock")) return false;
-    if (!nextTokenIs(builder_, L_BRACE)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SPEC_CODE_BLOCK, null);
-    result_ = consumeToken(builder_, L_BRACE);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, ItemSpecBlock_items(builder_, level_ + 1));
-    result_ = pinned_ && consumeToken(builder_, R_BRACE) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
-  // SpecExprStmt_items | Expr
-  static boolean SpecExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecExpr")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, null, "<expression>");
-    result_ = SpecExprStmt_items(builder_, level_ + 1);
-    if (!result_) result_ = Expr(builder_, level_ + 1, -1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // (SpecExpr_item !'}') ';'
-  public static boolean SpecExprStmt(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecExprStmt")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SPEC_EXPR_STMT, "<spec expr stmt>");
-    result_ = SpecExprStmt_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && consumeToken(builder_, SEMICOLON);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // SpecExpr_item !'}'
-  private static boolean SpecExprStmt_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecExprStmt_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = SpecExpr_item(builder_, level_ + 1);
-    result_ = result_ && SpecExprStmt_0_1(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // !'}'
-  private static boolean SpecExprStmt_0_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecExprStmt_0_1")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !consumeToken(builder_, R_BRACE);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // let | if | while
-  //                                     | include | apply | pragma | emits | assume | assert | ensures
-  //                                     | axiom | modifies | aborts_if | aborts_with | requires | invariant
-  static boolean SpecExprStmt_first(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecExprStmt_first")) return false;
-    boolean result_;
-    result_ = consumeTokenFast(builder_, LET);
-    if (!result_) result_ = consumeTokenFast(builder_, IF);
-    if (!result_) result_ = consumeTokenFast(builder_, WHILE);
-    if (!result_) result_ = include(builder_, level_ + 1);
-    if (!result_) result_ = apply(builder_, level_ + 1);
-    if (!result_) result_ = pragma(builder_, level_ + 1);
-    if (!result_) result_ = emits(builder_, level_ + 1);
-    if (!result_) result_ = assume(builder_, level_ + 1);
-    if (!result_) result_ = assert_$(builder_, level_ + 1);
-    if (!result_) result_ = ensures(builder_, level_ + 1);
-    if (!result_) result_ = axiom(builder_, level_ + 1);
-    if (!result_) result_ = modifies(builder_, level_ + 1);
-    if (!result_) result_ = aborts_if(builder_, level_ + 1);
-    if (!result_) result_ = aborts_with(builder_, level_ + 1);
-    if (!result_) result_ = requires(builder_, level_ + 1);
-    if (!result_) result_ = invariant(builder_, level_ + 1);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExpr | AbortsWithSpecExpr
-  //                 | RequiresSpecExpr | DecreasesSpecExpr
-  //                 | EnsuresSpecExpr | ModifiesSpecExpr | InvariantSpecExpr | AxiomSpecExpr
-  //                 | EmitsSpecExpr
-  static boolean SpecExprStmt_items(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecExprStmt_items")) return false;
-    boolean result_;
-    result_ = AssumeSpecExpr(builder_, level_ + 1);
-    if (!result_) result_ = AssertSpecExpr(builder_, level_ + 1);
-    if (!result_) result_ = AbortsIfSpecExpr(builder_, level_ + 1);
-    if (!result_) result_ = AbortsWithSpecExpr(builder_, level_ + 1);
-    if (!result_) result_ = RequiresSpecExpr(builder_, level_ + 1);
-    if (!result_) result_ = DecreasesSpecExpr(builder_, level_ + 1);
-    if (!result_) result_ = EnsuresSpecExpr(builder_, level_ + 1);
-    if (!result_) result_ = ModifiesSpecExpr(builder_, level_ + 1);
-    if (!result_) result_ = InvariantSpecExpr(builder_, level_ + 1);
-    if (!result_) result_ = AxiomSpecExpr(builder_, level_ + 1);
-    if (!result_) result_ = EmitsSpecExpr(builder_, level_ + 1);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !(';' | '}' | SpecExpr_first | Expr_first)
-  static boolean SpecExprStmt_recover(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecExprStmt_recover")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !SpecExprStmt_recover_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ';' | '}' | SpecExpr_first | Expr_first
-  private static boolean SpecExprStmt_recover_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecExprStmt_recover_0")) return false;
-    boolean result_;
-    result_ = consumeTokenFast(builder_, SEMICOLON);
-    if (!result_) result_ = consumeTokenFast(builder_, R_BRACE);
-    if (!result_) result_ = SpecExpr_first(builder_, level_ + 1);
-    if (!result_) result_ = Expr_first(builder_, level_ + 1);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // include | apply | pragma | emits | assume | assert | ensures
-  //                             | axiom | modifies | aborts_if | aborts_with | requires
-  //                             | invariant | choose | decreases | update
-  static boolean SpecExpr_first(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecExpr_first")) return false;
-    boolean result_;
-    result_ = include(builder_, level_ + 1);
-    if (!result_) result_ = apply(builder_, level_ + 1);
-    if (!result_) result_ = pragma(builder_, level_ + 1);
-    if (!result_) result_ = emits(builder_, level_ + 1);
-    if (!result_) result_ = assume(builder_, level_ + 1);
-    if (!result_) result_ = assert_$(builder_, level_ + 1);
-    if (!result_) result_ = ensures(builder_, level_ + 1);
-    if (!result_) result_ = axiom(builder_, level_ + 1);
-    if (!result_) result_ = modifies(builder_, level_ + 1);
-    if (!result_) result_ = aborts_if(builder_, level_ + 1);
-    if (!result_) result_ = aborts_with(builder_, level_ + 1);
-    if (!result_) result_ = requires(builder_, level_ + 1);
-    if (!result_) result_ = invariant(builder_, level_ + 1);
-    if (!result_) result_ = choose(builder_, level_ + 1);
-    if (!result_) result_ = decreases(builder_, level_ + 1);
-    if (!result_) result_ = update(builder_, level_ + 1);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // SpecExprStmt_items | ExprStmt_expr
-  static boolean SpecExpr_item(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecExpr_item")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_);
-    result_ = SpecExprStmt_items(builder_, level_ + 1);
-    if (!result_) result_ = ExprStmt_expr(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, MoveParser::SpecExprStmt_recover);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // Attr* spec fun IDENTIFIER TypeParameterList?
-  //                        FunctionParameterList ReturnType? (<<msl SpecCodeBlock>> | ';')
-  public static boolean SpecFunctionInner(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecFunctionInner")) return false;
-    if (!nextTokenIs(builder_, "<spec function inner>", HASH, SPEC)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SPEC_FUNCTION, "<spec function inner>");
-    result_ = SpecFunctionInner_0(builder_, level_ + 1);
-    result_ = result_ && consumeTokens(builder_, 2, SPEC, FUN, IDENTIFIER);
-    pinned_ = result_; // pin = 3
-    result_ = result_ && report_error_(builder_, SpecFunctionInner_4(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, FunctionParameterList(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, SpecFunctionInner_6(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && SpecFunctionInner_7(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // Attr*
-  private static boolean SpecFunctionInner_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecFunctionInner_0")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!Attr(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "SpecFunctionInner_0", pos_)) break;
-    }
-    return true;
-  }
-
-  // TypeParameterList?
-  private static boolean SpecFunctionInner_4(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecFunctionInner_4")) return false;
-    TypeParameterList(builder_, level_ + 1);
-    return true;
-  }
-
-  // ReturnType?
-  private static boolean SpecFunctionInner_6(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecFunctionInner_6")) return false;
-    ReturnType(builder_, level_ + 1);
-    return true;
-  }
-
-  // <<msl SpecCodeBlock>> | ';'
-  private static boolean SpecFunctionInner_7(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecFunctionInner_7")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = msl(builder_, level_ + 1, MoveParser::SpecCodeBlock);
-    if (!result_) result_ = consumeToken(builder_, SEMICOLON);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // SpecFunctionInner
-  //                             | NativeSpecFunctionInner
-  static boolean SpecFunctionItem(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecFunctionItem")) return false;
-    if (!nextTokenIs(builder_, "", HASH, SPEC)) return false;
-    boolean result_;
-    result_ = SpecFunctionInner(builder_, level_ + 1);
-    if (!result_) result_ = NativeSpecFunctionInner(builder_, level_ + 1);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // fun IDENTIFIER TypeParameterList?
-  //                              FunctionParameterList ReturnType? (<<msl SpecCodeBlock>> | ';')
-  public static boolean SpecInlineFunctionInner(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecInlineFunctionInner")) return false;
-    if (!nextTokenIs(builder_, FUN)) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SPEC_INLINE_FUNCTION, null);
-    result_ = consumeTokens(builder_, 1, FUN, IDENTIFIER);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, SpecInlineFunctionInner_2(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, FunctionParameterList(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, SpecInlineFunctionInner_4(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && SpecInlineFunctionInner_5(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // TypeParameterList?
-  private static boolean SpecInlineFunctionInner_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecInlineFunctionInner_2")) return false;
-    TypeParameterList(builder_, level_ + 1);
-    return true;
-  }
-
-  // ReturnType?
-  private static boolean SpecInlineFunctionInner_4(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecInlineFunctionInner_4")) return false;
-    ReturnType(builder_, level_ + 1);
-    return true;
-  }
-
-  // <<msl SpecCodeBlock>> | ';'
-  private static boolean SpecInlineFunctionInner_5(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecInlineFunctionInner_5")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = msl(builder_, level_ + 1, MoveParser::SpecCodeBlock);
-    if (!result_) result_ = consumeToken(builder_, SEMICOLON);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // SpecInlineFunctionInner
-  //                             | NativeSpecInlineFunctionInner
-  public static boolean SpecInlineFunctionStmt(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecInlineFunctionStmt")) return false;
-    if (!nextTokenIs(builder_, "<spec inline function stmt>", FUN, NATIVE)) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SPEC_INLINE_FUNCTION_STMT, "<spec inline function stmt>");
-    result_ = SpecInlineFunctionInner(builder_, level_ + 1);
-    if (!result_) result_ = NativeSpecInlineFunctionInner(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // !']' IDENTIFIER ('=' LitExpr)? &(',' | ']')
-  public static boolean SpecProperty(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecProperty")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, SPEC_PROPERTY, "<spec property>");
-    result_ = SpecProperty_0(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, consumeToken(builder_, IDENTIFIER));
-    result_ = pinned_ && report_error_(builder_, SpecProperty_2(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && SpecProperty_3(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // !']'
-  private static boolean SpecProperty_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecProperty_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !consumeToken(builder_, R_BRACK);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ('=' LitExpr)?
-  private static boolean SpecProperty_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecProperty_2")) return false;
-    SpecProperty_2_0(builder_, level_ + 1);
-    return true;
-  }
-
-  // '=' LitExpr
-  private static boolean SpecProperty_2_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecProperty_2_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, EQ);
-    result_ = result_ && LitExpr(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // &(',' | ']')
-  private static boolean SpecProperty_3(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecProperty_3")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _AND_);
-    result_ = SpecProperty_3_0(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ',' | ']'
-  private static boolean SpecProperty_3_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecProperty_3_0")) return false;
-    boolean result_;
-    result_ = consumeToken(builder_, COMMA);
-    if (!result_) result_ = consumeToken(builder_, R_BRACK);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // '[' SpecPropertyList_items? ']'
-  public static boolean SpecPropertyList(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecPropertyList")) return false;
-    if (!nextTokenIs(builder_, L_BRACK)) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, L_BRACK);
-    result_ = result_ && SpecPropertyList_1(builder_, level_ + 1);
-    result_ = result_ && consumeToken(builder_, R_BRACK);
-    exit_section_(builder_, marker_, SPEC_PROPERTY_LIST, result_);
-    return result_;
-  }
-
-  // SpecPropertyList_items?
-  private static boolean SpecPropertyList_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecPropertyList_1")) return false;
-    SpecPropertyList_items(builder_, level_ + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // SpecProperty (',' SpecProperty)* ','?
-  static boolean SpecPropertyList_items(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecPropertyList_items")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = SpecProperty(builder_, level_ + 1);
-    result_ = result_ && SpecPropertyList_items_1(builder_, level_ + 1);
-    result_ = result_ && SpecPropertyList_items_2(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // (',' SpecProperty)*
-  private static boolean SpecPropertyList_items_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecPropertyList_items_1")) return false;
-    while (true) {
-      int pos_ = current_position_(builder_);
-      if (!SpecPropertyList_items_1_0(builder_, level_ + 1)) break;
-      if (!empty_element_parsed_guard_(builder_, "SpecPropertyList_items_1", pos_)) break;
-    }
-    return true;
-  }
-
-  // ',' SpecProperty
-  private static boolean SpecPropertyList_items_1_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecPropertyList_items_1_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, COMMA);
-    result_ = result_ && SpecProperty(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // ','?
-  private static boolean SpecPropertyList_items_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecPropertyList_items_2")) return false;
-    consumeToken(builder_, COMMA);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // UseStmt
-  //                        | SchemaFieldStmtImpl
-  //                        | GlobalVariableStmt
-  //                        | SpecInlineFunctionStmt
-  //                        | PragmaSpecStmt
-  //                        | IncludeStmt
-  //                        | UpdateSpecStmt
-  //                        | ApplySchemaStmt
-  //                        | LetMslStmt
-  //                        | SpecExprStmt
-  static boolean SpecStmt(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "SpecStmt")) return false;
-    boolean result_;
-    result_ = UseStmt(builder_, level_ + 1);
-    if (!result_) result_ = SchemaFieldStmtImpl(builder_, level_ + 1);
-    if (!result_) result_ = GlobalVariableStmt(builder_, level_ + 1);
-    if (!result_) result_ = SpecInlineFunctionStmt(builder_, level_ + 1);
-    if (!result_) result_ = PragmaSpecStmt(builder_, level_ + 1);
-    if (!result_) result_ = IncludeStmt(builder_, level_ + 1);
-    if (!result_) result_ = UpdateSpecStmt(builder_, level_ + 1);
-    if (!result_) result_ = ApplySchemaStmt(builder_, level_ + 1);
-    if (!result_) result_ = LetMslStmt(builder_, level_ + 1);
-    if (!result_) result_ = SpecExprStmt(builder_, level_ + 1);
     return result_;
   }
 
@@ -6641,20 +4155,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // PatBinding ':' Type
-  public static boolean TypeQuantBinding(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "TypeQuantBinding")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, TYPE_QUANT_BINDING, "<type quant binding>");
-    result_ = PatBinding(builder_, level_ + 1);
-    result_ = result_ && consumeToken(builder_, COLON);
-    pinned_ = result_; // pin = 2
-    result_ = result_ && Type(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  /* ********************************************************** */
   // '(' ')'
   public static boolean UnitType(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "UnitType")) return false;
@@ -6664,33 +4164,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
     result_ = consumeTokens(builder_, 0, L_PAREN, R_PAREN);
     exit_section_(builder_, marker_, UNIT_TYPE, result_);
     return result_;
-  }
-
-  /* ********************************************************** */
-  // UnaryExpr | BorrowExpr | AtomExpr
-  static boolean UpdateExpr_items(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "UpdateExpr_items")) return false;
-    boolean result_;
-    result_ = Expr(builder_, level_ + 1, 17);
-    if (!result_) result_ = BorrowExpr(builder_, level_ + 1);
-    if (!result_) result_ = Expr(builder_, level_ + 1, 19);
-    return result_;
-  }
-
-  /* ********************************************************** */
-  // update UpdateExpr_items '=' Expr ';'
-  public static boolean UpdateSpecStmt(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "UpdateSpecStmt")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, UPDATE_SPEC_STMT, "<update spec stmt>");
-    result_ = update(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, UpdateExpr_items(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, consumeToken(builder_, EQ)) && result_;
-    result_ = pinned_ && report_error_(builder_, Expr(builder_, level_ + 1, -1)) && result_;
-    result_ = pinned_ && consumeToken(builder_, SEMICOLON) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
   }
 
   /* ********************************************************** */
@@ -7030,7 +4503,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(<<mslOnly SpecExpr_first>> | Expr_first | ')' | '}' | ';' | ',')
+  // !(Expr_first | ')' | '}' | ';' | ',')
   static boolean ValueArgument_recover(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ValueArgument_recover")) return false;
     boolean result_;
@@ -7040,18 +4513,15 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // <<mslOnly SpecExpr_first>> | Expr_first | ')' | '}' | ';' | ','
+  // Expr_first | ')' | '}' | ';' | ','
   private static boolean ValueArgument_recover_0(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "ValueArgument_recover_0")) return false;
     boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = mslOnly(builder_, level_ + 1, MoveParser::SpecExpr_first);
-    if (!result_) result_ = Expr_first(builder_, level_ + 1);
+    result_ = Expr_first(builder_, level_ + 1);
     if (!result_) result_ = consumeTokenFast(builder_, R_PAREN);
     if (!result_) result_ = consumeTokenFast(builder_, R_BRACE);
     if (!result_) result_ = consumeTokenFast(builder_, SEMICOLON);
     if (!result_) result_ = consumeTokenFast(builder_, COMMA);
-    exit_section_(builder_, marker_, null, result_);
     return result_;
   }
 
@@ -7179,18 +4649,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<abortsIfKeyword>>
-  static boolean aborts_if(PsiBuilder builder_, int level_) {
-    return abortsIfKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<abortsWithKeyword>>
-  static boolean aborts_with(PsiBuilder builder_, int level_) {
-    return abortsWithKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
   // <<addressKeyword>>
   static boolean address(PsiBuilder builder_, int level_) {
     return addressKeyword(builder_, level_ + 1);
@@ -7200,36 +4658,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   // <<andandImpl>>
   static boolean andand(PsiBuilder builder_, int level_) {
     return andandImpl(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<applyKeyword>>
-  static boolean apply(PsiBuilder builder_, int level_) {
-    return applyKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<assertKeyword>>
-  static boolean assert_$(PsiBuilder builder_, int level_) {
-    return assertKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<assumeKeyword>>
-  static boolean assume(PsiBuilder builder_, int level_) {
-    return assumeKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<axiomKeyword>>
-  static boolean axiom(PsiBuilder builder_, int level_) {
-    return axiomKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<chooseKeyword>>
-  static boolean choose(PsiBuilder builder_, int level_) {
-    return chooseKeyword(builder_, level_ + 1);
   }
 
   /* ********************************************************** */
@@ -7275,27 +4703,9 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<decreasesKeyword>>
-  static boolean decreases(PsiBuilder builder_, int level_) {
-    return decreasesKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
   // <<dotdotImpl>>
   static boolean dotdot(PsiBuilder builder_, int level_) {
     return dotdotImpl(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<emitsKeyword>>
-  static boolean emits(PsiBuilder builder_, int level_) {
-    return emitsKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<ensuresKeyword>>
-  static boolean ensures(PsiBuilder builder_, int level_) {
-    return ensuresKeyword(builder_, level_ + 1);
   }
 
   /* ********************************************************** */
@@ -7311,45 +4721,15 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<eqeqgtImpl>>
-  static boolean eqeq_gt(PsiBuilder builder_, int level_) {
-    return eqeqgtImpl(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<exceptKeyword>>
-  static boolean except(PsiBuilder builder_, int level_) {
-    return exceptKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<existsKeyword>>
-  static boolean exists(PsiBuilder builder_, int level_) {
-    return existsKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
   // <<forKeyword>>
   static boolean for_$(PsiBuilder builder_, int level_) {
     return forKeyword(builder_, level_ + 1);
   }
 
   /* ********************************************************** */
-  // <<forallKeyword>>
-  static boolean forall(PsiBuilder builder_, int level_) {
-    return forallKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
   // <<friendKeyword>>
   static boolean friend(PsiBuilder builder_, int level_) {
     return friendKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<globalKeyword>>
-  static boolean global(PsiBuilder builder_, int level_) {
-    return globalKeyword(builder_, level_ + 1);
   }
 
   /* ********************************************************** */
@@ -7377,21 +4757,9 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<includeKeyword>>
-  static boolean include(PsiBuilder builder_, int level_) {
-    return includeKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
   // <<inlineKeyword>>
   static boolean inline(PsiBuilder builder_, int level_) {
     return inlineKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<invariantKeyword>>
-  static boolean invariant(PsiBuilder builder_, int level_) {
-    return invariantKeyword(builder_, level_ + 1);
   }
 
   /* ********************************************************** */
@@ -7440,18 +4808,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<localKeyword>>
-  static boolean local(PsiBuilder builder_, int level_) {
-    return localKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<lteqeqgtImpl>>
-  static boolean lt_eqeq_gt(PsiBuilder builder_, int level_) {
-    return lteqeqgtImpl(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
   // <<lteqImpl>>
   static boolean lteq(PsiBuilder builder_, int level_) {
     return lteqImpl(builder_, level_ + 1);
@@ -7467,18 +4823,6 @@ public class MoveParser implements PsiParser, LightPsiParser {
   // <<matchKeyword>>
   static boolean match(PsiBuilder builder_, int level_) {
     return matchKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<minKeyword>>
-  static boolean min(PsiBuilder builder_, int level_) {
-    return minKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<modifiesKeyword>>
-  static boolean modifies(PsiBuilder builder_, int level_) {
-    return modifiesKeyword(builder_, level_ + 1);
   }
 
   /* ********************************************************** */
@@ -7536,75 +4880,9 @@ public class MoveParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<postKeyword>>
-  static boolean post(PsiBuilder builder_, int level_) {
-    return postKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<pragmaKeyword>>
-  static boolean pragma(PsiBuilder builder_, int level_) {
-    return pragmaKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<pureKeyword>>
-  static boolean pure(PsiBuilder builder_, int level_) {
-    return pureKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<readsKeyword>>
-  static boolean reads(PsiBuilder builder_, int level_) {
-    return readsKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<requiresKeyword>>
-  static boolean requires(PsiBuilder builder_, int level_) {
-    return requiresKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<schemaKeyword>>
-  static boolean schema(PsiBuilder builder_, int level_) {
-    return schemaKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<toKeyword>>
-  static boolean to(PsiBuilder builder_, int level_) {
-    return toKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
   // <<underscorePat>>
   static boolean underscore_pat(PsiBuilder builder_, int level_) {
     return underscorePat(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<updateKeyword>>
-  static boolean update(PsiBuilder builder_, int level_) {
-    return updateKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<whereKeyword>>
-  static boolean where(PsiBuilder builder_, int level_) {
-    return whereKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<withKeyword>>
-  static boolean with(PsiBuilder builder_, int level_) {
-    return withKeyword(builder_, level_ + 1);
-  }
-
-  /* ********************************************************** */
-  // <<writesKeyword>>
-  static boolean writes(PsiBuilder builder_, int level_) {
-    return writesKeyword(builder_, level_ + 1);
   }
 
   /* ********************************************************** */
@@ -7612,28 +4890,24 @@ public class MoveParser implements PsiParser, LightPsiParser {
   // Operator priority table:
   // 0: POSTFIX(AssignmentExpr)
   // 1: BINARY(RangeExpr)
-  // 2: ATOM(ForallQuantExpr)
-  // 3: ATOM(ExistsQuantExpr)
-  // 4: ATOM(ChooseQuantExpr)
-  // 5: BINARY(ImplyBinExpr) BINARY(PartialImplyBinExpr)
-  // 6: BINARY(OrBinExpr)
-  // 7: BINARY(AndBinExpr)
-  // 8: BINARY(EqualsBinExpr) BINARY(NotEqualsBinExpr) BINARY(LessEqualsBinExpr) BINARY(LessBinExpr)
+  // 2: BINARY(OrBinExpr)
+  // 3: BINARY(AndBinExpr)
+  // 4: BINARY(EqualsBinExpr) BINARY(NotEqualsBinExpr) BINARY(LessEqualsBinExpr) BINARY(LessBinExpr)
   //    BINARY(GreaterEqualsBinExpr) BINARY(GreaterBinExpr)
-  // 9: BINARY(BitOrBinExpr)
-  // 10: BINARY(BitXorBinExpr)
-  // 11: BINARY(BitAndBinExpr)
-  // 12: BINARY(LeftShiftBinExpr)
-  // 13: BINARY(RightShiftBinExpr)
-  // 14: BINARY(PlusBinExpr) BINARY(MinusBinExpr)
-  // 15: BINARY(DivBinExpr) BINARY(MulBinExpr) BINARY(ModBinExpr)
-  // 16: POSTFIX(CastExpr)
-  // 17: ATOM(IfExpr) ATOM(LoopExpr) ATOM(MatchExpr) ATOM(WhileExpr)
+  // 5: BINARY(BitOrBinExpr)
+  // 6: BINARY(BitXorBinExpr)
+  // 7: BINARY(BitAndBinExpr)
+  // 8: BINARY(LeftShiftBinExpr)
+  // 9: BINARY(RightShiftBinExpr)
+  // 10: BINARY(PlusBinExpr) BINARY(MinusBinExpr)
+  // 11: BINARY(DivBinExpr) BINARY(MulBinExpr) BINARY(ModBinExpr)
+  // 12: POSTFIX(CastExpr)
+  // 13: ATOM(IfExpr) ATOM(LoopExpr) ATOM(MatchExpr) ATOM(WhileExpr)
   //    ATOM(ForExpr) ATOM(LabeledBlockExpr)
-  // 18: PREFIX(CopyExpr) PREFIX(MoveExpr) PREFIX(DerefExpr) PREFIX(BangExpr)
+  // 14: PREFIX(CopyExpr) PREFIX(MoveExpr) PREFIX(DerefExpr) PREFIX(BangExpr)
   //    ATOM(ReturnExpr) ATOM(ContinueExpr) ATOM(BreakExpr) ATOM(AbortExpr)
-  // 19: PREFIX(BorrowExpr)
-  // 20: ATOM(TupleLitOrParenExpr) ATOM(UnitLitExpr) ATOM(StructLitExpr) ATOM(PathExpr)
+  // 15: PREFIX(BorrowExpr)
+  // 16: ATOM(TupleLitOrParenExpr) ATOM(UnitLitExpr) ATOM(StructLitExpr) ATOM(PathExpr)
   //    ATOM(CallExpr) POSTFIX(DotExpr) POSTFIX(IndexExpr) ATOM(VectorLitExpr)
   //    ATOM(AssertMacroExpr) ATOM(LambdaExpr) ATOM(LitExpr) ATOM(CodeBlockExpr)
   public static boolean Expr(PsiBuilder builder_, int level_, int priority_) {
@@ -7641,10 +4915,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     addVariant(builder_, "<expression>");
     boolean result_, pinned_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, "<expression>");
-    result_ = ForallQuantExpr(builder_, level_ + 1);
-    if (!result_) result_ = ExistsQuantExpr(builder_, level_ + 1);
-    if (!result_) result_ = ChooseQuantExpr(builder_, level_ + 1);
-    if (!result_) result_ = IfExpr(builder_, level_ + 1);
+    result_ = IfExpr(builder_, level_ + 1);
     if (!result_) result_ = LoopExpr(builder_, level_ + 1);
     if (!result_) result_ = MatchExpr(builder_, level_ + 1);
     if (!result_) result_ = WhileExpr(builder_, level_ + 1);
@@ -7688,95 +4959,87 @@ public class MoveParser implements PsiParser, LightPsiParser {
         result_ = Expr(builder_, level_, 1);
         exit_section_(builder_, level_, marker_, RANGE_EXPR, result_, true, null);
       }
-      else if (priority_ < 5 && ImplyBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 2 && OrBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 2);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 3 && AndBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 3);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 4 && EqualsBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 4);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 4 && NotEqualsBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 4);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 4 && LessEqualsBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 4);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 4 && LessBinExpr_0(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 4);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 4 && GreaterEqualsBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 4);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 4 && GreaterBinExpr_0(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 4);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 5 && BitOrBinExpr_0(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 5);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 5 && PartialImplyBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 5);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 6 && OrBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 6 && BitXorBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 6);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 7 && AndBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 7 && BitAndBinExpr_0(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 7);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 8 && EqualsBinExpr_0(builder_, level_ + 1)) {
+      else if (priority_ < 8 && LeftShiftBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 8);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 8 && NotEqualsBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 8);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 8 && LessEqualsBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 8);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 8 && LessBinExpr_0(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 8);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 8 && GreaterEqualsBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 8);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 8 && GreaterBinExpr_0(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 8);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 9 && BitOrBinExpr_0(builder_, level_ + 1)) {
+      else if (priority_ < 9 && RightShiftBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 9);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 10 && BitXorBinOp(builder_, level_ + 1)) {
+      else if (priority_ < 10 && PlusBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 10);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 11 && BitAndBinExpr_0(builder_, level_ + 1)) {
+      else if (priority_ < 10 && MinusBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 10);
+        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
+      }
+      else if (priority_ < 11 && DivBinOp(builder_, level_ + 1)) {
         result_ = Expr(builder_, level_, 11);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 12 && LeftShiftBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 12);
+      else if (priority_ < 11 && MulBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 11);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 13 && RightShiftBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 13);
+      else if (priority_ < 11 && ModBinOp(builder_, level_ + 1)) {
+        result_ = Expr(builder_, level_, 11);
         exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
       }
-      else if (priority_ < 14 && PlusBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 14);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 14 && MinusBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 14);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 15 && DivBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 15);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 15 && MulBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 15);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 15 && ModBinOp(builder_, level_ + 1)) {
-        result_ = Expr(builder_, level_, 15);
-        exit_section_(builder_, level_, marker_, BINARY_EXPR, result_, true, null);
-      }
-      else if (priority_ < 16 && CastExpr_0(builder_, level_ + 1)) {
+      else if (priority_ < 12 && CastExpr_0(builder_, level_ + 1)) {
         result_ = true;
         exit_section_(builder_, level_, marker_, CAST_EXPR, result_, true, null);
       }
-      else if (priority_ < 20 && DotExpr_inner(builder_, level_ + 1)) {
+      else if (priority_ < 16 && DotExpr_inner(builder_, level_ + 1)) {
         result_ = true;
         exit_section_(builder_, level_, marker_, DOT_EXPR, result_, true, null);
       }
-      else if (priority_ < 20 && IndexArg(builder_, level_ + 1)) {
+      else if (priority_ < 16 && IndexArg(builder_, level_ + 1)) {
         result_ = true;
         exit_section_(builder_, level_, marker_, INDEX_EXPR, result_, true, null);
       }
@@ -7788,100 +5051,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // <<mslOnly forall>> QuantBindings QuantWhere? ':' Expr
-  public static boolean ForallQuantExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ForallQuantExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, FORALL_QUANT_EXPR, "<expression>");
-    result_ = mslOnly(builder_, level_ + 1, MoveParser::forall);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, QuantBindings(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, ForallQuantExpr_2(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, consumeToken(builder_, COLON)) && result_;
-    result_ = pinned_ && Expr(builder_, level_ + 1, -1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // QuantWhere?
-  private static boolean ForallQuantExpr_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ForallQuantExpr_2")) return false;
-    QuantWhere(builder_, level_ + 1);
-    return true;
-  }
-
-  // <<mslOnly exists>> QuantBindings QuantWhere? ':' Expr
-  public static boolean ExistsQuantExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ExistsQuantExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, EXISTS_QUANT_EXPR, "<expression>");
-    result_ = mslOnly(builder_, level_ + 1, MoveParser::exists);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, QuantBindings(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, ExistsQuantExpr_2(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && report_error_(builder_, consumeToken(builder_, COLON)) && result_;
-    result_ = pinned_ && Expr(builder_, level_ + 1, -1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // QuantWhere?
-  private static boolean ExistsQuantExpr_2(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ExistsQuantExpr_2")) return false;
-    QuantWhere(builder_, level_ + 1);
-    return true;
-  }
-
-  // choose min? QuantBindings QuantWhere?
-  public static boolean ChooseQuantExpr(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ChooseQuantExpr")) return false;
-    boolean result_, pinned_;
-    Marker marker_ = enter_section_(builder_, level_, _COLLAPSE_, CHOOSE_QUANT_EXPR, "<expression>");
-    result_ = choose(builder_, level_ + 1);
-    pinned_ = result_; // pin = 1
-    result_ = result_ && report_error_(builder_, ChooseQuantExpr_1(builder_, level_ + 1));
-    result_ = pinned_ && report_error_(builder_, QuantBindings(builder_, level_ + 1)) && result_;
-    result_ = pinned_ && ChooseQuantExpr_3(builder_, level_ + 1) && result_;
-    exit_section_(builder_, level_, marker_, result_, pinned_, null);
-    return result_ || pinned_;
-  }
-
-  // min?
-  private static boolean ChooseQuantExpr_1(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ChooseQuantExpr_1")) return false;
-    min(builder_, level_ + 1);
-    return true;
-  }
-
-  // QuantWhere?
-  private static boolean ChooseQuantExpr_3(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "ChooseQuantExpr_3")) return false;
-    QuantWhere(builder_, level_ + 1);
-    return true;
-  }
-
-  // !eqeq_gt EqualsBinOp
-  private static boolean EqualsBinExpr_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "EqualsBinExpr_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_);
-    result_ = EqualsBinExpr_0_0(builder_, level_ + 1);
-    result_ = result_ && EqualsBinOp(builder_, level_ + 1);
-    exit_section_(builder_, marker_, null, result_);
-    return result_;
-  }
-
-  // !eqeq_gt
-  private static boolean EqualsBinExpr_0_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "EqualsBinExpr_0_0")) return false;
-    boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !eqeq_gt(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // !(ltlt | lt_eqeq_gt) LessBinOp
+  // !ltlt LessBinOp
   private static boolean LessBinExpr_0(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "LessBinExpr_0")) return false;
     boolean result_;
@@ -7892,22 +5062,13 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // !(ltlt | lt_eqeq_gt)
+  // !ltlt
   private static boolean LessBinExpr_0_0(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "LessBinExpr_0_0")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NOT_);
-    result_ = !LessBinExpr_0_0_0(builder_, level_ + 1);
+    result_ = !ltlt(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
-    return result_;
-  }
-
-  // ltlt | lt_eqeq_gt
-  private static boolean LessBinExpr_0_0_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "LessBinExpr_0_0_0")) return false;
-    boolean result_;
-    result_ = ltlt(builder_, level_ + 1);
-    if (!result_) result_ = lt_eqeq_gt(builder_, level_ + 1);
     return result_;
   }
 
@@ -8125,7 +5286,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_, level_, _NONE_, null);
     result_ = consumeTokenSmart(builder_, COPY);
     pinned_ = result_;
-    result_ = pinned_ && Expr(builder_, level_, 18);
+    result_ = pinned_ && Expr(builder_, level_, 14);
     exit_section_(builder_, level_, marker_, COPY_EXPR, result_, pinned_, null);
     return result_ || pinned_;
   }
@@ -8137,7 +5298,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_, level_, _NONE_, null);
     result_ = consumeTokenSmart(builder_, MOVE);
     pinned_ = result_;
-    result_ = pinned_ && Expr(builder_, level_, 18);
+    result_ = pinned_ && Expr(builder_, level_, 14);
     exit_section_(builder_, level_, marker_, MOVE_EXPR, result_, pinned_, null);
     return result_ || pinned_;
   }
@@ -8149,7 +5310,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_, level_, _NONE_, null);
     result_ = consumeTokenSmart(builder_, MUL);
     pinned_ = result_;
-    result_ = pinned_ && Expr(builder_, level_, 18);
+    result_ = pinned_ && Expr(builder_, level_, 14);
     exit_section_(builder_, level_, marker_, DEREF_EXPR, result_, pinned_, null);
     return result_ || pinned_;
   }
@@ -8161,7 +5322,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_, level_, _NONE_, null);
     result_ = consumeTokenSmart(builder_, EXCL);
     pinned_ = result_;
-    result_ = pinned_ && Expr(builder_, level_, 18);
+    result_ = pinned_ && Expr(builder_, level_, 14);
     exit_section_(builder_, level_, marker_, BANG_EXPR, result_, pinned_, null);
     return result_ || pinned_;
   }
@@ -8265,7 +5426,7 @@ public class MoveParser implements PsiParser, LightPsiParser {
     Marker marker_ = enter_section_(builder_, level_, _NONE_, null);
     result_ = BorrowExpr_0(builder_, level_ + 1);
     pinned_ = result_;
-    result_ = pinned_ && Expr(builder_, level_, 19);
+    result_ = pinned_ && Expr(builder_, level_, 15);
     exit_section_(builder_, level_, marker_, BORROW_EXPR, result_, pinned_, null);
     return result_ || pinned_;
   }
@@ -8335,13 +5496,12 @@ public class MoveParser implements PsiParser, LightPsiParser {
     return result_ || pinned_;
   }
 
-  // <<includeStmtModeFalse>> PathImpl StructLitFieldsBlock
+  // PathImpl StructLitFieldsBlock
   public static boolean StructLitExpr(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "StructLitExpr")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, STRUCT_LIT_EXPR, "<expression>");
-    result_ = includeStmtModeFalse(builder_, level_ + 1);
-    result_ = result_ && PathImpl(builder_, level_ + 1);
+    result_ = PathImpl(builder_, level_ + 1);
     result_ = result_ && StructLitFieldsBlock(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;

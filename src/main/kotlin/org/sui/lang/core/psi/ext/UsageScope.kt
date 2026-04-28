@@ -5,11 +5,8 @@ import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.PsiModificationTracker
 import org.sui.lang.core.psi.MvElement
-import org.sui.lang.core.psi.MvItemSpecRef
-import org.sui.lang.core.psi.MvSpecCodeBlock
 import org.sui.lang.core.psi.NamedItemScope
 import org.sui.lang.core.psi.NamedItemScope.MAIN
-import org.sui.lang.core.psi.NamedItemScope.VERIFY
 import org.sui.lang.core.psi.itemScopeFromAttributes
 import org.sui.utils.cache
 import org.sui.utils.cacheManager
@@ -21,10 +18,6 @@ private class UsageScopeProvider(val scopeElement: MvElement) : CachedValueProvi
     override fun compute(): CachedValueProvider.Result<NamedItemScope> {
         var scope = MAIN
         for (ancestor in scopeElement.ancestorsOfType<MvDocAndAttributeOwner>()) {
-            if (scopeElement is MvSpecCodeBlock || scopeElement is MvItemSpecRef) {
-                scope = VERIFY
-                break
-            }
             val attributeScope = ancestor.itemScopeFromAttributes()
             if (attributeScope != null) {
                 scope = attributeScope

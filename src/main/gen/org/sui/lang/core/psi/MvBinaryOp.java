@@ -23,9 +23,6 @@ public interface MvBinaryOp extends MvElement {
   PsiElement getEqEq();
 
   @Nullable
-  PsiElement getEqEqGt();
-
-  @Nullable
   PsiElement getGt();
 
   @Nullable
@@ -39,9 +36,6 @@ public interface MvBinaryOp extends MvElement {
 
   @Nullable
   PsiElement getLtEq();
-
-  @Nullable
-  PsiElement getLtEqEqGt();
 
   @Nullable
   PsiElement getLtLt();

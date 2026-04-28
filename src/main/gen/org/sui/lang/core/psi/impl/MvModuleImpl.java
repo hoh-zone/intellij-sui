@@ -71,32 +71,8 @@ public class MvModuleImpl extends MvModuleMixin implements MvModule {
 
   @Override
   @NotNull
-  public List<MvItemSpec> getItemSpecList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, MvItemSpec.class);
-  }
-
-  @Override
-  @NotNull
-  public List<MvModuleItemSpec> getModuleItemSpecList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, MvModuleItemSpec.class);
-  }
-
-  @Override
-  @NotNull
   public List<MvPublicUseFun> getPublicUseFunList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, MvPublicUseFun.class);
-  }
-
-  @Override
-  @NotNull
-  public List<MvSchema> getSchemaList() {
-    return PsiTreeUtil.getStubChildrenOfTypeAsList(this, MvSchema.class);
-  }
-
-  @Override
-  @NotNull
-  public List<MvSpecFunction> getSpecFunctionList() {
-    return PsiTreeUtil.getStubChildrenOfTypeAsList(this, MvSpecFunction.class);
   }
 
   @Override

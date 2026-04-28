@@ -63,8 +63,6 @@ val MvPath.identifierName: String? get() = identifier?.text
 
 val MvPath.maybeStruct get() = reference?.resolveFollowingAliases() as? MvStruct
 
-val MvPath.maybeSchema get() = reference?.resolveFollowingAliases() as? MvSchema
-
 //fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
 ////    val qualifierPath = this.path
 ////    val parentElement = this.parent
@@ -129,17 +127,10 @@ fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
 
         // can be anything in completion
         parent is MvPathExpr -> if (isCompletion) ALL_NAMESPACES else NAMES
-//        }
-        parent is MvSchemaLit
-                || parent is MvSchemaRef -> SCHEMAS
         parent is MvStructLitExpr
                 || parent is MvPatStruct
                 || parent is MvPatConst -> TYPES_N_ENUMS
-        parent is MvAccessSpecifier -> TYPES_N_ENUMS
-        parent is MvAddressSpecifierArg -> FUNCTIONS
-        parent is MvAddressSpecifierCallParam -> NAMES
         parent is MvFriendDecl -> MODULES
-        parent is MvModuleSpec -> MODULES
 
         else -> debugErrorOrFallback(
             "Cannot build path namespaces: unhandled parent type ${parent?.elementType}",

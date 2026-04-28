@@ -59,12 +59,6 @@ public class MvBinaryOpImpl extends MvElementImpl implements MvBinaryOp {
 
   @Override
   @Nullable
-  public PsiElement getEqEqGt() {
-    return findChildByType(EQ_EQ_GT);
-  }
-
-  @Override
-  @Nullable
   public PsiElement getGt() {
     return findChildByType(GT);
   }
@@ -91,12 +85,6 @@ public class MvBinaryOpImpl extends MvElementImpl implements MvBinaryOp {
   @Nullable
   public PsiElement getLtEq() {
     return findChildByType(LT_EQ);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getLtEqEqGt() {
-    return findChildByType(LT_EQ_EQ_GT);
   }
 
   @Override

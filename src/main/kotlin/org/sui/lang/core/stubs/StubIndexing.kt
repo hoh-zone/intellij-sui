@@ -36,10 +36,6 @@ fun IndexSink.indexFunctionStub(stub: MvFunctionStub) {
 //    }
 }
 
-fun IndexSink.indexSpecFunctionStub(stub: MvSpecFunctionStub) {
-    indexNamedStub(stub)
-}
-
 fun IndexSink.indexStructStub(stub: MvStructStub) {
     indexNamedStub(stub)
 }
@@ -52,18 +48,8 @@ fun IndexSink.indexEnumVariantStub(stub: MvEnumVariantStub) {
     indexNamedStub(stub)
 }
 
-fun IndexSink.indexSchemaStub(stub: MvSchemaStub) {
-    indexNamedStub(stub)
-}
-
 fun IndexSink.indexConstStub(stub: MvConstStub) {
     indexNamedStub(stub)
-}
-
-fun IndexSink.indexModuleSpecStub(stub: MvModuleSpecStub) {
-    stub.moduleName?.let {
-        occurrence(MvModuleSpecIndex.KEY, it)
-    }
 }
 
 private fun IndexSink.indexNamedStub(stub: MvNamedStub) {

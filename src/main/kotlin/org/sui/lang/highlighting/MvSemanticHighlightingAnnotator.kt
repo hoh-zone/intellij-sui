@@ -100,7 +100,7 @@ class MvSemanticHighlightingAnnotator : Annotator {
                 val resolved = path.reference?.resolve()
                 val typeName = path.referenceName
                 val attrKey = when {
-                    typeName in PRIMITIVE_TYPES || typeName in SPEC_PRIMITIVE_TYPES -> MvSyntaxHighlighter.PRIMITIVE_TYPE
+                    typeName in PRIMITIVE_TYPES -> MvSyntaxHighlighter.PRIMITIVE_TYPE
                     typeName == "vector" -> MvSyntaxHighlighter.VECTOR_TYPE
                     resolved is MvTypeParameter -> MvSyntaxHighlighter.TYPE_DECLARATION
                     else -> MvSyntaxHighlighter.TYPE_DECLARATION
@@ -116,7 +116,7 @@ class MvSemanticHighlightingAnnotator : Annotator {
                     when {
                         element.text in ABILITIES && element.isInAbilityContext() ->
                             annotateNameElement(element, holder, MvSyntaxHighlighter.ABILITY)
-                        element.text in PRIMITIVE_TYPES || element.text in SPEC_PRIMITIVE_TYPES || element.text in BUILTIN_TYPE_NAMES ->
+                        element.text in PRIMITIVE_TYPES || element.text in BUILTIN_TYPE_NAMES ->
                             annotateNameElement(element, holder, MvSyntaxHighlighter.PRIMITIVE_TYPE)
                         element.text == "vector" -> annotateNameElement(element, holder, MvSyntaxHighlighter.VECTOR_TYPE)
                         element.text == "Self" -> annotateNameElement(element, holder, MvSyntaxHighlighter.TYPE_DECLARATION)
@@ -130,8 +130,6 @@ class MvSemanticHighlightingAnnotator : Annotator {
                             annotateNameElement(element, holder, MvSyntaxHighlighter.DECLARATION_KEYWORD)
                         element.text in CONTROL_CONTEXTUAL_KEYWORDS ->
                             annotateNameElement(element, holder, MvSyntaxHighlighter.CONTROL_KEYWORD)
-                        element.text in SPEC_CONTEXTUAL_KEYWORDS ->
-                            annotateNameElement(element, holder, MvSyntaxHighlighter.SPEC_KEYWORD)
                         element.text in GENERIC_CONTEXTUAL_KEYWORDS ->
                             annotateNameElement(element, holder, MvSyntaxHighlighter.KEYWORD)
                         element.text in BASE_KEYWORDS ->
@@ -145,40 +143,24 @@ class MvSemanticHighlightingAnnotator : Annotator {
     companion object {
         private val ABILITIES = setOf("store", "key", "drop", "copy")
         private val PRIMITIVE_TYPES = setOf("u8", "u16", "u32", "u64", "u128", "u256", "bool", "address", "signer")
-        private val SPEC_PRIMITIVE_TYPES = setOf("num", "range", "bv")
         private val BUILTIN_TYPE_NAMES = setOf("option", "Option", "vector", "String", "ascii", "utf8")
         private val BUILTIN_TYPED_FUNCTIONS = setOf(
             "borrow_global", "borrow_global_mut", "exists", "move_from", "move_to", "move_to_sender"
         )
         private val BASE_KEYWORDS = setOf(
             "let", "mut", "abort", "break", "continue", "if", "else", "loop", "return", "as", "while", "for",
-            "script", "address", "module", "public", "fun", "struct", "acquires", "use", "phantom",
-            "move", "const", "native", "spec", "type", "macro"
+            "address", "module", "public", "fun", "struct", "use", "phantom",
+            "move", "const", "native", "macro"
         )
-        private val DECLARATION_CONTEXTUAL_KEYWORDS = setOf("friend", "entry", "inline", "enum", "package", "internal")
-        private val CONTROL_CONTEXTUAL_KEYWORDS = setOf("match", "for", "in", "where")
-        private val SPEC_CONTEXTUAL_KEYWORDS = setOf(
-            "reads", "writes", "pure", "pragma", "post", "local", "global",
-            "forall", "exists", "with", "include", "choose", "min", "invariant", "axiom",
-            "aborts_if", "aborts_with", "assert", "assume", "modifies", "ensures",
-            "requires", "decreases", "emits", "apply", "except", "to", "update"
-        )
+        private val DECLARATION_CONTEXTUAL_KEYWORDS = setOf("friend", "entry", "inline", "enum", "package")
+        private val CONTROL_CONTEXTUAL_KEYWORDS = setOf("match", "for", "in")
         private val GENERIC_CONTEXTUAL_KEYWORDS = setOf("has")
         private val DECLARATION_TOKENS = TokenSet.create(
             MvElementTypes.FRIEND, MvElementTypes.ENTRY, MvElementTypes.INLINE,
-            MvElementTypes.ENUM_KW, MvElementTypes.PACKAGE, MvElementTypes.INTERNAL
+            MvElementTypes.ENUM_KW, MvElementTypes.PACKAGE
         )
         private val CONTROL_TOKENS = TokenSet.create(
-            MvElementTypes.MATCH_KW, MvElementTypes.FOR, MvElementTypes.IN, MvElementTypes.WHERE
-        )
-        private val SPEC_TOKENS = TokenSet.create(
-            MvElementTypes.READS, MvElementTypes.WRITES, MvElementTypes.PURE, MvElementTypes.PRAGMA,
-            MvElementTypes.POST, MvElementTypes.LOCAL, MvElementTypes.GLOBAL, MvElementTypes.FORALL,
-            MvElementTypes.EXISTS, MvElementTypes.WITH, MvElementTypes.INCLUDE, MvElementTypes.CHOOSE,
-            MvElementTypes.MIN, MvElementTypes.INVARIANT, MvElementTypes.AXIOM, MvElementTypes.ABORTS_IF,
-            MvElementTypes.ABORTS_WITH, MvElementTypes.ASSERT, MvElementTypes.ASSUME, MvElementTypes.MODIFIES,
-            MvElementTypes.ENSURES, MvElementTypes.REQUIRES, MvElementTypes.DECREASES, MvElementTypes.EMITS,
-            MvElementTypes.APPLY, MvElementTypes.EXCEPT, MvElementTypes.TO, MvElementTypes.UPDATE
+            MvElementTypes.MATCH_KW, MvElementTypes.FOR, MvElementTypes.IN
         )
         private val GENERIC_TOKENS = TokenSet.create(MvElementTypes.HAS)
     }
@@ -196,7 +178,6 @@ class MvSemanticHighlightingAnnotator : Annotator {
         when {
             tokenType in DECLARATION_TOKENS -> annotateNameElement(element, holder, MvSyntaxHighlighter.DECLARATION_KEYWORD)
             tokenType in CONTROL_TOKENS -> annotateNameElement(element, holder, MvSyntaxHighlighter.CONTROL_KEYWORD)
-            tokenType in SPEC_TOKENS -> annotateNameElement(element, holder, MvSyntaxHighlighter.SPEC_KEYWORD)
             tokenType in GENERIC_TOKENS -> annotateNameElement(element, holder, MvSyntaxHighlighter.KEYWORD)
         }
     }

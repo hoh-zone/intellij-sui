@@ -68,9 +68,6 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
             if (itemUsageScope != pathUsageScope) return@VisibilityFilter Invisible
         }
 
-        // we're in non-msl scope at this point, msl only items aren't available
-        if (item is MslOnlyElement) return@VisibilityFilter Invisible
-
         val pathModule = methodOrPath.containingModule
         // local methods, Self::method - everything is visible
         if (itemModule == pathModule) return@VisibilityFilter Visible
@@ -84,7 +81,7 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
                     is Restricted.Friend -> {
                         if (pathModule != null && itemModule != null) {
                             val friendModules = itemModule.friendModules
-                            if (friendModules.any { isModulesEqual(it, pathModule) }) {
+                            if (friendModules.any { it == pathModule }) {
                                 return@VisibilityFilter Visible
                             }
                         }

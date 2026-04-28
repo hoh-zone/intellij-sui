@@ -9,7 +9,6 @@ import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.BitUtil
-import org.sui.cli.settings.moveSettings
 import org.sui.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.sui.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.sui.lang.MvElementTypes.*
@@ -58,12 +57,6 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun andandImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, AND_AND, AND, AND)
-
-    @JvmStatic
-    fun eqeqgtImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, EQ_EQ_GT, EQ_EQ, GT)
-
-    @JvmStatic
-    fun lteqeqgtImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, LT_EQ_EQ_GT, LT, EQ_EQ, GT)
 
     @JvmStatic
     fun dotdotImpl(b: PsiBuilder, level: Int): Boolean {
@@ -172,55 +165,6 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun patternVisibility(b: PsiBuilder, level: Int): Boolean {
-        if (b.tokenType in tokenSetOf(PUBLIC, INTERNAL)) {
-            b.advanceLexer()
-            return true
-        }
-        if (b.tokenType == IDENTIFIER && b.tokenText == "internal") {
-            b.remapCurrentToken(INTERNAL)
-            b.advanceLexer()
-            return true
-        }
-        return false
-    }
-
-    @JvmStatic
-    fun msl(b: PsiBuilder, level: Int, parser: Parser): Boolean {
-        b.mslLevel = b.mslLevel + 1
-        val result = parser.parse(b, level)
-        b.mslLevel = b.mslLevel - 1
-        return result
-    }
-
-    @JvmStatic
-    fun mslOnly(b: PsiBuilder, level: Int, parser: Parser): Boolean {
-        if (b.mslLevel == 0) return false
-        return parser.parse(b, level)
-    }
-
-    @JvmStatic
-    fun isResourceAccessEnabled(b: PsiBuilder, level: Int): Boolean =
-        b.project.moveSettings.enableResourceAccessControl
-
-    @JvmStatic
-    fun includeStmtMode(b: PsiBuilder, level: Int, parser: Parser): Boolean {
-        val oldFlags = b.flags
-        val newFlags = oldFlags
-            .setFlag(INCLUDE_STMT_MODE, true)
-        b.flags = newFlags
-        val result = parser.parse(b, level)
-        b.flags = oldFlags
-        return result
-    }
-
-    @JvmStatic
-    fun includeStmtModeFalse(b: PsiBuilder, level: Int): Boolean = !includeStmtModeTrue(b, level)
-
-    @JvmStatic
-    fun includeStmtModeTrue(b: PsiBuilder, level: Int): Boolean = BitUtil.isSet(b.flags, INCLUDE_STMT_MODE)
-
-    @JvmStatic
     fun functionModifierSet(
         b: PsiBuilder,
         level: Int,
@@ -303,27 +247,6 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun invariantModifierKeyword(b: PsiBuilder, level: Int): Boolean {
-        if (b.tokenType in tokenSetOf(PACK, UNPACK, UPDATE)) {
-            b.advanceLexer()
-            return true
-        }
-        if (b.tokenType != IDENTIFIER) return false
-
-        val tokenType = when (b.tokenText) {
-            "pack" -> PACK
-            "unpack" -> UNPACK
-            "update" -> UPDATE
-            else -> {
-                return false
-            }
-        }
-        b.remapCurrentToken(tokenType)
-        b.advanceLexer()
-        return true
-    }
-
-    @JvmStatic
     fun remapContextualKwOnRollback(b: PsiBuilder, level: Int, p: Parser): Boolean {
         val result = p.parse(b, level)
         if (!result && b.tokenType in CONTEXTUAL_KEYWORDS) {
@@ -365,15 +288,6 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     fun inlineKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "inline", INLINE)
 
     @JvmStatic
-    fun schemaKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "schema", SCHEMA_KW)
-
-//    @JvmStatic
-//    fun vectorKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "vector", VECTOR_KW)
-
-    @JvmStatic
-    fun updateKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "update", UPDATE)
-
-    @JvmStatic
     fun friendKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "friend", FRIEND)
 
     @JvmStatic
@@ -389,122 +303,20 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     fun forKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "for", FOR)
 
     @JvmStatic
-    fun readsKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "reads", READS)
-
-    @JvmStatic
-    fun writesKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "writes", WRITES)
-
-    @JvmStatic
-    fun pureKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "pure", PURE)
-
-    @JvmStatic
-    fun pragmaKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "pragma", PRAGMA)
-
-    @JvmStatic
-    fun postKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "post", POST)
-
-    @JvmStatic
-    fun localKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "local", LOCAL)
-
-    @JvmStatic
-    fun globalKeyword(b: PsiBuilder, level: Int): Boolean =
-        contextualKeyword(b, "global", GLOBAL, { it !in CALL_EXPR_START_TOKENS })
-
-    private val CALL_EXPR_START_TOKENS = tokenSetOf(L_PAREN, LT)
-
-    @JvmStatic
-    fun forallKeyword(b: PsiBuilder, level: Int): Boolean =
-        contextualKeyword(b, "forall", FORALL, { it !in CALL_EXPR_START_TOKENS })
-
-    @JvmStatic
-    fun existsKeyword(b: PsiBuilder, level: Int): Boolean =
-        contextualKeyword(b, "exists", EXISTS, { it !in CALL_EXPR_START_TOKENS })
-
-    @JvmStatic
-    fun withKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "with", WITH)
-
-    @JvmStatic
-    fun whereKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "where", WHERE)
-
-    @JvmStatic
     fun inKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "in", IN)
-
-    @JvmStatic
-    fun includeKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "include", INCLUDE)
-
-    @JvmStatic
-    fun chooseKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "choose", CHOOSE)
-
-    @JvmStatic
-    fun minKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "min", MIN)
-
-    @JvmStatic
-    fun invariantKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "invariant", INVARIANT)
-
-    @JvmStatic
-    fun axiomKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "axiom", AXIOM)
-
-    @JvmStatic
-    fun abortsIfKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "aborts_if", ABORTS_IF)
-
-    @JvmStatic
-    fun abortsWithKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "aborts_with", ABORTS_WITH)
-
-    @JvmStatic
-    fun assertKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "assert", ASSERT)
-
-    @JvmStatic
-    fun assumeKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "assume", ASSUME)
-
-    @JvmStatic
-    fun modifiesKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "modifies", MODIFIES)
-
-    @JvmStatic
-    fun ensuresKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "ensures", ENSURES)
-
-    @JvmStatic
-    fun requiresKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "requires", REQUIRES)
-
-    @JvmStatic
-    fun decreasesKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "decreases", DECREASES)
-
-    @JvmStatic
-    fun emitsKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "emits", EMITS)
-
-    @JvmStatic
-    fun applyKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "apply", APPLY)
-
-    @JvmStatic
-    fun exceptKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "except", EXCEPT)
-
-    @JvmStatic
-    fun toKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "to", TO)
 
     private val FLAGS: Key<Int> = Key("MoveParserUtil.FLAGS")
     private var PsiBuilder.flags: Int
         get() = getUserData(FLAGS) ?: DEFAULT_FLAGS
         set(value) = putUserData(FLAGS, value)
 
-    private fun Int.setFlag(flag: Int, mode: Boolean): Int =
-        BitUtil.set(this, flag, mode)
-
     // flags
     private val TOP_LEVEL: Int = makeBitMask(0)
-    private val INCLUDE_STMT_MODE: Int = makeBitMask(1)
 
     private val PATH_MODE_VALUE: Int = makeBitMask(2)
     private val PATH_MODE_WILDCARD: Int = makeBitMask(3)
 
-//    private val STRUCT_ALLOWED: Int = makeBitMask(4)
-
     private val DEFAULT_FLAGS: Int = TOP_LEVEL
-//    private val DEFAULT_FLAGS: Int = TOP_LEVEL or STRUCT_ALLOWED
-
-    // msl
-    private val MSL_LEVEL: Key<Int> = Key("MoveParserUtil.MSL_LEVEL")
-    private var PsiBuilder.mslLevel: Int
-        get() = getUserData(MSL_LEVEL) ?: 0
-        set(value) = putUserData(MSL_LEVEL, value)
 
     private fun contextualKeyword(
         b: PsiBuilder,

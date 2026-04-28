@@ -9,7 +9,6 @@ import org.sui.lang.core.types.ty.Ty
 import org.sui.lang.core.types.ty.TyInfer
 import org.sui.lang.core.types.ty.TyReference
 import org.sui.lang.moveProject
-import java.util.*
 
 val MvNamedElement.namespace
     get() = when (this) {
@@ -17,9 +16,7 @@ val MvNamedElement.namespace
         is MvStruct -> Namespace.TYPE
         is MvEnum -> Namespace.ENUM
         is MvConst -> Namespace.NAME
-        is MvSchema -> Namespace.SCHEMA
         is MvModule -> Namespace.MODULE
-        is MvGlobalVariableStmt -> Namespace.NAME
         else -> error("when should be exhaustive, $this is not covered")
     }
 
@@ -35,7 +32,6 @@ fun processMethodResolveVariants(
         .wrapWithFilter { e ->
             val function = e.element as? MvFunction ?: return@wrapWithFilter false
             val selfTy = function.selfParamTy(msl) ?: return@wrapWithFilter false
-            // need to use TyVar here, loweredType() erases them
             val selfTyWithTyVars =
                 selfTy.deepFoldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
             TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
@@ -48,12 +44,7 @@ fun processItemDeclarations(
     ns: Set<Namespace>,
     processor: MvResolveProcessor
 ): Boolean {
-
-    // 1. loop over all items in module (item is anything accessible with MODULE:: )
-    // 2. for every item, use it's .visibility to create VisibilityFilter, even it's just a { false }
-    val items = itemsOwner.itemElements +
-            (itemsOwner as? MvModule)?.innerSpecItems.orEmpty() +
-            (itemsOwner as? MvModule)?.let { getItemsFromModuleSpecs(it, ns) }.orEmpty()
+    val items = itemsOwner.itemElements
 
     for (item in items) {
         val name = item.name ?: continue
@@ -63,35 +54,5 @@ fun processItemDeclarations(
         if (processor.process(name, item, setOf(namespace))) return true
     }
 
-    return false
-}
-
-fun getItemsFromModuleSpecs(module: MvModule, ns: Set<Namespace>): List<MvItemElement> {
-    val c = mutableListOf<MvItemElement>()
-    processItemsFromModuleSpecs(module, ns, createProcessor { c.add(it.element as MvItemElement) })
-    return c
-}
-
-fun processItemsFromModuleSpecs(
-    module: MvModule,
-    namespaces: Set<Namespace>,
-    processor: MvResolveProcessor,
-): Boolean {
-    for (namespace in namespaces) {
-        val thisNs = setOf(namespace)
-        for (moduleSpec in module.allModuleSpecs()) {
-            val matched = when (namespace) {
-                Namespace.FUNCTION ->
-                    processor.processAll(
-                        thisNs,
-                        moduleSpec.specFunctions(),
-                        moduleSpec.specInlineFunctions(),
-                    )
-                Namespace.SCHEMA -> processor.processAll(thisNs, moduleSpec.schemas())
-                else -> false
-            }
-            if (matched) return true
-        }
-    }
     return false
 }

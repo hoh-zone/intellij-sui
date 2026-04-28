@@ -24,13 +24,12 @@ interface MvFunctionLike : MvNameIdentifierOwner,
     override fun declaredType(msl: Boolean): TyFunction {
         val typeParameters = this.tyTypeParams
         val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
-        val acquiredTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
         val retType = rawReturnType(msl)
         return TyFunction(
             this,
             typeParameters,
             paramTypes,
-            acquiredTypes,
+            emptyList(),
             retType
         )
     }
@@ -74,18 +73,11 @@ val MvFunctionLike.lambdaParamsAsBindings: List<MvPatBinding>
             .map { it.patBinding }
     }
 
-val MvFunctionLike.acquiresPathTypes: List<MvPathType>
-    get() =
-        when (this) {
-            is MvFunction -> this.acquiresType?.pathTypeList.orEmpty()
-            else -> emptyList()
-        }
+val MvFunctionLike.acquiresPathTypes: List<MvPathType> get() = emptyList()
 
 val MvFunctionLike.anyBlock: AnyBlock?
     get() = when (this) {
         is MvFunction -> this.codeBlock
-        is MvSpecFunction -> this.specCodeBlock
-        is MvSpecInlineFunction -> this.specCodeBlock
         else -> null
     }
 
@@ -100,11 +92,8 @@ val MvFunctionLike.module: MvModule?
                     this.parent as? MvModule
                 }
             }
-            // TODO:
             else -> null
         }
-
-val MvFunctionLike.script: MvScript? get() = this.parent as? MvScript
 
 val MvFunctionLike.signatureText: String
     get() {

@@ -21,16 +21,14 @@ enum class Namespace {
     FUNCTION,
     TYPE,
     ENUM,
-    SCHEMA,
     MODULE;
-//    CONST;
 
     companion object {
         fun all(): Set<Namespace> {
-            return EnumSet.of(NAME, FUNCTION, TYPE, ENUM, SCHEMA, MODULE)
+            return EnumSet.of(NAME, FUNCTION, TYPE, ENUM, MODULE)
         }
 
-        fun moduleItems(): Set<Namespace> = EnumSet.of(NAME, FUNCTION, TYPE, ENUM, SCHEMA)
+        fun moduleItems(): Set<Namespace> = EnumSet.of(NAME, FUNCTION, TYPE, ENUM)
 
         fun none(): Set<Namespace> = setOf()
     }
@@ -38,12 +36,10 @@ enum class Namespace {
 
 val NONE = Namespace.none()
 val NAMES = setOf(Namespace.NAME)
-//val NAMES_N_FUNCTIONS = setOf(Namespace.NAME, Namespace.FUNCTION)
 
 val MODULES = setOf(Namespace.MODULE)
 val FUNCTIONS = setOf(Namespace.FUNCTION)
 val FUNCTIONS_N_TYPES_N_ENUMS = setOf(Namespace.FUNCTION, Namespace.TYPE, Namespace.ENUM)
-val SCHEMAS = setOf(Namespace.SCHEMA)
 val TYPES = setOf(Namespace.TYPE)
 val ENUMS = setOf(Namespace.ENUM)
 val TYPES_N_ENUMS = setOf(Namespace.TYPE, Namespace.ENUM)
@@ -54,4 +50,4 @@ val TYPES_N_ENUMS_N_MODULES = setOf(Namespace.TYPE, Namespace.ENUM, Namespace.MO
 
 val ALL_NAMESPACES = Namespace.all()
 val ITEM_NAMESPACES =
-    setOf(Namespace.NAME, Namespace.FUNCTION, Namespace.TYPE, Namespace.ENUM, Namespace.SCHEMA)
+    setOf(Namespace.NAME, Namespace.FUNCTION, Namespace.TYPE, Namespace.ENUM)

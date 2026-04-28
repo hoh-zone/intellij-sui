@@ -53,32 +53,8 @@ public class MvModuleBlockImpl extends MvElementImpl implements MvModuleBlock {
 
   @Override
   @NotNull
-  public List<MvItemSpec> getItemSpecList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, MvItemSpec.class);
-  }
-
-  @Override
-  @NotNull
-  public List<MvModuleItemSpec> getModuleItemSpecList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, MvModuleItemSpec.class);
-  }
-
-  @Override
-  @NotNull
   public List<MvPublicUseFun> getPublicUseFunList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, MvPublicUseFun.class);
-  }
-
-  @Override
-  @NotNull
-  public List<MvSchema> getSchemaList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, MvSchema.class);
-  }
-
-  @Override
-  @NotNull
-  public List<MvSpecFunction> getSpecFunctionList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, MvSpecFunction.class);
   }
 
   @Override

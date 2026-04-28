@@ -6,7 +6,6 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiParserFacade
 import org.intellij.lang.annotations.Language
 import org.sui.cli.MvConstants
-import org.sui.ide.utils.FunctionSignature
 import org.sui.lang.MoveFile
 import org.sui.lang.MoveFileType
 import org.sui.lang.core.psi.ext.childOfType
@@ -17,17 +16,6 @@ import org.sui.lang.core.psi.impl.MvFunctionParameterImpl
 val Project.psiFactory get() = MvPsiFactory(this)
 
 class MvPsiFactory(val project: Project) {
-    fun itemSpecSignature(signature: FunctionSignature): MvItemSpecSignature {
-        val typeParams = signature.typeParameters
-        val typeParamsText =
-            if (typeParams.isNotEmpty())
-                signature.typeParameters.joinToString(", ", "<", ">")
-            else ""
-        val paramsText = signature.parameters.joinToString(", ", "(", ")")
-        return createFromText("spec 0x1::_M { spec call$typeParamsText$paramsText }")
-            ?: error("Failed to create item spec signature")
-    }
-
     fun structLitField(fieldName: String, expr: String): MvStructLitField =
         createFromText("module 0x1::_M { fun m() { S { $fieldName: $expr }; }}")
             ?: error("Failed to create MvStructLitField")
@@ -39,10 +27,6 @@ class MvPsiFactory(val project: Project) {
     fun fieldPatFull(fieldName: String, binding: String): MvPatFieldFull =
         createFromText("module 0x1::_M { fun m() { let S { $fieldName: $binding } = 1; }}")
             ?: error("Failed to create MvFieldPat")
-
-    fun schemaLitField(fieldName: String, expr: String): MvSchemaLitField =
-        createFromText("module _M { spec module { include Schema { $fieldName: $expr } }}")
-            ?: error("Failed to create MvSchemaField")
 
     fun inlineModule(address: String, name: String, blockText: String): MvModule =
         createFromText("module $address::$name $blockText") ?: error("failed to create module")
@@ -125,11 +109,6 @@ class MvPsiFactory(val project: Project) {
         return useGroup.useSpeckList.first()
     }
 
-    fun acquires(text: String): MvAcquiresType {
-        return createFromText("module 0x1::_DummyModule { fun main() $text {}}")
-            ?: error("Failed to create a method member from text: `$text`")
-    }
-
     fun bindingPat(text: String): MvPatBinding {
         return createFromText("module 0x1::_DummyModule { fun main() { let S { $text } = 1; }}")
             ?: error("Failed to create a MvBindingPat from text: `$text`")
@@ -184,10 +163,6 @@ class MvPsiFactory(val project: Project) {
 
     fun addressRef(text: String): MvAddressRef =
         createFromText("module $text::Main {} ")
-            ?: error("Failed to create a function from text: `$text`")
-
-    fun specFunction(text: String, moduleName: String = "_Dummy"): MvSpecFunction =
-        createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")
 
     fun createWhitespace(ws: String): PsiElement =

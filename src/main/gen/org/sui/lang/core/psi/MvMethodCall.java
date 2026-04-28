@@ -8,7 +8,7 @@ import org.sui.lang.core.psi.ext.MvMethodOrField;
 import org.sui.lang.core.psi.ext.MvMethodOrPath;
 import org.sui.lang.core.psi.ext.MvCallable;
 
-public interface MvMethodCall extends MvMethodOrField, MvMethodOrPath, MvCallable, MvAcquireTypesOwner {
+public interface MvMethodCall extends MvMethodOrField, MvMethodOrPath, MvCallable {
 
   @Nullable
   MvTypeArgumentList getTypeArgumentList();

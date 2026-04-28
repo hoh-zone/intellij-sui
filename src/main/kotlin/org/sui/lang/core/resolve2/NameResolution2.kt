@@ -188,27 +188,6 @@ fun walkUpThroughScopes(
     while (scope != null) {
         if (handleScope(cameFrom, scope)) return true
 
-        // walk all items in original module block
-        if (scope is MvModule) {
-            // handle spec module {}
-            if (handleModuleItemSpecsInItemsOwner(cameFrom, scope, handleScope)) return true
-            // walk over all spec modules
-            for (moduleSpec in scope.allModuleSpecs()) {
-                val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
-                if (handleScope(cameFrom, moduleSpecBlock)) return true
-                if (handleModuleItemSpecsInItemsOwner(cameFrom, moduleSpecBlock, handleScope)) return true
-            }
-        }
-
-        if (scope is MvModuleSpecBlock) {
-            val module = scope.moduleSpec.moduleItem
-            if (module != null) {
-                cameFrom = scope
-                scope = module
-                continue
-            }
-        }
-
         if (stopAfter(scope)) break
 
         cameFrom = scope
@@ -223,20 +202,3 @@ private fun processFieldDeclarations(struct: MvFieldsOwner, processor: MvResolve
         val name = field.name
         processor.process(name, NAMES, field)
     }
-
-private fun handleModuleItemSpecsInItemsOwner(
-    cameFrom: MvElement,
-    itemsOwner: MvItemsOwner,
-    handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean
-): Boolean {
-    val moduleItemSpecs = when (itemsOwner) {
-        is MvModule -> itemsOwner.moduleItemSpecList
-        is MvModuleSpecBlock -> itemsOwner.moduleItemSpecList
-        else -> emptyList()
-    }
-    for (moduleItemSpec in moduleItemSpecs.filter { it != cameFrom }) {
-        val itemSpecBlock = moduleItemSpec.itemSpecBlock ?: continue
-        if (handleScope(cameFrom, itemSpecBlock)) return true
-    }
-    return false
-}

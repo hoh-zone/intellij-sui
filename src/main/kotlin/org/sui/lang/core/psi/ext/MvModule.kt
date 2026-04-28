@@ -6,7 +6,6 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.psi.stubs.IStubElementType
-import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.sui.ide.MoveIcons
 import org.sui.lang.core.resolve2.PreImportedModuleService.Companion.PRELOAD_STD_MODULES
@@ -20,11 +19,7 @@ import org.sui.lang.core.stubs.ext.childrenStubsOfType
 import org.sui.lang.core.types.Address
 import org.sui.lang.core.types.ItemQualName
 import org.sui.lang.core.types.address
-import org.sui.lang.index.MvModuleSpecIndex
 import org.sui.lang.moveProject
-import org.sui.utils.cache
-import org.sui.utils.cacheManager
-import org.sui.utils.psiCacheResult
 import javax.swing.Icon
 
 fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()
@@ -64,8 +59,6 @@ fun MvModule.testFunctions(): List<MvFunction> =
     }
 
 val MvModule.isBuiltins: Boolean get() = this.name == "builtins" && (this.address(null)?.is0x0 ?: false)
-val MvModule.isSpecBuiltins: Boolean
-    get() = this.name == "spec_builtins" && (this.address(null)?.is0x0 ?: false)
 
 fun MvModule.builtinFunctions(): List<MvFunction> {
     return getProjectPsiDependentCache(this) {
@@ -97,14 +90,6 @@ fun MvModule.entryFunctions(): List<MvFunction> = this.allFunctions().filter { i
 
 fun MvModule.viewFunctions(): List<MvFunction> = this.allFunctions().filter { it.isView }
 
-fun MvModule.specInlineFunctions(): List<MvSpecInlineFunction> =
-    this.moduleItemSpecList.flatMap { it.specInlineFunctions() }
-
-fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
-    val trimmedText = text.trimIndent()
-    return project.psiFactory.specFunction(trimmedText, moduleName = "builtin_spec_functions")
-}
-
 fun MvModule.structs(): List<MvStruct> {
     return getProjectPsiDependentCache(this) {
         val stub = it.greenStub
@@ -128,92 +113,9 @@ fun builtinModule(text: String, project: Project): MvModule {
     return project.psiFactory.inlineModule(trimmedText, "", "")
 }
 
-fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
-    return getProjectPsiDependentCache(this) {
-        val project = it.project
-        listOf(
-            builtinSpecFunction("spec native fun max_u8(): num;", project),
-            builtinSpecFunction("spec native fun max_u64(): num;", project),
-            builtinSpecFunction("spec native fun max_u128(): num;", project),
-            builtinSpecFunction("spec native fun global<T: key>(addr: address): T;", project),
-            builtinSpecFunction("spec native fun old<T>(_: T): T;", project),
-            builtinSpecFunction(
-                "spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;",
-                project
-            ),
-            builtinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
-            // vector functions
-            builtinSpecFunction(
-                "spec native fun concat<T>(v1: vector<T>, v2: vector<T>): vector<T>;",
-                project
-            ),
-            builtinSpecFunction("spec native fun vec<T>(_: T): vector<T>;", project),
-            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", project),
-            builtinSpecFunction("spec native fun contains<T>(v: vector<T>, e: T): bool;", project),
-            builtinSpecFunction("spec native fun index_of<T>(_: vector<T>, _: T): num;", project),
-            builtinSpecFunction("spec native fun range<T>(_: vector<T>): range;", project),
-            builtinSpecFunction("spec native fun update<T>(_: vector<T>, _: num, _: T): vector<T>;", project),
-            builtinSpecFunction("spec native fun in_range<T>(_: vector<T>, _: num): bool;", project),
-            builtinSpecFunction("spec native fun int2bv(_: num): bv;", project),
-            builtinSpecFunction("spec native fun bv2int(_: bv): num;", project),
-        )
-    }
-}
-
-fun MvModule.specFunctions(): List<MvSpecFunction> = specFunctionList.orEmpty()
-
 fun MvModule.consts(): List<MvConst> = this.constList
 
 fun MvModule.enumVariants(): List<MvEnumVariant> = this.enumList.flatMap { it.variants }
-
-//fun MvModuleBlock.moduleItemSpecs() = this.moduleItemSpecList
-////    this.childrenOfType<MvItemSpec>()
-////        .filter { it.itemSpecRef?.moduleKw != null }
-
-val MvModuleSpec.moduleItem: MvModule? get() = this.path?.reference?.resolve() as? MvModule
-
-val MvModuleSpecBlock.moduleSpec: MvModuleSpec get() = this.parent as MvModuleSpec
-
-fun MvModuleSpec.moduleItemSpecs(): List<MvModuleItemSpec> =
-    this.moduleSpecBlock?.moduleItemSpecList.orEmpty()
-
-fun MvModuleSpec.schemas(): List<MvSchema> = this.moduleSpecBlock?.schemaList.orEmpty()
-
-fun MvModuleSpec.specFunctions(): List<MvSpecFunction> = this.moduleSpecBlock?.specFunctionList.orEmpty()
-
-fun MvModuleSpec.specInlineFunctions(): List<MvSpecInlineFunction> =
-    this.moduleItemSpecs().flatMap { it.specInlineFunctions() }
-
-private val MODULE_SPECS_KEY: Key<CachedValue<List<MvModuleSpec>>> =
-    Key.create("ALL_MODULE_SPECS_KEY")
-
-fun MvModule.allModuleSpecs(): List<MvModuleSpec> = project.cacheManager.cache(this, MODULE_SPECS_KEY) {
-    val specs: List<MvModuleSpec> = run {
-        val moveProject = this.moveProject ?: return@run emptyList()
-        val moduleName = this.name ?: return@run emptyList()
-
-        val searchScope = moveProject.searchScope()
-        // all `spec 0x1::m {}` for the current module
-        val allModuleSpecs = MvModuleSpecIndex.getElementsByModuleName(this.project, moduleName, searchScope)
-        if (allModuleSpecs.isEmpty()) return@run emptyList()
-
-        allModuleSpecs
-            .filter { moduleSpec ->
-                val specModule = moduleSpec.moduleItem ?: return@filter false
-                isModulesEqual(this, specModule)
-            }
-            .toList()
-    }
-    this.psiCacheResult(specs)
-}
-
-fun MvModule.allModuleSpecBlocks(): List<MvModuleSpecBlock> {
-    return this.allModuleSpecs().mapNotNull { it.moduleSpecBlock }
-}
-
-fun isModulesEqual(left: MvModule, right: MvModule): Boolean {
-    return left == right
-}
 
 fun MvModule.isPreload(): Boolean {
     return this.addressRef?.namedAddress?.text == "sui" && PRELOAD_SUI_MODULES.contains(this.name)

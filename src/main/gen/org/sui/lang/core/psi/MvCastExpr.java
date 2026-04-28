@@ -8,9 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface MvCastExpr extends MvExpr {
 
   @Nullable
-  MvApplySchemaStmt getApplySchemaStmt();
-
-  @Nullable
   MvBinaryOp getBinaryOp();
 
   @Nullable
@@ -20,49 +17,16 @@ public interface MvCastExpr extends MvExpr {
   List<MvExpr> getExprList();
 
   @Nullable
-  MvExprStmt getExprStmt();
-
-  @Nullable
   MvForIterCondition getForIterCondition();
 
   @Nullable
-  MvGlobalVariableStmt getGlobalVariableStmt();
-
-  @Nullable
-  MvIncludeStmt getIncludeStmt();
-
-  @Nullable
   MvLabelRef getLabelRef();
-
-  @Nullable
-  MvLetStmt getLetStmt();
-
-  @Nullable
-  MvPragmaSpecStmt getPragmaSpecStmt();
-
-  @Nullable
-  MvSchemaFieldStmt getSchemaFieldStmt();
-
-  @Nullable
-  MvSpecExprStmt getSpecExprStmt();
-
-  @Nullable
-  MvSpecInlineFunctionStmt getSpecInlineFunctionStmt();
-
-  @Nullable
-  MvSpecPropertyList getSpecPropertyList();
 
   @Nullable
   MvStmt getStmt();
 
   @Nullable
   MvType getType();
-
-  @Nullable
-  MvTypeParameterList getTypeParameterList();
-
-  @Nullable
-  MvUpdateSpecStmt getUpdateSpecStmt();
 
   @Nullable
   MvUseStmt getUseStmt();

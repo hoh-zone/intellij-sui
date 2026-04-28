@@ -189,7 +189,7 @@ class ResolutionContext(val element: MvElement, val isCompletion: Boolean) {
     val methodOrPath: MvMethodOrPath? get() = element as? MvMethodOrPath
     val path: MvPath? get() = element as? MvPath
 
-    val isSpecOnlyExpr: Boolean get() = element.hasAncestor<MvSpecOnlyExpr>()
+    val isSpecOnlyExpr: Boolean get() = false
 }
 
 fun resolvePathRaw(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {

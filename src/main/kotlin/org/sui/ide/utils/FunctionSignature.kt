@@ -72,25 +72,6 @@ data class FunctionSignature(
             val signature = FunctionSignature(typeParameters, parameters, returnType)
             return signature
         }
-
-        fun fromItemSpecSignature(specSignature: MvItemSpecSignature): FunctionSignature {
-            val paramList = specSignature.itemSpecFunctionParameterList
-
-            val specParameters = paramList.itemSpecFunctionParameterList
-            val signatureParams = specParameters.map { specParam ->
-                val paramName = specParam.referenceName
-                val paramType = specParam.typeAnnotation?.type?.text ?: ""
-                Parameter(paramName, paramType)
-            }
-            val specTypeParameters =
-                specSignature.itemSpecTypeParameterList?.itemSpecTypeParameterList.orEmpty()
-            val signatureTypeParams = specTypeParameters
-                .map { specTypeParam ->
-                    TypeParameter(specTypeParam.referenceName, specTypeParam.bounds.mapNotNull { it.ability })
-                }
-            val returnType = specSignature.returnType?.type?.text
-            return FunctionSignature(signatureTypeParams, signatureParams, returnType)
-        }
     }
 }
 
@@ -104,6 +85,3 @@ fun MvFunction.getSignature(): FunctionSignature? =
             project.moveStructureModificationTracker
         )
     }
-
-val MvItemSpecSignature.functionSignature: FunctionSignature
-    get() = FunctionSignature.fromItemSpecSignature(this)
