@@ -29,7 +29,6 @@ interface MvFunctionLike : MvNameIdentifierOwner,
             this,
             typeParameters,
             paramTypes,
-            emptyList(),
             retType
         )
     }
@@ -47,22 +46,11 @@ val MvFunctionLike.functionItemPresentation: PresentationData?
         )
     }
 
-val MvFunctionLike.isMraco get() = hasChild(MvElementTypes.MACRO_KW)
-
 val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
 
 val MvFunctionLike.parametersAsBindings: List<MvPatBinding> get() = this.parameters.map { it.patBinding }
-
-val MvFunctionLike.valueParamsAsBindings: List<MvPatBinding>
-    get() {
-        val msl = this.isMslOnlyItem
-        val parameters = this.parameters
-        return parameters
-            .filter { it.type?.loweredType(msl) !is TyLambda }
-            .map { it.patBinding }
-    }
 
 val MvFunctionLike.lambdaParamsAsBindings: List<MvPatBinding>
     get() {
@@ -72,8 +60,6 @@ val MvFunctionLike.lambdaParamsAsBindings: List<MvPatBinding>
             .filter { it.type?.loweredType(msl) is TyLambda }
             .map { it.patBinding }
     }
-
-val MvFunctionLike.acquiresPathTypes: List<MvPathType> get() = emptyList()
 
 val MvFunctionLike.anyBlock: AnyBlock?
     get() = when (this) {
@@ -103,19 +89,3 @@ val MvFunctionLike.signatureText: String
         return "$paramsText$retTypeSuffix"
     }
 
-val MvFunction.selfParam: MvFunctionParameter? get() {
-    if (!project.moveSettings.enableReceiverStyleFunctions) return null
-    return this.parameters.firstOrNull()?.takeIf { it.name == "self" }
-}
-
-fun MvFunction.selfParamTy(msl: Boolean): Ty? = this.selfParam?.type?.loweredType(msl)
-
-val MvFunction.isMethod get() = selfParam != null
-
-val MvFunction.selfSignatureText: String
-    get() {
-        val paramsText = this.parameters.drop(1).joinToSignature()
-        val retType = this.returnType?.type?.text ?: ""
-        val retTypeSuffix = if (retType == "") "" else ": $retType"
-        return "$paramsText$retTypeSuffix"
-    }

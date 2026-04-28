@@ -8,7 +8,6 @@ import org.sui.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_TYPE_PA
 import org.sui.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_UNKNOWN_VISITOR
 import org.sui.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_INFER
 import org.sui.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_SUBST
-import org.sui.lang.core.types.ty.Ability.COPY
 
 enum class Ability {
     DROP, COPY, STORE, KEY;
@@ -32,8 +31,6 @@ enum class Ability {
         fun all(): Set<Ability> = setOf(DROP, COPY, STORE, KEY)
     }
 }
-
-val Ty.isCopy: Boolean get() = this.abilities().contains(COPY)
 
 val TypeFoldable<*>.hasTyInfer get() = visitWith(HAS_TY_INFER_VISITOR)
 val TypeFoldable<*>.hasTyTypeParameters get() = visitWith(HAS_TY_TYPE_PARAMETER_VISITOR)
@@ -70,22 +67,6 @@ abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
     abstract fun abilities(): Set<Ability>
 }
 
-//val Ty.isTypeParam: Boolean get() = this is TyInfer || this is TyTypeParameter
-
-//fun Ty.mslTy(msl: Boolean): Ty = if (this is TyReference && msl) this.innermostTy() else this
-
-fun Ty.mslScopeRefined(msl: Boolean): Ty {
-    var ty = this
-    if (!msl) return ty
-
-    if (this is TyReference) {
-        ty = this.innermostTy()
-    }
-    if (ty is TyInteger || ty is TyInfer.IntVar) {
-        ty = TyNum
-    }
-    return ty
-}
 
 abstract class GenericTy(
     open val item: MvTypeParametersOwner,

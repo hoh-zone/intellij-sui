@@ -16,6 +16,3 @@ val MvItemsOwner.itemElements: List<MvItemElement>
     get() {
         return this.items().filterIsInstance<MvItemElement>().toList()
     }
-
-val MvItemsOwner.firstItem: MvElement?
-    get() = items().firstOrNull { it !is MvAttr }

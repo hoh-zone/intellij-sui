@@ -1,8 +1,6 @@
 package org.sui.lang.core
 
 val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u16", "u32", "u64", "u128", "u256")
-val SPEC_INTEGER_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("num")
-val SPEC_ONLY_PRIMITIVE_TYPES = setOf("num")
 val PRIMITIVE_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("bool")
 private val PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer")
 private val SUI_BUILTIN_TYPE_IDENTIFIERS = setOf(

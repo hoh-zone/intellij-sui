@@ -4,18 +4,10 @@ import com.intellij.lang.ASTNode
 import org.sui.cli.settings.debugErrorOrFallback
 import org.sui.lang.core.BUILTIN_TYPE_IDENTIFIERS
 import org.sui.lang.core.PRIMITIVE_TYPE_IDENTIFIERS
-import org.sui.lang.core.SPEC_ONLY_PRIMITIVE_TYPES
 import org.sui.lang.MvElementTypes.COLON_COLON
 import org.sui.lang.core.psi.*
 import org.sui.lang.core.resolve.ref.*
 import org.sui.lang.core.resolve2.ref.MvPath2ReferenceImpl
-
-/** For `Foo::bar::baz::quux` path returns `Foo` */
-tailrec fun <T: MvPath> T.basePath(): T {
-    @Suppress("UNCHECKED_CAST")
-    val qualifier = path as T?
-    return if (qualifier === null) this else qualifier.basePath()
-}
 
 /** For `Foo::bar` in `Foo::bar::baz::quux` returns `Foo::bar::baz::quux` */
 tailrec fun MvPath.rootPath(): MvPath {
@@ -25,43 +17,9 @@ tailrec fun MvPath.rootPath(): MvPath {
     return if (parent is MvPath) parent.rootPath() else this
 }
 
-val MvPath.length: Int
-    get() {
-        var length = 1
-        var currentPath = this
-        while (currentPath.path != null) {
-            currentPath = currentPath.path!!
-            length += 1
-        }
-        return length
-    }
-
 fun MvPath.isPrimitiveType(): Boolean =
     this.parent is MvPathType
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS.union(BUILTIN_TYPE_IDENTIFIERS)
-
-fun MvPath.isSpecPrimitiveType(): Boolean =
-    this.parent is MvPathType
-            && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS
-        .union(BUILTIN_TYPE_IDENTIFIERS)
-        .union(SPEC_ONLY_PRIMITIVE_TYPES)
-
-val MvPath.isUpdateFieldArg2: Boolean
-    get() {
-        if (!this.isMslScope) return false
-        val ind = this
-            .ancestorStrict<MvCallExpr>()
-            ?.let { if (it.path.textMatches("update_field")) it else null }
-            ?.let {
-                val expr = this.ancestorStrict<MvPathExpr>() ?: return@let -1
-                it.argumentExprs.indexOf(expr)
-            }
-        return ind == 1
-    }
-
-val MvPath.identifierName: String? get() = identifier?.text
-
-val MvPath.maybeStruct get() = reference?.resolveFollowingAliases() as? MvStruct
 
 //fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
 ////    val qualifierPath = this.path

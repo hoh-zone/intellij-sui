@@ -35,8 +35,6 @@ val MvFunction.isView: Boolean
 // is a Macro function
 val MvFunction.isMacro :Boolean get() = this.isChildExists(MvElementTypes.MACRO_KW)
 
-fun MvFunction.functionId(moveProject: MoveProject): String? = qualName?.cmdText(moveProject)
-
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 
 val MvFunction.hasTestAttr: Boolean
@@ -56,8 +54,6 @@ val MvFunction.outerFileName: String
         } else {
             this.containingFile?.name.orEmpty()
         }
-
-val MvFunction.transactionParameters: List<MvFunctionParameter> get() = this.parameters.drop(1)
 
 fun MvFunctionLike.rawReturnType(msl: Boolean): Ty {
     val retType = returnType ?: return TyUnit

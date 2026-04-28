@@ -29,10 +29,4 @@ data class TyLambda(
 
     override fun innerVisitWith(visitor: TypeVisitor): Boolean =
         paramTypes.any { it.visitWith(visitor) } || retType.visitWith(visitor)
-
-    companion object {
-        fun unknown(numParams: Int): TyLambda {
-            return TyLambda(generateSequence { TyUnknown }.take(numParams).toList(), TyUnknown)
-        }
-    }
 }

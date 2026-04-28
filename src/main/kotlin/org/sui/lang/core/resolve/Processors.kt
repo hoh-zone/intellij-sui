@@ -74,66 +74,6 @@ interface MvResolveProcessorBase<in T: ScopeEntry> {
 
 typealias MvResolveProcessor = MvResolveProcessorBase<ScopeEntry>
 
-fun createStoppableProcessor(processor: (ScopeEntry) -> Boolean): MvResolveProcessor {
-    return object: MvResolveProcessorBase<ScopeEntry> {
-        override fun process(entry: ScopeEntry): Boolean = processor(entry)
-        override val names: Set<String>? get() = null
-    }
-}
-
-fun createProcessor(processor: (ScopeEntry) -> Unit): MvResolveProcessor {
-    return object: MvResolveProcessorBase<ScopeEntry> {
-        override fun process(entry: ScopeEntry): Boolean {
-            processor(entry)
-            return false
-        }
-
-        override val names: Set<String>? get() = null
-    }
-}
-
-fun <T: ScopeEntry, U: ScopeEntry> MvResolveProcessorBase<T>.wrapWithMapper(
-    mapper: (U) -> T
-): MvResolveProcessorBase<U> {
-    return MappingProcessor(this, mapper)
-}
-
-private class MappingProcessor<in T: ScopeEntry, in U: ScopeEntry>(
-    private val originalProcessor: MvResolveProcessorBase<T>,
-    private val mapper: (U) -> T,
-): MvResolveProcessorBase<U> {
-    override val names: Set<String>? = originalProcessor.names
-    override fun process(entry: U): Boolean {
-        val mapped = mapper(entry)
-        return originalProcessor.process(mapped)
-    }
-
-    override fun toString(): String = "MappingProcessor($originalProcessor, mapper = $mapper)"
-}
-
-fun <T: ScopeEntry, U: ScopeEntry> MvResolveProcessorBase<T>.wrapWithNonNullMapper(
-    mapper: (U) -> T?
-): MvResolveProcessorBase<U> {
-    return NonNullMappingProcessor(this, mapper)
-}
-
-private class NonNullMappingProcessor<in T: ScopeEntry, in U: ScopeEntry>(
-    private val originalProcessor: MvResolveProcessorBase<T>,
-    private val mapper: (U) -> T?,
-): MvResolveProcessorBase<U> {
-    override val names: Set<String>? = originalProcessor.names
-    override fun process(entry: U): Boolean {
-        val mapped = mapper(entry)
-        return if (mapped == null) {
-            false
-        } else {
-            originalProcessor.process(mapped)
-        }
-    }
-
-    override fun toString(): String = "MappingProcessor($originalProcessor, mapper = $mapper)"
-}
-
 fun <T: ScopeEntry> MvResolveProcessorBase<T>.wrapWithFilter(
     filter: (T) -> Boolean
 ): MvResolveProcessorBase<T> {
@@ -154,49 +94,6 @@ private class FilteringProcessor<in T: ScopeEntry>(
     }
 
     override fun toString(): String = "FilteringProcessor($originalProcessor, filter = $filter)"
-}
-
-fun <T: ScopeEntry> MvResolveProcessorBase<T>.wrapWithBeforeProcessingHandler(
-    handler: (T) -> Unit
-): MvResolveProcessorBase<T> {
-    return BeforeProcessingProcessor(this, handler)
-}
-
-private class BeforeProcessingProcessor<in T: ScopeEntry>(
-    private val originalProcessor: MvResolveProcessorBase<T>,
-    private val handler: (T) -> Unit,
-): MvResolveProcessorBase<T> {
-    override val names: Set<String>? = originalProcessor.names
-    override fun process(entry: T): Boolean {
-        handler(entry)
-        return originalProcessor.process(entry)
-    }
-
-    override fun toString(): String = "BeforeProcessingProcessor($originalProcessor, handler = $handler)"
-}
-
-
-fun <T: ScopeEntry> MvResolveProcessorBase<T>.wrapWithShadowingProcessor(
-    prevScope: Map<String, Set<Namespace>>,
-    ns: Set<Namespace>,
-): MvResolveProcessorBase<T> {
-    return ShadowingProcessor(this, prevScope, ns)
-}
-
-private class ShadowingProcessor<in T: ScopeEntry>(
-    private val originalProcessor: MvResolveProcessorBase<T>,
-    private val prevScope: Map<String, Set<Namespace>>,
-    private val ns: Set<Namespace>,
-): MvResolveProcessorBase<T> {
-    override val names: Set<String>? = originalProcessor.names
-    override fun process(entry: T): Boolean {
-        val prevNs = prevScope[entry.name]
-        if (entry.name == "_" || prevNs == null) return originalProcessor.process(entry)
-        val restNs = entry.namespaces.minus(prevNs)
-        return ns.intersects(restNs) && originalProcessor.process(entry.copyWithNs(restNs))
-    }
-
-    override fun toString(): String = "ShadowingProcessor($originalProcessor, ns = $ns)"
 }
 
 fun <T: ScopeEntry> MvResolveProcessorBase<T>.wrapWithShadowingProcessorAndUpdateScope(
@@ -238,32 +135,6 @@ private class ShadowingAndUpdateScopeProcessor<in T: ScopeEntry>(
     }
 
     override fun toString(): String = "ShadowingAndUpdateScopeProcessor($originalProcessor, ns = $ns)"
-}
-
-fun <T: ScopeEntry> MvResolveProcessorBase<T>.wrapWithShadowingProcessorAndImmediatelyUpdateScope(
-    prevScope: MutableMap<String, Set<Namespace>>,
-    ns: Set<Namespace>,
-): MvResolveProcessorBase<T> {
-    return ShadowingAndImmediatelyUpdateScopeProcessor(this, prevScope, ns)
-}
-
-private class ShadowingAndImmediatelyUpdateScopeProcessor<in T: ScopeEntry>(
-    private val originalProcessor: MvResolveProcessorBase<T>,
-    private val prevScope: MutableMap<String, Set<Namespace>>,
-    private val ns: Set<Namespace>,
-): MvResolveProcessorBase<T> {
-    override val names: Set<String>? = originalProcessor.names
-    override fun process(entry: T): Boolean {
-        if (entry.name in prevScope) return false
-        val result = originalProcessor.process(entry)
-        if (originalProcessor.acceptsName(entry.name)) {
-            prevScope[entry.name] = ns
-        }
-        return result
-    }
-
-    override fun toString(): String =
-        "ShadowingAndImmediatelyUpdateScopeProcessor($originalProcessor, ns = $ns)"
 }
 
 fun collectResolveVariants(referenceName: String?, f: (MvResolveProcessor) -> Unit): List<MvNamedElement> {
@@ -355,79 +226,6 @@ private fun collectMethodOrPathScopeEntry(
     result += MvPathResolveResult(element, isVisible)
 }
 
-fun pickFirstResolveVariant(referenceName: String?, f: (MvResolveProcessor) -> Unit): MvNamedElement? =
-    pickFirstResolveEntry(referenceName, f)?.element
-
-fun pickFirstResolveEntry(referenceName: String?, f: (MvResolveProcessor) -> Unit): ScopeEntry? {
-    if (referenceName == null) return null
-    val processor = PickFirstScopeEntryCollector(referenceName)
-    f(processor)
-    return processor.result
-}
-
-private class PickFirstScopeEntryCollector(
-    private val referenceName: String,
-    var result: ScopeEntry? = null,
-): MvResolveProcessorBase<ScopeEntry> {
-    override val names: Set<String> = setOf(referenceName)
-
-    override fun process(entry: ScopeEntry): Boolean {
-        if (entry.name == referenceName) {
-//            val element = entry.element
-//            if (element !is RsDocAndAttributeOwner || element.existsAfterExpansionSelf) {
-            result = entry
-            return true
-//            }
-        }
-        return false
-    }
-}
-
-
-fun resolveSingleResolveVariant(referenceName: String?, f: (MvResolveProcessor) -> Unit): MvNamedElement? =
-    resolveSingleResolveEntry(referenceName, f).singleOrNull()?.element
-
-fun resolveSingleResolveEntry(referenceName: String?, f: (MvResolveProcessor) -> Unit): List<ScopeEntry> {
-    if (referenceName == null) return emptyList()
-    val processor = ResolveSingleScopeEntryCollector(referenceName)
-    f(processor)
-    return processor.result
-}
-
-private class ResolveSingleScopeEntryCollector(
-    private val referenceName: String,
-    val result: MutableList<ScopeEntry> = SmartList(),
-): MvResolveProcessorBase<ScopeEntry> {
-    override val names: Set<String> = setOf(referenceName)
-
-    override fun process(entry: ScopeEntry): Boolean {
-        if (entry.name == referenceName) {
-            result += entry
-        }
-        return result.isNotEmpty()
-    }
-}
-
-
-//fun collectNames(f: (MvResolveProcessor) -> Unit): Set<String> {
-//    val processor = NamesCollector()
-//    f(processor)
-//    return processor.result
-//}
-
-//private class NamesCollector(
-//    val result: MutableSet<String> = mutableSetOf(),
-//): MvResolveProcessor {
-//    override val names: Set<String>? get() = null
-//
-//    override fun process(entry: SimpleScopeEntry): Boolean {
-//        if (entry.name != "_") {
-//            result += entry.name
-//        }
-//        return false
-//    }
-//}
-
 data class SimpleScopeEntry(
     override val name: String,
     override val element: MvNamedElement,
@@ -442,18 +240,6 @@ data class ModInfo(
     val module: MvModule?,
 //    val isScript: Boolean,
 ) {
-}
-
-fun <T> Map<String, T>.entriesWithNames(names: Set<String>?): Map<String, T> {
-    return if (names.isNullOrEmpty()) {
-        this
-    } else if (names.size == 1) {
-        val single = names.single()
-        val value = this[single] ?: return emptyMap()
-        mapOf(single to value)
-    } else {
-        names.mapNotNull { name -> this[name]?.let { name to it } }.toMap()
-    }
 }
 
 fun interface VisibilityFilter {

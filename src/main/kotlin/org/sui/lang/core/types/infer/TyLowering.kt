@@ -2,7 +2,6 @@ package org.sui.lang.core.types.infer
 
 import org.sui.cli.settings.debugErrorOrFallback
 import org.sui.lang.core.INTEGER_TYPE_IDENTIFIERS
-import org.sui.lang.core.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.sui.lang.core.psi.*
 import org.sui.lang.core.psi.ext.*
 import org.sui.lang.core.types.ty.*
@@ -73,8 +72,6 @@ class TyLowering {
         // Type hole placeholder in signatures (e.g. macro params/returns `: _`).
         // Keep it as an inference variable so call/branch context can solve it.
         if (refName == "_") return TyInfer.TyVar()
-        if (msl && refName in SPEC_INTEGER_TYPE_IDENTIFIERS) return TyInteger.fromName("num")
-        if (msl && refName == "bv") return TySpecBv
 
         val ty = when (refName) {
             in INTEGER_TYPE_IDENTIFIERS -> TyInteger.fromName(refName)

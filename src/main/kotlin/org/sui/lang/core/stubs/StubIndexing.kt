@@ -1,9 +1,8 @@
 package org.sui.lang.core.stubs
 
 import com.intellij.psi.stubs.IndexSink
-import org.sui.lang.core.psi.MvFunction
-import org.sui.lang.index.*
-import org.sui.lang.moveProject
+import org.sui.lang.index.MvModuleIndex
+import org.sui.lang.index.MvNamedElementIndex
 
 fun IndexSink.indexModuleStub(stub: MvModuleStub) {
     stub.name?.let {
@@ -14,26 +13,6 @@ fun IndexSink.indexModuleStub(stub: MvModuleStub) {
 
 fun IndexSink.indexFunctionStub(stub: MvFunctionStub) {
     indexNamedStub(stub)
-    stub.unresolvedQualName?.let {
-        when {
-//            stub.isTest -> occurrence(MvTestFunctionIndex.KEY, it)
-            stub.isEntry -> occurrence(MvEntryFunctionIndex.KEY, it)
-            stub.isView -> occurrence(MvViewFunctionIndex.KEY, it)
-        }
-    }
-    val function = stub.psi as MvFunction
-    function.moveProject?.let { proj ->
-        stub.resolvedQualName(proj)
-            ?.let {
-                when {
-//                    stub.isTest -> occurrence(MvTestFunctionIndex.KEY, it)
-                    stub.isEntry -> occurrence(MvEntryFunctionIndex.KEY, it)
-                    stub.isView -> occurrence(MvViewFunctionIndex.KEY, it)
-                }
-            }
-    }
-//    if (!stub.isTest) {
-//    }
 }
 
 fun IndexSink.indexStructStub(stub: MvStructStub) {

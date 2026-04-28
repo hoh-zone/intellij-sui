@@ -1,14 +1,10 @@
 package org.sui.lang.core.resolve2
 
 import org.sui.lang.core.psi.*
-import org.sui.lang.core.psi.ext.*
+import org.sui.lang.core.psi.ext.MvItemsOwner
+import org.sui.lang.core.psi.ext.itemElements
 import org.sui.lang.core.resolve.*
 import org.sui.lang.core.resolve.ref.Namespace
-import org.sui.lang.core.types.infer.deepFoldTyTypeParameterWith
-import org.sui.lang.core.types.ty.Ty
-import org.sui.lang.core.types.ty.TyInfer
-import org.sui.lang.core.types.ty.TyReference
-import org.sui.lang.moveProject
 
 val MvNamedElement.namespace
     get() = when (this) {
@@ -19,25 +15,6 @@ val MvNamedElement.namespace
         is MvModule -> Namespace.MODULE
         else -> error("when should be exhaustive, $this is not covered")
     }
-
-fun processMethodResolveVariants(
-    methodOrField: MvMethodOrField,
-    receiverTy: Ty,
-    msl: Boolean,
-    processor: MvResolveProcessor
-): Boolean {
-    val moveProject = methodOrField.moveProject ?: return false
-    val itemModule = receiverTy.itemModule(moveProject) ?: return false
-    return processor
-        .wrapWithFilter { e ->
-            val function = e.element as? MvFunction ?: return@wrapWithFilter false
-            val selfTy = function.selfParamTy(msl) ?: return@wrapWithFilter false
-            val selfTyWithTyVars =
-                selfTy.deepFoldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
-            TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
-        }
-        .processAllItems(setOf(Namespace.FUNCTION), itemModule.allNonTestFunctions())
-}
 
 fun processItemDeclarations(
     itemsOwner: MvItemsOwner,

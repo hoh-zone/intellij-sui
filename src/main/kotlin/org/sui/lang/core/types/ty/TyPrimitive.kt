@@ -26,22 +26,6 @@ object TyUnit : TyPrimitive("()") {
     override fun toString(): String = tyToString(this)
 }
 
-object TyNever : TyPrimitive("()") {
-    override fun abilities() = Ability.none()
-    override fun toString(): String = "<never>"
-}
-
-object TyNum : TyPrimitive("num") {
-    override fun abilities() = Ability.all()
-    override fun toString(): String = tyToString(this)
-}
-
-object TySpecBv: TyPrimitive("bv") {
-    override fun abilities() = Ability.all()
-    override fun toString(): String = tyToString(this)
-
-}
-
 data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
     override fun abilities() = Ability.all()
 

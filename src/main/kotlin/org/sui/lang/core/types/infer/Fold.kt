@@ -84,37 +84,3 @@ interface TypeFoldable<out Self> {
     fun innerVisitWith(visitor: TypeVisitor): Boolean
 }
 
-/** Deeply replace any [TyInfer] with the function [folder] */
-fun <T> TypeFoldable<T>.deepFoldTyInferWith(folder: (TyInfer) -> Ty): T =
-    foldWith(object : TypeFolder() {
-        override fun fold(ty: Ty): Ty {
-            val foldedTy = if (ty is TyInfer) folder(ty) else ty
-            return foldedTy.innerFoldWith(this)
-        }
-    })
-
-/** Deeply replace any [TyTypeParameter] with the function [folder] */
-fun <T> TypeFoldable<T>.deepFoldTyTypeParameterWith(folder: (TyTypeParameter) -> Ty): T =
-    foldWith(object : TypeFolder() {
-        override fun fold(ty: Ty): Ty =
-            if (ty is TyTypeParameter) folder(ty) else ty.innerFoldWith(this)
-    })
-//
-
-fun <T> TypeFoldable<T>.visitTyTypeParameterWith(visitor: (TyTypeParameter) -> Boolean) =
-    visitWith(object : TypeVisitor {
-        override fun invoke(ty: Ty): Boolean =
-            if (ty is TyTypeParameter) visitor(ty) else ty.innerVisitWith(this)
-    })
-
-fun <T> TypeFoldable<T>.visitTyVarWith(visitor: (TyInfer.TyVar) -> Boolean) =
-    visitWith(object : TypeVisitor {
-        override fun invoke(ty: Ty): Boolean =
-            if (ty is TyInfer.TyVar) visitor(ty) else ty.innerVisitWith(this)
-    })
-
-fun <T> TypeFoldable<T>.containsTyOfClass(classes: List<Class<*>>): Boolean =
-    visitWith(object : TypeVisitor {
-        override fun invoke(ty: Ty): Boolean =
-            if (classes.any { it.isInstance(ty) }) true else ty.innerVisitWith(this)
-    })
