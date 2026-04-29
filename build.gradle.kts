@@ -89,7 +89,7 @@ plugins {
     kotlin("jvm") version "2.3.0"
     id("org.jetbrains.intellij.platform") version "2.15.0"
     id("org.jetbrains.grammarkit") version "2023.3.0.1"
-    id("net.saliman.properties") version "1.5.2"
+    id("net.saliman.properties") version "1.6.0"
     id("org.gradle.idea")
     id("de.undercouch.download") version "5.6.0"
 }
