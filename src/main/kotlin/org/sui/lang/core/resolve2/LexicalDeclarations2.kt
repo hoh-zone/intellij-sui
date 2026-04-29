@@ -35,7 +35,7 @@ fun processItemsInScope(
                         if (processor.processAllItems(
                             elementNs,
                             scope.structs(),
-                            scope.consts()
+                            scope.constList
                         )) return true
 
                         PreImportedModuleService.getInstance(scope.project)

@@ -15,18 +15,8 @@ interface MvStructOrEnumItemElement: MvQualNamedElement,
     override fun declaredType(msl: Boolean): TyAdt = TyAdt(this, this.tyTypeParams, this.generics)
 }
 
-val MvStructOrEnumItemElement.psiAbilities: List<MvAbility>
-    get() {
-        return this.abilitiesList?.abilityList ?: emptyList()
-    }
-
 val MvStructOrEnumItemElement.abilities: Set<Ability>
-    get() = this.psiAbilities.mapNotNull { it.ability }.toSet()
-
-val MvStructOrEnumItemElement.hasKey: Boolean get() = Ability.KEY in abilities
-val MvStructOrEnumItemElement.hasStore: Boolean get() = Ability.STORE in abilities
-val MvStructOrEnumItemElement.hasCopy: Boolean get() = Ability.COPY in abilities
-val MvStructOrEnumItemElement.hasDrop: Boolean get() = Ability.DROP in abilities
+    get() = this.abilitiesList?.abilityList.orEmpty().mapNotNull { it.ability }.toSet()
 
 val MvStructOrEnumItemElement.module: MvModule
     get() {

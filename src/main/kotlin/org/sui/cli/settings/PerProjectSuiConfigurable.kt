@@ -29,48 +29,8 @@ class PerProjectSuiConfigurable(val project: Project) : BoundConfigurable("Sui")
             chooseSuiCliPanel.attachToLayout(this)
 
             group {
-//                row {
-//                    checkBox("Fetch external packages on project reload")
-//                        .bindSelected(state::fetchSuiDeps)
-//                    link("Configure project reload schedule") {
-//                        ProjectManager.getInstance().defaultProject.showSettingsDialog<ExternalSystemGroupConfigurable>()
-//                    }
-//                        .align(AlignX.RIGHT)
-//                }
                 group("Compiler 2024") {
-//                    row {
-//                        checkBox("Set Compiler V2 flags for CLI")
-//                            .comment(
-//                                "Adds `--compiler-version v2 --language-version 2.0` " +
-//                                        "to all generated Sui CLI commands"
-//                            )
-//                            .bindSelected(state::addCompilerV2CLIFlags)
-//                    }
                     group("Language features") {
-                        row {
-                            checkBox("Receiver-Style functions")
-                                .comment(
-                                    "Allows calling functions with special " +
-                                            "first <b><code>self</code></b> parameter as a methods through dot expression."
-                                )
-                                .bindSelected(state::enableReceiverStyleFunctions)
-                        }
-//                        row {
-//                            checkBox("Resource-Access control")
-//                                .comment(
-//                                    "Allows specifying resource access attributes " +
-//                                            "(<code>reads, writes, pure</code> for functions). " +
-//                                            "Requires re-parsing of all Move files in the project, can be slow."
-//                                )
-//                                .bindSelected(state::enableResourceAccessControl)
-//                        }
-                        row {
-                            checkBox("Index notation")
-                                .comment(
-                                    "Allows resource (<code>R[@0x1]</code>) and vector (<code>v[0]</code>) index operators."
-                                )
-                                .bindSelected(state::enableIndexExpr)
-                        }
                         row {
                             checkBox("public(package) visibility modifier")
                                 .comment(
@@ -100,13 +60,6 @@ class PerProjectSuiConfigurable(val project: Project) : BoundConfigurable("Sui")
                     }
                 }
                 group("Command Line Options") {
-//                    row {
-//                        checkBox("Disable telemetry for new Run Configurations")
-//                            .comment(
-//                                "Adds SUI_DISABLE_TELEMETRY=true to every generated Sui command."
-//                            )
-//                            .bindSelected(state::disableTelemetry)
-//                    }
                     row {
                         checkBox("Skip updating to the latest git dependencies")
                             .comment(
@@ -115,13 +68,6 @@ class PerProjectSuiConfigurable(val project: Project) : BoundConfigurable("Sui")
                             .bindSelected(state::skipFetchLatestGitDeps)
 
                     }
-//                    row {
-//                        checkBox("Dump storage to console on test failures")
-//                            .comment(
-//                                "Adds --dump to generated test runs."
-//                            )
-//                            .bindSelected(state::dumpStateOnTestFailure)
-//                    }
                 }
             }
 
@@ -138,22 +84,14 @@ class PerProjectSuiConfigurable(val project: Project) : BoundConfigurable("Sui")
             onApply {
                 val oldState = settings.state.copy()
                 settings.modify {
-                    it.suiExecType = chooseSuiCliPanel.data.suiExecType
-
                     val localSuiSdkPath = chooseSuiCliPanel.data.localSuiPath
                     if (localSuiSdkPath != null) {
                         chooseSuiCliPanel.updateSuiSdks(localSuiSdkPath)
                     }
                     it.localSuiPath = localSuiSdkPath
 
-                    it.disableTelemetry = state.disableTelemetry
                     it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
-                    it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
-                    it.enableReceiverStyleFunctions = state.enableReceiverStyleFunctions
-                    it.enableResourceAccessControl = state.enableResourceAccessControl
-                    it.enableIndexExpr = state.enableIndexExpr
                     it.enablePublicPackage = state.enablePublicPackage
-                    it.addCompilerV2CLIFlags = state.addCompilerV2CLIFlags
                     it.fetchSuiDeps = state.fetchSuiDeps
                     it.moveAnalyzerPath = state.moveAnalyzerPath
                 }
@@ -167,32 +105,19 @@ class PerProjectSuiConfigurable(val project: Project) : BoundConfigurable("Sui")
             // loads settings from configurable to swing form
             onReset {
                 state.copyFrom(settings.state)
-                chooseSuiCliPanel.data =
-                    ChooseSuiCliPanel.Data(state.suiExecType, state.localSuiPath)
+                chooseSuiCliPanel.data = ChooseSuiCliPanel.Data(state.localSuiPath)
             }
 
             /// checks whether any settings are modified (should be fast)
             onIsModified {
                 val current = settings.state
                 val suiPanelData = chooseSuiCliPanel.data
-                suiPanelData.suiExecType != settings.suiExecType
-                        || suiPanelData.localSuiPath != settings.localSuiPath
-                        || state.disableTelemetry != current.disableTelemetry
+                suiPanelData.localSuiPath != settings.localSuiPath
                         || state.skipFetchLatestGitDeps != current.skipFetchLatestGitDeps
-                        || state.dumpStateOnTestFailure != current.dumpStateOnTestFailure
-                        || state.enableReceiverStyleFunctions != current.enableReceiverStyleFunctions
-                        || state.enableResourceAccessControl != current.enableResourceAccessControl
-                        || state.enableIndexExpr != current.enableIndexExpr
                         || state.enablePublicPackage != current.enablePublicPackage
-                        || state.addCompilerV2CLIFlags != current.addCompilerV2CLIFlags
                         || state.fetchSuiDeps != current.fetchSuiDeps
                         || state.moveAnalyzerPath != current.moveAnalyzerPath
             }
         }
     }
-
-//    override fun disposeUIResources() {
-//        super.disposeUIResources()
-//        Disposer.dispose(chooseSuiCliPanel)
-//    }
 }

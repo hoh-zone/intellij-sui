@@ -2,7 +2,6 @@ package org.sui.stdext
 
 import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
@@ -14,8 +13,6 @@ private val LOG = Logger.getInstance("#org.sui.stdext")
 fun String.toPath(): Path = Paths.get(this)
 
 fun String.toPathOrNull(): Path? = pathOrNull(this::toPath)
-
-fun Path.resolveOrNull(other: String): Path? = pathOrNull { resolve(other) }
 
 private inline fun pathOrNull(block: () -> Path): Path? {
     return try {
@@ -31,9 +28,6 @@ fun Path.isExecutableFile(): Boolean {
 }
 
 fun Path.exists(): Boolean = Files.exists(this)
-
-fun executableName(toolName: String): String =
-    if (SystemInfo.isWindows) "$toolName.exe" else toolName
 
 fun String.blankToNull(): String? = ifBlank { null }
 

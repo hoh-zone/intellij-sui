@@ -27,37 +27,18 @@ class MvProjectSettingsService(
 ) :
     MvProjectSettingsServiceBase<MoveProjectSettings>(project, MoveProjectSettings()) {
 
-    val suiExecType: SuiExecType get() = state.suiExecType
     val localSuiPath: String? get() = state.localSuiPath
     val fetchSuiDeps: Boolean get() = state.fetchSuiDeps
 
-    val disableTelemetry: Boolean get() = state.disableTelemetry
     val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
-    val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
 
-    val enableReceiverStyleFunctions: Boolean get() = state.enableReceiverStyleFunctions
-    val enableResourceAccessControl: Boolean get() = state.enableResourceAccessControl
-    val enableIndexExpr: Boolean get() = state.enableIndexExpr
     val enablePublicPackage: Boolean get() = state.enablePublicPackage
-    val addCompilerV2CLIFlags: Boolean get() = state.addCompilerV2CLIFlags
     val moveAnalyzerPath: String? get() = state.moveAnalyzerPath
 
     // default values for settings
     class MoveProjectSettings : MvProjectSettingsBase<MoveProjectSettings>() {
         @AffectsMoveProjectsMetadata
-        var suiExecType: SuiExecType by enum(defaultSuiExecType)
-
-        @AffectsMoveProjectsMetadata
         var localSuiPath: String? by string()
-
-        @AffectsHighlighting
-        var enableReceiverStyleFunctions: Boolean by property(true)
-
-        @AffectsParseTree
-        var enableResourceAccessControl: Boolean by property(false)
-
-        @AffectsHighlighting
-        var enableIndexExpr: Boolean by property(true)
 
         @AffectsHighlighting
         var enablePublicPackage: Boolean by property(true)
@@ -65,13 +46,8 @@ class MvProjectSettingsService(
         @AffectsMoveProjectsMetadata
         var fetchSuiDeps: Boolean by property(false)
 
-        var disableTelemetry: Boolean by property(true)
-
         // change to true here to not annoy the users with constant updates
         var skipFetchLatestGitDeps: Boolean by property(true)
-        var dumpStateOnTestFailure: Boolean by property(false)
-
-        var addCompilerV2CLIFlags: Boolean by property(false)
 
         @AffectsHighlighting
         var moveAnalyzerPath: String? by string()
@@ -92,23 +68,13 @@ class MvProjectSettingsService(
         oldState: MoveProjectSettings,
         newState: MoveProjectSettings
     ) : SettingsChangedEventBase<MoveProjectSettings>(oldState, newState)
-
-    companion object {
-        private val defaultSuiExecType
-            get() = SuiExecType.LOCAL
-    }
 }
 
 val Project.moveSettings: MvProjectSettingsService get() = service()
 
 fun Project.getSuiCli(parentDisposable: Disposable? = null): Sui? {
-    val suiExecPath =
-        SuiExecType.suiExecPath(
-            this.moveSettings.suiExecType,
-            this.moveSettings.localSuiPath
-        )
-    val sui = suiExecPath?.let { Sui(it, parentDisposable) }
-    return sui
+    val suiExecPath = SuiExecType.suiExecPath(this.moveSettings.localSuiPath)
+    return suiExecPath?.let { Sui(it, parentDisposable) }
 }
 
 val Project.isSuiConfigured: Boolean get() = this.getSuiCli() != null
@@ -128,13 +94,6 @@ fun Path?.isValidExecutable(): Boolean {
 }
 
 fun isDebugModeEnabled(): Boolean = Registry.`is`("org.sui.debug.enabled")
-fun isTypeUnknownAsError(): Boolean = Registry.`is`("org.sui.types.highlight.unknown.as.error")
-
-fun debugError(message: String) {
-    if (isDebugModeEnabled()) {
-        error(message)
-    }
-}
 
 fun <T> debugErrorOrFallback(message: String, fallback: T): T {
     if (isDebugModeEnabled()) {

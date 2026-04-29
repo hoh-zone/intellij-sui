@@ -11,11 +11,9 @@ import org.sui.lang.MoveLanguage
 import org.sui.lang.core.psi.MvModule
 import org.sui.lang.core.psi.MvStruct
 import org.sui.lang.core.psi.ext.structs
-import org.sui.lang.core.psi.namespaceModule
 import org.sui.lang.core.resolve.MvResolveProcessor
 import org.sui.lang.core.resolve.process
 import org.sui.lang.core.resolve.ref.Namespace
-import org.sui.lang.preLoadItems
 import org.sui.openapiext.allMoveFiles
 import java.util.concurrent.ConcurrentHashMap
 
@@ -65,35 +63,16 @@ class PreImportedModuleService(private val project: Project) {
     }
 
     fun processPreImportedModules(ns: Set<Namespace>, processor: MvResolveProcessor): Boolean {
-        // deal with pre-imported modules
-        for (module in preImportedModules) {
-            if (Namespace.MODULE in ns) {
+        if (Namespace.MODULE in ns) {
+            for (module in preImportedModules) {
                 val name = module.name ?: continue
                 if (processor.process(name, module, setOf(Namespace.MODULE))) return true
             }
-
-//            // deal with pre-imported structs
-//            for (item in module.structs()) {
-//                if (item.name in PRELOAD_MODULE_ITEMS) {
-//                    if (item.namespace in ns) {
-//                        val name = item.name ?: continue
-//                        if (processor.process(name, item, setOf(item.namespace))) return true
-//                    }
-//                }
-//            }
         }
-
-        for (item in preImportedItems) {
-            if (item.namespace in ns) {
-                val name = item.name ?: continue
-                if (processor.process(name, item, setOf(item.namespace))) return true
-            }
-        }
-        return false
+        return processPreImportedItems(ns, processor)
     }
 
     fun processPreImportedItems(ns: Set<Namespace>, processor: MvResolveProcessor): Boolean {
-        // deal with pre-imported structs
         for (item in preImportedItems) {
             if (item.namespace in ns) {
                 val name = item.name ?: continue
@@ -101,33 +80,6 @@ class PreImportedModuleService(private val project: Project) {
             }
         }
         return false
-    }
-
-    fun getPreImportedModules(): List<MvModule> = preImportedModules
-    fun getPreImportedItems(): List<MvStruct> = preImportedItems
-
-    fun addPreImportedModule(module: MvModule) {
-        preImportedModules.add(module)
-    }
-
-    fun removePreImportedModule(module: MvModule) {
-        preImportedModules.remove(module)
-    }
-
-    fun clearPreImportedModules() {
-        preImportedModules.clear()
-    }
-
-    fun addPreImportedNamedElement(element: MvStruct) {
-        preImportedItems.add(element)
-    }
-
-    fun removePreImportedNamedElement(element: MvStruct) {
-        preImportedItems.remove(element)
-    }
-
-    fun clearPreImportedNamedElements() {
-        preImportedItems.clear()
     }
 
     companion object {

@@ -31,8 +31,6 @@ abstract class MvStubbedNamedElementImpl<StubT> : MvStubbedElementImpl<StubT>,
 
     override fun getName(): String? {
         return nameIdentifier?.text
-//        val stub = greenStub
-//        return if (stub !== null) stub.name else nameIdentifier?.text
     }
 
     override fun setName(name: String): PsiElement? {

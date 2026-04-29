@@ -1,9 +1,7 @@
 package org.sui.lang.core.types.ty
 
-import com.intellij.openapi.project.Project
 import org.sui.ide.presentation.tyToString
 import org.sui.lang.core.psi.MvFunctionLike
-import org.sui.lang.core.psi.psiFactory
 import org.sui.lang.core.types.infer.*
 
 data class TyFunction(

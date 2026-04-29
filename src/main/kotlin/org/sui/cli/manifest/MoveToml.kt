@@ -1,6 +1,5 @@
 package org.sui.cli.manifest
 
-import org.sui.cli.manifest.SuiConfigYaml
 import com.intellij.openapi.project.Project
 import org.sui.cli.*
 import org.sui.lang.toNioPathOrNull
@@ -16,15 +15,13 @@ import kotlin.io.path.readText
 class MoveToml(
     val project: Project,
     val tomlFile: TomlFile,
-    val packageTable: MoveTomlPackageTable? = null,
+    val packageName: String? = null,
 
     val addresses: RawAddressMap = mutableRawAddressMap(),
-    val devAddresses: RawAddressMap = mutableRawAddressMap(),
 
     var deps: List<Pair<TomlDependency, RawAddressMap>> = emptyList(),
     val devDeps: List<Pair<TomlDependency, RawAddressMap>> = emptyList()
 ) {
-    val packageName: String? get() = packageTable?.name
 
     fun declaredAddresses(): PackageAddresses {
         val packageName = this.packageName ?: ""
@@ -34,7 +31,7 @@ class MoveToml(
         val placeholders = placeholderMap()
         for ((addressName, addressVal) in raws.entries) {
             val (value, tomlKeyValue) = addressVal
-            if (addressVal.first == Consts.ADDR_PLACEHOLDER) {
+            if (addressVal.first == MvConstants.ADDR_PLACEHOLDER) {
                 placeholders[addressName] = PlaceholderVal(tomlKeyValue, packageName)
             } else {
                 values[addressName] = AddressVal(value, tomlKeyValue, null, packageName)
@@ -43,54 +40,25 @@ class MoveToml(
         return PackageAddresses(values, placeholders)
     }
 
-    data class MoveTomlPackageTable(
-        val name: String?,
-        val version: String?,
-        val authors: List<String>,
-        val license: String?
-    )
-
     companion object {
 
         fun fromTomlFile(tomlFile: TomlFile): MoveToml {
             // needs read access for Toml
             checkReadAccessAllowed()
 
-            val packageTomlTable = tomlFile.getTable("package")
-            var packageTable: MoveTomlPackageTable? = null
-            if (packageTomlTable != null) {
-                val name = packageTomlTable.findValue("name")?.stringValue()
-                val version = packageTomlTable.findValue("version")?.stringValue() ?: ""
-                val authors = packageTomlTable.findValue("authors")?.arrayValue()
-                    .orEmpty()
-                    .mapNotNull { it.stringValue() }
-                val license = packageTomlTable.findValue("license")?.stringValue()
-                packageTable = MoveTomlPackageTable(name, version, authors, license)
-            }
+            val packageName = tomlFile.getTable("package")?.findValue("name")?.stringValue()
 
             val addresses = parseAddresses("addresses", tomlFile)
-            val devAddresses = parseAddresses("dev-addresses", tomlFile)
 
             val contentRoot = tomlFile.parent?.virtualFile?.toNioPathOrNull()
-            var deps = contentRoot?.let { parseDependencies("dependencies", tomlFile, it) }.orEmpty()
-//            if(deps.isEmpty()) {
-//                val depPair = getYamlByPath(contentRoot, tomlFile.project.name)
-//                val dependencies = mutableListOf<Pair<TomlDependency, RawAddressMap>>()
-//                if(depPair!=null) {
-//                    dependencies.add(depPair)
-//                    dependencies.addAll(deps)
-//                    deps = dependencies.toList()
-//                }
-//            }
+            val deps = contentRoot?.let { parseDependencies("dependencies", tomlFile, it) }.orEmpty()
             val devDeps = contentRoot?.let { parseDependencies("dev-dependencies", tomlFile, it) }.orEmpty()
-
 
             return MoveToml(
                 tomlFile.project,
                 tomlFile,
-                packageTable,
+                packageName,
                 addresses,
-                devAddresses,
                 deps,
                 devDeps
             )
@@ -149,15 +117,6 @@ class MoveToml(
                 .map { Pair(it.first, it.second?.toMap().orEmpty()) }
 
             val dependencies = mutableListOf<Pair<TomlDependency, RawAddressMap>>()
-            val notHasSui = tomlInlineTableDeps.isEmpty() || tomlInlineTableDeps.filter { it.first == "Sui" }.isEmpty()
-//
-//            if(notHasSui){
-//                val depPair =getYamlByPath(projectRoot,tomlFile.project.name)
-//                if(depPair!=null)
-//                    dependencies.add(depPair)
-//            }
-//            if(tomlInlineTableDeps.isEmpty())
-//                return dependencies
 
             val tomlTableDeps = tomlFile
                 .getTablesByFirstSegment(tableKey)
@@ -219,42 +178,10 @@ class MoveToml(
             return subst
         }
 
-//        private fun parseGitSuiBuild(
-//            projectRoot: Path,
-//            depName: String,
-//            projectName:String
-//        ): Pair<TomlDependency.Git, RawAddressMap>? {
-//
-//            val path = Paths.get(projectRoot.toString(),  "build",projectName, "BuildInfo.yaml")
-//            val repo = ""
-//            val rev = ""
-//            val subdir =  ""
-//            val subst = mutableRawAddressMap()
-//            return Pair(
-//                TomlDependency.Git(
-//                    depName,
-//                    repo,
-//                    rev,
-//                    subdir,
-//                ), subst
-//            )
-//        }
-
         private fun parseBuildInfoGitDependency(
             depMap: Map<String, *>,
             depName:String
         ): Pair<TomlDependency.Git, RawAddressMap>?{
-//            val path = Paths.get(projectRoot.toString(),  "build",projectName, "BuildInfo.yaml")
-//            val yaml =
-//                try {
-//                    Yaml().load<Map<String, Any>>(path.readText())
-//                } catch (e: YAMLException) {
-//                    // TODO: error notification?
-//                    return null
-//                }
-//            val compiled_package_info = (yaml["compiled_package_info"] as? Map<String, *>)?: return null
-//            val build_flags = (compiled_package_info["build_flags"] as? Map<String, *> )?: return null
-//            val Sui = findGitByName(build_flags,"Sui")?: return null
             val gitInfo = findGitByName(depMap,"Git")?: return null
 
             val gitUrl = gitInfo["git_url"] as? String?: return null
@@ -285,21 +212,5 @@ class MoveToml(
             }
             return null
         }
-//
-//        private fun parseAddrSubstSui(depTable: TomlElementMap): RawAddressMap {
-//            val substEntries =
-//                depTable["addr_subst"]?.inlineTableValue()?.namedEntries().orEmpty()
-//            val subst = mutableRawAddressMap()
-//            for ((name, tomlValue) in substEntries) {
-//                if (tomlValue == null) continue
-//                val value = tomlValue.stringValue() ?: continue
-//                val keyValue = tomlValue.keyValue
-//                subst[name] = Pair(value, keyValue)
-//            }
-//            return subst
-//        }
-
-
-
     }
 }

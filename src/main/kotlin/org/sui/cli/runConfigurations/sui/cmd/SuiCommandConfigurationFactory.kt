@@ -17,22 +17,4 @@ class SuiCommandConfigurationFactory(
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
         return SuiCommandConfiguration(project, this)
     }
-
-//    companion object {
-//        fun createTemplateRunConfiguration(
-//            project: Project,
-//            configurationName: String,
-//            save: Boolean
-//        ): RunnerAndConfigurationSettings {
-//            val runManager = RunManagerEx.getInstanceEx(project)
-//            val runConfiguration = runManager.createConfiguration(
-//                configurationName,
-//                SuiCommandConfigurationFactory(SuiTransactionConfigurationType.getInstance())
-//            )
-//            if (save) {
-//                runManager.setTemporaryConfiguration(runConfiguration)
-//            }
-//            return runConfiguration
-//        }
-//    }
 }

@@ -15,15 +15,9 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import org.sui.cli.manifest.MoveToml
-import org.sui.cli.manifest.SuiConfigYaml
 import org.sui.cli.tests.NamedAddressService
-import org.sui.lang.core.resolve2.PreImportedModuleService.Companion.PRELOAD_STD_MODULES
-import org.sui.lang.core.resolve2.PreImportedModuleService.Companion.PRELOAD_SUI_MODULES
 import org.sui.lang.MoveFile
-import org.sui.lang.core.psi.MvModule
 import org.sui.lang.core.types.Address
-import org.sui.lang.core.types.AddressLit
-import org.sui.lang.index.MvNamedElementIndex
 import org.sui.lang.toMoveFile
 import org.sui.lang.toNioPathOrNull
 import org.sui.openapiext.common.checkUnitTestMode
@@ -91,31 +85,16 @@ data class MoveProject(
 
     fun getNamedAddressValue(name: String): String? = addressValues()[name]?.value
 
-    fun getNamedAddress(name: String): Address.Named? {
-        val value = getNamedAddressValue(name) ?: return null
-        return Address.Named(name, value, this)
-    }
-
     fun getNamedAddressTestAware(name: String): Address.Named? {
-        val namedAddress = getNamedAddress(name)
-        if (namedAddress != null) return namedAddress
+        val value = getNamedAddressValue(name)
+        if (value != null) {
+            return Address.Named(name, value, this)
+        }
         if (isUnitTestMode) {
             val namedAddressService = project.service<NamedAddressService>()
             return namedAddressService.getNamedAddress(this, name)
         }
         return null
-    }
-
-    fun getAddressNamesForValue(addressValue: String): List<String> {
-        val addressLit = AddressLit(addressValue)
-        val names = mutableListOf<String>()
-        for ((name, value) in addresses().values.entries) {
-            val canonicalValue = value.literal.canonical()
-            if (canonicalValue == addressLit.canonical()) {
-                names.add(name)
-            }
-        }
-        return names
     }
 
     fun searchScope(): GlobalSearchScope {
@@ -135,16 +114,6 @@ data class MoveProject(
         return searchScope
     }
 
-    fun getModulesFromIndex(name: String): Collection<MvModule> {
-        return MvNamedElementIndex
-            .getElementsByName(project, name, searchScope())
-            .filterIsInstance<MvModule>()
-    }
-
-    val suiConfigYaml: SuiConfigYaml? get() = this.currentPackage.suiConfigYaml
-
-    val profiles: Set<String> = this.suiConfigYaml?.profiles.orEmpty()
-
     fun processMoveFiles(processFile: (MoveFile) -> Boolean) {
         val folders = allAccessibleMoveFolders()
         var stopped = false
@@ -159,36 +128,12 @@ data class MoveProject(
         }
     }
 
-    fun preloadModules(): List<MvModule> {
-        val preModules: MutableList<MvModule> = mutableListOf()
-        val depFolders = dependencies.asReversed().flatMap { it.first.moveFolders() }
-        for (floder in depFolders) {
-            floder.iterateMoveVirtualFiles {
-                val moveFile = it.toMoveFile(project) ?: return@iterateMoveVirtualFiles true
-                if (PRELOAD_STD_MODULES.contains(moveFile.name) || PRELOAD_SUI_MODULES.contains(moveFile.name)) {
-                    val preloadModules = moveFile.preloadModules()
-                    preModules += preloadModules
-                }
-                true
-            }
-        }
-        return preModules
-    }
-
-
-
-    sealed class UpdateStatus(private val priority: Int) {
-        //        object UpToDate : UpdateStatus(0)
-        object NeedsUpdate: UpdateStatus(1)
-        class UpdateFailed(@Tooltip val reason: String): UpdateStatus(2) {
+    sealed class UpdateStatus {
+        object NeedsUpdate: UpdateStatus()
+        class UpdateFailed(@Tooltip val reason: String): UpdateStatus() {
             override fun toString(): String = reason
         }
-
-        fun merge(status: UpdateStatus): UpdateStatus = if (priority >= status.priority) this else status
     }
-
-    val mergedStatus: UpdateStatus get() = fetchDepsStatus
-//    val mergedStatus: UpdateStatus get() = fetchDepsStatus.merge(stdlibStatus)
 
     override fun toString(): String {
         return "MoveProject(" +

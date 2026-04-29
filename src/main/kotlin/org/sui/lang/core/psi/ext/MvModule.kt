@@ -3,13 +3,9 @@ package org.sui.lang.core.psi.ext
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.sui.ide.MoveIcons
-import org.sui.lang.core.resolve2.PreImportedModuleService.Companion.PRELOAD_STD_MODULES
-import org.sui.lang.core.resolve2.PreImportedModuleService.Companion.PRELOAD_SUI_MODULES
 import org.sui.lang.core.psi.*
 import org.sui.lang.core.stubs.MvFunctionStub
 import org.sui.lang.core.stubs.MvModuleStub
@@ -32,14 +28,6 @@ val MvModule.friendModules: Sequence<MvModule>
         return this.friendDeclList
             .asSequence()
             .mapNotNull { it.path?.reference?.resolveFollowingAliases() as? MvModule }
-//        return sequence {
-//        }
-//        val friends = mutableSetOf<MvModule>()
-//        for (modulePath in friendModulePaths) {
-//            val module = modulePath.reference?.resolveFollowingAliases() as? MvModule ?: continue
-//            friends.add(module)
-//        }
-//        return friends
     }
 
 fun MvModule.allFunctions(): List<MvFunction> {
@@ -48,10 +36,7 @@ fun MvModule.allFunctions(): List<MvFunction> {
 }
 
 fun MvModule.allNonTestFunctions(): List<MvFunction> =
-//    allFunctions().filter { f -> !f.isTest }
     this.allFunctions().filter { f -> !f.hasTestAttr }
-//    getProjectPsiDependentCache(this) {
-//    }
 
 fun MvModule.testFunctions(): List<MvFunction> =
     getProjectPsiDependentCache(this) {
@@ -97,48 +82,7 @@ fun MvModule.structs(): List<MvStruct> {
     }
 }
 
-fun MvModule.builtinModules(): List<MvModule> {
-    return getProjectPsiDependentCache(this) {
-        val project = it.project
-        listOf(
-            builtinModule("transfer", project),
-            builtinModule("object", project),
-        )
-    }
-}
-
-// TODO
-fun builtinModule(text: String, project: Project): MvModule {
-    val trimmedText = text.trimIndent()
-    return project.psiFactory.inlineModule(trimmedText, "", "")
-}
-
-fun MvModule.consts(): List<MvConst> = this.constList
-
 fun MvModule.enumVariants(): List<MvEnumVariant> = this.enumList.flatMap { it.variants }
-
-fun MvModule.isPreload(): Boolean {
-    return this.addressRef?.namedAddress?.text == "sui" && PRELOAD_SUI_MODULES.contains(this.name)
-            || this.addressRef?.namedAddress?.text == "std" && PRELOAD_STD_MODULES.contains(this.name)
-}
-
-fun MvModule.useModuleItemList(): List<String> {
-    val strings: MutableList<String> =
-        (this.useStmtList.mapNotNull { it.useSpeck?.path?.text?.split("::")?.getOrNull(1) }
-            .toMutableList() ?: mutableListOf()).toMutableList()
-    val useGroupSpeckList = this.useStmtList.mapNotNull { it.useSpeck?.useGroup?.useSpeckList }.toMutableList()
-    useGroupSpeckList.forEach() { useGroupSpeck ->
-        strings += (useGroupSpeck.mapNotNull {
-            if (it.path.text?.split("::")?.size!! > 1) {
-                it.path.text?.split("::")?.get(0)
-            } else {
-                null
-            }
-        })
-    }
-
-    return strings
-}
 
 abstract class MvModuleMixin: MvStubbedNamedElementImpl<MvModuleStub>,
                               MvModule {

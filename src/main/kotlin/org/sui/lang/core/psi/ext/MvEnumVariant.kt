@@ -10,8 +10,7 @@ import org.sui.lang.core.stubs.MvEnumVariantStub
 import org.sui.lang.core.stubs.MvStubbedNamedElementImpl
 import javax.swing.Icon
 
-val MvEnumVariant.enumBody: MvEnumBody get() = this.parent as MvEnumBody
-val MvEnumVariant.enumItem: MvEnum get() = this.enumBody.parent as MvEnum
+val MvEnumVariant.enumItem: MvEnum get() = (this.parent as MvEnumBody).parent as MvEnum
 
 abstract class MvEnumVariantMixin: MvStubbedNamedElementImpl<MvEnumVariantStub>,
                                    MvEnumVariant {

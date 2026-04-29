@@ -23,7 +23,6 @@ class DownloadSuiSDKAction : DumbAwareAction("Download pre-compiled binary from 
         val sdkParametersDialog = DownloadSuiSdkDialog(e.project)
         val isOk = sdkParametersDialog.showAndGet()
         if (isOk) {
-            // download Sui SDK
             val sdkVersion = sdkParametersDialog.versionField.text
             val network = sdkParametersDialog.networkComboBox.selectedItem as String
             val project: Project = e.project ?: return
@@ -40,14 +39,6 @@ class DownloadSuiSDKAction : DumbAwareAction("Download pre-compiled binary from 
             val archive = SuiSdk(sdksDir, sdkVersion, network)
             ProgressManager.getInstance()
                 .run(DownloadSuiSdkTask(archive, onFinish))
-        }
-    }
-
-    companion object {
-        fun create(onFinish: (SuiSdk) -> Unit): DownloadSuiSDKAction {
-            val action = DownloadSuiSDKAction()
-            action.onFinish = onFinish
-            return action
         }
     }
 }

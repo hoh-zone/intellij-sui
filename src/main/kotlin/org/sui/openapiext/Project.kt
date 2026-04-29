@@ -13,10 +13,6 @@ import org.sui.openapiext.common.isHeadlessEnvironment
 
 val Project.runManager: RunManager get() = RunManager.getInstance(this)
 
-fun Project.suiCommandConfigurations(): List<SuiCommandConfiguration> =
-    runManager.allConfigurationsList
-        .filterIsInstance<SuiCommandConfiguration>()
-
 fun Project.suiCommandConfigurationsSettings(): List<RunnerAndConfigurationSettings> =
     runManager.allSettings
         .filter { it.configuration is SuiCommandConfiguration }
@@ -39,14 +35,11 @@ fun Project.addRunConfiguration(
     return runnerAndConfigurationSettings
 }
 
-data class GeneratedFilesHolder(val manifest: VirtualFile)
-
-fun Project.openFile(file: VirtualFile) = openFiles(GeneratedFilesHolder(file))
-
-fun Project.openFiles(files: GeneratedFilesHolder) = invokeLater {
+fun Project.openFile(file: VirtualFile) = invokeLater {
     if (!isHeadlessEnvironment) {
-        val navigation = PsiNavigationSupport.getInstance()
-        navigation.createNavigatable(this, files.manifest, -1).navigate(false)
+        PsiNavigationSupport.getInstance()
+            .createNavigatable(this, file, -1)
+            .navigate(false)
     }
 }
 

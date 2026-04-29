@@ -1,19 +1,14 @@
 package org.sui.lang.core.resolve.ref
 
-import org.sui.cli.MovePackage
-import org.sui.lang.core.psi.MvElement
-import org.sui.lang.core.psi.MvModule
-import org.sui.lang.core.psi.ext.MvVisibilityOwner
 import java.util.*
 
 sealed class Visibility2 {
     data object Public: Visibility2()
     data object Private: Visibility2()
     sealed class Restricted: Visibility2() {
-        class Friend(/*val friendModules: Lazy<Set<MvModule>>*/): Restricted()
-        class Package(/*val contextElement: MvVisibilityOwner*/): Restricted()
+        class Friend: Restricted()
+        class Package: Restricted()
     }
-
 }
 
 enum class Namespace {
@@ -24,11 +19,7 @@ enum class Namespace {
     MODULE;
 
     companion object {
-        fun all(): Set<Namespace> {
-            return EnumSet.of(NAME, FUNCTION, TYPE, ENUM, MODULE)
-        }
-
-        fun moduleItems(): Set<Namespace> = EnumSet.of(NAME, FUNCTION, TYPE, ENUM)
+        fun all(): Set<Namespace> = EnumSet.of(NAME, FUNCTION, TYPE, ENUM, MODULE)
 
         fun none(): Set<Namespace> = setOf()
     }

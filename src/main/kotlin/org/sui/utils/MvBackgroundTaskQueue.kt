@@ -31,11 +31,8 @@ class MvBackgroundTaskQueue {
     // Guarded by self object monitor (@Synchronized)
     private val cancelableTasks: MutableList<BackgroundableTaskData> = mutableListOf()
 
-    val isEmpty: Boolean get() = processor.isEmpty
-
     @Synchronized
     fun run(task: Task.Backgroundable) {
-//        if (isUnitTestMode && task is RsTask && task.runSyncInUnitTests) {
         if (isUnitTestMode) {
             runTaskInCurrentThread(task)
         } else {
@@ -43,7 +40,6 @@ class MvBackgroundTaskQueue {
             cancelTasks()
 
             val data = BackgroundableTaskData(task, ::onFinish)
-            // Add to cancelable tasks even if the task is not [RsTaskExt] b/c it still can be canceled by [cancelAll]
             cancelableTasks += data
 
             processor.add(data)
@@ -114,7 +110,6 @@ class MvBackgroundTaskQueue {
                 else -> Unit
             }
 
-//            if (task is RsTask && task.waitForSmartMode && DumbService.isDumb(task.project)) {
             if (DumbService.isDumb(task.project)) {
                 check(state !is State.WaitForSmartMode)
                 state = State.WaitForSmartMode(continuation)
@@ -124,10 +119,6 @@ class MvBackgroundTaskQueue {
 
             val indicator = when {
                 isHeadlessEnvironment -> EmptyProgressIndicator()
-//
-//                task is RsTask && task.progressBarShowDelay > 0 ->
-//                    DelayedBackgroundableProcessIndicator(task, task.progressBarShowDelay)
-
                 else -> BackgroundableProcessIndicator(task)
             }
 

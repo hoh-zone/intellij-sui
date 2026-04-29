@@ -63,6 +63,7 @@ jbr/
 
 # Plugin sandbox
 .sandbox/
+.intellijPlatform/
 
 # IDE system files
 system/

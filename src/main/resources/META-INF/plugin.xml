@@ -51,6 +51,10 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
+        <!-- Required since IntelliJ Platform 2026.1: all stub element types must be
+             instantiated before stub index initialization completes. -->
+        <stubElementTypeHolder class="org.sui.lang.MvElementTypes" externalIdPrefix="move."/>
+
         <fileType name="SUI_BYTECODE"
                   extensions="mv"
                   implementationClass="org.sui.bytecode.SuiBytecodeFileType"
@@ -104,12 +108,6 @@
                     factoryClass="org.sui.cli.toolwindow.SuiToolWindowFactory"
                     icon="/icons/sui.svg"/>
 
-        <!--        <statusBarWidgetFactory id="moveExternalLinterWidget"-->
-        <!--                                implementation="org.sui.cli.externalLinter.RsExternalLinterWidgetFactory"-->
-        <!--                                order="first"/>-->
-
-
-
         <projectTaskRunner implementation="org.sui.cli.runConfigurations.SuiBuildTaskRunner"/>
 
         <!--ProjectCreation-->
@@ -118,33 +116,13 @@
 
         <postStartupActivity
                 implementation="org.sui.ide.newProject.projectActivity.AlwaysRefreshProjectsAfterOpen"/>
-        <!--     background = 5 seconds delayed  -->
-        <!--    <postStartupActivity-->
-        <!--        implementation="org.sui.cli.openProject.CreateDefaultCompileRunConfiguration" />-->
-
 
         <projectConfigurable instance="org.sui.cli.settings.PerProjectSuiConfigurable"
                              displayName="Sui Move Language"
                              groupId="language"
                              id="language.sui.move"/>
 
-
-        <!--        <projectConfigurable instance="org.sui.cli.externalLinter.MvExternalLinterConfigurable"-->
-        <!--                             parentId="language.move"-->
-        <!--                             id="language.move.compiler.check"-->
-        <!--                             displayName="ExternalLinters"/>-->
-
-        <projectService serviceInterface="org.sui.utils.SuiProjectRootService"
-                        serviceImplementation="org.sui.utils.SuiProjectRootServiceImpl"
-                        testServiceImplementation="org.sui.utils.TestProjectRootServiceImpl"/>
-
         <projectService serviceImplementation="org.sui.cli.MoveProjectsService"/>
-        <!--        <projectService serviceImplementation="org.move.cli.packages.MovePackageService"/>-->
-
-        <!--        <projectService serviceInterface="com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker"-->
-        <!--                        serviceImplementation="org.move.cli.externalSystem.MoveExternalSystemProjectAware"-->
-        <!--                        overrides="true" />-->
-        <!--<applicationServiceserviceImplementation="org.sui.openapiext.OpenSSLInfoService"/>-->
 
         <additionalLibraryRootsProvider implementation="org.sui.cli.BuildLibraryRootsProvider"/>
 
@@ -185,8 +163,6 @@
         <listener class="org.sui.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
                   topic="org.sui.cli.settings.MvProjectSettingsServiceBase$MoveSettingsListener"
                   activeInTestMode="false"/>
-        <!--        <listener class="org.sui.cli.externalLinter.RsExternalLinterWidgetUpdater"-->
-        <!--                  topic="org.sui.cli.MoveProjectsService$MoveProjectsListener"/>-->
     </projectListeners>
     <actions>
         <action id="Sui.NewMoveFile"

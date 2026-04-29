@@ -1,18 +1,12 @@
 package org.sui.lang.core.psi.ext
 
-import org.sui.cli.containingMovePackage
 import org.sui.lang.core.psi.MvElement
 import org.sui.lang.core.psi.MvVisibilityModifier
-import org.sui.lang.core.psi.containingModule
 import org.sui.lang.core.psi.ext.VisKind.*
 import org.sui.lang.core.resolve.ref.Visibility2
 
-interface MvVisibilityOwner: MvElement {
+interface MvVisibilityOwner : MvElement {
     val visibilityModifier: MvVisibilityModifier? get() = childOfType<MvVisibilityModifier>()
-//        get() = PsiTreeUtil.getStubChildOfType(this, MvVisibilityModifier::class.java)
-
-    // restricted visibility considered as public
-    val isPublic: Boolean get() = visibilityModifier != null
 }
 
 // todo: add VisibilityModifier to stubs, rename this one to VisStubKind
@@ -35,13 +29,7 @@ val MvVisibilityOwner.visibility2: Visibility2
         val kind = this.visibilityModifier?.stubVisKind ?: return Visibility2.Private
         return when (kind) {
             PACKAGE -> Visibility2.Restricted.Package()
-            FRIEND -> {
-                Visibility2.Restricted.Friend()
-            }
+            FRIEND -> Visibility2.Restricted.Friend()
             PUBLIC -> Visibility2.Public
         }
     }
-
-
-
-

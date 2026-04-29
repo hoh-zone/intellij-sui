@@ -53,9 +53,6 @@ class NoMoveProjectDetectedNotificationProvider(project: Project) : MvEditorNoti
         //       It should be invoked somewhere else where it's more appropriate,
         //       not in the notification handler.
         if (!moveProjectsService.initialized) {
-//            moveProjectsService.scheduleProjectsRefresh(
-//                reason = "called from notification on uninitialized projects service"
-//            )
             // exit notification handler here, it's going to be entered again after the refresh
             return null
         }
@@ -87,8 +84,5 @@ class NoMoveProjectDetectedNotificationProvider(project: Project) : MvEditorNoti
 
     companion object {
         private const val NOTIFICATION_STATUS_KEY = "org.move.hideNoMoveProjectNotifications"
-
-        const val NO_MOVE_PROJECTS = "NoMoveProjects"
-        const val FILE_NOT_IN_MOVE_PROJECT = "FileNotInMoveProject"
     }
 }

@@ -10,7 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.util.NlsActions.ActionDescription
 import com.intellij.openapi.util.NlsActions.ActionText
-import org.sui.cli.runConfigurations.hasMoveProject
+import org.sui.cli.hasMoveProject
 import javax.swing.Icon
 
 abstract class RunSuiCommandActionBase(

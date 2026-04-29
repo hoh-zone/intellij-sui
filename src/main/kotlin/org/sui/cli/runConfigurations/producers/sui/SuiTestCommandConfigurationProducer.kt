@@ -1,6 +1,5 @@
 package org.sui.cli.runConfigurations.producers.sui
 
-import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
@@ -72,13 +71,11 @@ class SuiTestCommandConfigurationProducer : CommandConfigurationProducerBase() {
         val moveProject = fn.moveProject ?: return null
         val rootPath = moveProject.contentRootPath ?: return null
         return SuiCommandLineFromContext(
-            fn,
             confName,
             SuiCommandLine(
                 "move test",
                 arguments,
                 workingDirectory = rootPath,
-                environmentVariables = initEnvironmentVariables(psi.project)
             )
         )
     }
@@ -98,13 +95,11 @@ class SuiTestCommandConfigurationProducer : CommandConfigurationProducerBase() {
         val moveProject = mod.moveProject ?: return null
         val rootPath = moveProject.contentRootPath ?: return null
         return SuiCommandLineFromContext(
-            mod,
             confName,
             SuiCommandLine(
                 "move test",
                 arguments,
                 workingDirectory = rootPath,
-                environmentVariables = initEnvironmentVariables(psi.project)
             )
         )
     }
@@ -120,23 +115,13 @@ class SuiTestCommandConfigurationProducer : CommandConfigurationProducerBase() {
         val arguments = cliFlagsFromProjectSettings(location.project)
 
         return SuiCommandLineFromContext(
-            location,
             confName,
             SuiCommandLine(
                 "move test",
                 arguments,
                 workingDirectory = rootPath,
-                environmentVariables = initEnvironmentVariables(location.project)
             )
         )
-    }
-
-    private fun initEnvironmentVariables(project: Project): EnvironmentVariablesData {
-        val environmentMap = linkedMapOf<String, String>()
-//        if (project.moveSettings.addCompilerV2CLIFlags) {
-//            environmentMap[Consts.MOVE_COMPILER_V2_ENV] = "true"
-//        }
-        return EnvironmentVariablesData.create(environmentMap, true)
     }
 
     private fun cliFlagsFromProjectSettings(project: Project): List<String> =
@@ -144,12 +129,5 @@ class SuiTestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             if (project.moveSettings.skipFetchLatestGitDeps) {
                 add("--skip-fetch-latest-git-deps")
             }
-//            if (project.moveSettings.dumpStateOnTestFailure) {
-//                add("--dump")
-//            }
-//            if (project.moveSettings.addCompilerV2CLIFlags) {
-//                addAll(arrayOf("--compiler-version", "v2"))
-//                addAll(arrayOf("--language-version", "2.0"))
-//            }
         }
 }

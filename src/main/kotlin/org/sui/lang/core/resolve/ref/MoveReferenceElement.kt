@@ -14,8 +14,6 @@ interface PsiReferenceElement : PsiElement {
         get() = identifier?.text
 
     override fun getReference(): PsiReference?
-
-    val unresolved: Boolean get() = reference?.resolve() == null
 }
 
 interface PsiMandatoryReferenceElement : PsiElement {
@@ -51,22 +49,6 @@ interface MvMandatoryReferenceElement : MvReferenceElement {
     override fun getReference(): MvPolyVariantReference
 }
 
-//interface MvPathReferenceElement : MvReferenceElement {
-//    override fun getReference(): MvPathReference?
-//}
-
 interface MvNameAccessChainReferenceElement : MvReferenceElement {
     override fun getReference(): MvPath2Reference?
 }
-
-//interface MvFQModuleReferenceElement : MvReferenceElement {
-//    override fun getReference(): MvFQModuleReference?
-//}
-
-//interface MvStructPatFieldReferenceElement : MvMandatoryReferenceElement
-
-interface MvStructFieldLitReferenceElement : MvMandatoryReferenceElement
-
-interface MvSchemaRefFieldReferenceElement : MvMandatoryReferenceElement
-
-interface MvItemSpecParameterReferenceElement: MvMandatoryReferenceElement

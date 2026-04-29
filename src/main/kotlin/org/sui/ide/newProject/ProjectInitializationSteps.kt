@@ -3,7 +3,7 @@ package org.sui.ide.newProject
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.sui.cli.Consts
+import org.sui.cli.MvConstants
 import org.sui.cli.runConfigurations.sui.SuiCommandConfigurationType
 import org.sui.cli.runConfigurations.sui.cmd.SuiCommandConfiguration
 import org.sui.cli.runConfigurations.sui.cmd.SuiCommandConfigurationFactory
@@ -20,7 +20,7 @@ object ProjectInitializationSteps {
             moveTomlFile ?: run {
                 val packageRoot = project.contentRoots.firstOrNull()
                 if (packageRoot != null) {
-                    val manifest = packageRoot.findChild(Consts.MANIFEST_FILE)
+                    val manifest = packageRoot.findChild(MvConstants.MANIFEST_FILE)
                     return@run manifest
                 }
                 return@run null

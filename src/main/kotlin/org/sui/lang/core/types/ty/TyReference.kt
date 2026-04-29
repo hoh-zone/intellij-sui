@@ -18,16 +18,6 @@ data class TyReference(
 
     override fun abilities() = setOf(Ability.COPY, Ability.DROP)
 
-    val isMut: Boolean get() = this.mutability.isMut
-
-    fun innerTy(): Ty {
-        return if (referenced is TyReference) {
-            referenced.innerTy()
-        } else {
-            referenced
-        }
-    }
-
     override fun innerFoldWith(folder: TypeFolder): Ty =
         TyReference(referenced.foldWith(folder), mutability, msl)
 
@@ -35,12 +25,6 @@ data class TyReference(
         referenced.visitWith(visitor)
 
     override fun toString(): String = tyToString(this)
-
-    companion object {
-        fun coerceMutability(inferred: TyReference, expected: TyReference): Boolean {
-            return inferred.isMut || !expected.isMut
-        }
-    }
 }
 
 enum class Mutability {
@@ -53,4 +37,3 @@ enum class Mutability {
         fun valueOf(mutable: Boolean): Mutability = if (mutable) MUTABLE else IMMUTABLE
     }
 }
-

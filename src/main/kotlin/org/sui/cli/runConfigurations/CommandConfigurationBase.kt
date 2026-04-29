@@ -86,9 +86,6 @@ abstract class CommandConfigurationBase(
         when {
             !AdvancedSettings.getBoolean(TEST_TOOL_WINDOW_SETTING_KEY) -> false
             commandLine.subCommand != "move test" -> false
-//            "--nocapture" in commandLine.additionalArguments -> false
-//            Cargo.TEST_NOCAPTURE_ENABLED_KEY.asBoolean() -> false
-//            else -> !hasRemoteTarget
             else -> true
         }
 

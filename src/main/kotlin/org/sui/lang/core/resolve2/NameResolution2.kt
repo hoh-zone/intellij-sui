@@ -69,19 +69,6 @@ fun processPatBindingResolveVariants(
     return processNestedScopesUpwards(binding, if (isCompletion) TYPES_N_NAMES else NAMES, ctx, processor)
 }
 
-fun resolveBindingForFieldShorthand(
-    element: MvMandatoryReferenceElement,
-): List<MvNamedElement> {
-    return collectResolveVariants(element.referenceName) {
-        processNestedScopesUpwards(
-            element,
-            setOf(Namespace.NAME),
-            ResolutionContext(element, isCompletion = false),
-            it
-        )
-    }
-}
-
 fun processNestedScopesUpwards(
     scopeStart: MvElement,
     ns: Set<Namespace>,
@@ -141,7 +128,6 @@ fun processModulePathResolveVariants(
         return false
     }
 
-//    var stop = false
     for (targetModuleName in targetNames) {
         val modules = MvModuleIndex.getModulesByName(project, targetModuleName, searchScope)
         for (module in modules) {
@@ -167,17 +153,6 @@ inline fun processWithShadowingAndUpdateScope(
     }
 }
 
-//inline fun processWithShadowing(
-//    prevScope: Map<String, Set<Namespace>>,
-//    ns: Set<Namespace>,
-//    processor: MvResolveProcessor,
-//    f: (MvResolveProcessor) -> Boolean
-//): Boolean {
-//    val shadowingProcessor = processor.wrapWithShadowingProcessor(prevScope, ns)
-//    return f(shadowingProcessor)
-//}
-
-
 fun walkUpThroughScopes(
     start: MvElement,
     stopAfter: (MvElement) -> Boolean,
@@ -198,7 +173,7 @@ fun walkUpThroughScopes(
 }
 
 private fun processFieldDeclarations(struct: MvFieldsOwner, processor: MvResolveProcessor): Boolean =
-    struct.fields.any { field ->
+    struct.namedFields.any { field ->
         val name = field.name
         processor.process(name, NAMES, field)
     }

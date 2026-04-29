@@ -20,20 +20,4 @@ val MOVE_KEYWORDS = tokenSetOf(
 )
 val CONTEXTUAL_KEYWORDS = tokenSetOf(MATCH_KW)
 
-val TYPES = tokenSetOf(PATH_TYPE, REF_TYPE, TUPLE_TYPE)
-
 val MOVE_COMMENTS = tokenSetOf(BLOCK_COMMENT, EOL_COMMENT, EOL_DOC_COMMENT)
-
-val MOVE_BINARY_OPS = tokenSetOf(
-    OR_OR, AND_AND,
-    LT, LT_EQ, GT, GT_EQ,
-    LT_LT, GT_GT,
-    EQ_EQ, NOT_EQ,
-    OR, AND, XOR,
-    MUL, DIV, MODULO,
-    PLUS, MINUS,
-    XOR, AND, OR
-)
-
-val LIST_OPEN_SYMBOLS = tokenSetOf(L_PAREN, LT)
-val LIST_CLOSE_SYMBOLS = tokenSetOf(R_PAREN, GT)

@@ -1,18 +1,12 @@
 package org.sui.lang.core.types.infer
 
-import com.google.common.collect.Maps
-import org.sui.lang.core.psi.MvTypeParameter
 import org.sui.lang.core.types.ty.*
 
 open class Substitution(val typeSubst: Map<TyTypeParameter, Ty> = emptyMap()) : TypeFoldable<Substitution> {
 
     val types: Collection<Ty> get() = typeSubst.values
 
-    operator fun plus(other: Substitution): Substitution =
-        Substitution(mergeMaps(typeSubst, other.typeSubst))
-
     operator fun get(key: TyTypeParameter): Ty? = typeSubst[key]
-    operator fun get(psi: MvTypeParameter): Ty? = typeSubst[TyTypeParameter(psi)]
 
     fun foldValues(folder: TypeFolder): Substitution =
         Substitution(
@@ -55,13 +49,3 @@ fun <T : TypeFoldable<T>> TypeFoldable<T>.substitute(subst: Substitution): T =
             }
         }
     })
-
-private fun <K, V> mergeMaps(map1: Map<K, V>, map2: Map<K, V>): Map<K, V> =
-    when {
-        map1.isEmpty() -> map2
-        map2.isEmpty() -> map1
-        else -> Maps.newHashMapWithExpectedSize<K, V>(map1.size + map2.size).apply {
-            putAll(map1)
-            putAll(map2)
-        }
-    }

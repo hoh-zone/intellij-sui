@@ -47,7 +47,6 @@ class TyLowering {
     private fun lowerPath(methodOrPath: MvMethodOrPath, namedItem: MvNamedElement?, msl: Boolean): Ty {
         // cannot do resolve() here due to circular caching for MethodCall, need to pass namedItem explicitly,
         // namedItem can be null if it's a primitive type
-//        val namedItem = methodOrPath.reference?.resolveWithAliases()
         if (namedItem == null) {
             return if (methodOrPath is MvPath) lowerPrimitiveTy(methodOrPath, msl) else TyUnknown
         }
@@ -56,7 +55,6 @@ class TyLowering {
             is MvTypeParametersOwner -> {
                 val baseTy = namedItem.declaredType(msl)
                 val explicitSubst = instantiateTypeParamsSubstitution(methodOrPath, namedItem, msl)
-//                val (_, explicits) = instantiatePathGenerics(path, namedItem, msl)
                 baseTy.substitute(explicitSubst)
             }
             is MvEnumVariant -> lowerPath(methodOrPath, namedItem.enumItem, msl)
@@ -113,10 +111,6 @@ class TyLowering {
     companion object {
         fun lowerType(type: MvType, msl: Boolean): Ty {
             return TyLowering().lowerTy(type, msl)
-        }
-
-        fun lowerPath(path: MvMethodOrPath, namedItem: MvNamedElement?, msl: Boolean): Ty {
-            return TyLowering().lowerPath(path, namedItem, msl)
         }
     }
 }

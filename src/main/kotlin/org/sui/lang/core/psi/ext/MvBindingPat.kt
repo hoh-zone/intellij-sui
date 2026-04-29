@@ -6,12 +6,10 @@ import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import org.sui.ide.MoveIcons
-import org.sui.lang.MvElementTypes.IDENTIFIER
 import org.sui.lang.core.psi.*
 import org.sui.lang.core.psi.impl.MvMandatoryNameIdentifierOwnerImpl
 import org.sui.lang.core.resolve.ref.MvPolyVariantReference
 import org.sui.lang.core.resolve2.ref.MvBindingPatReferenceImpl
-import org.sui.lang.core.types.ty.Mutability
 import javax.swing.Icon
 
 val MvPatBinding.owner: PsiElement?
@@ -19,14 +17,6 @@ val MvPatBinding.owner: PsiElement?
         it is MvLetStmt
                 || it is MvFunctionParameter
     }
-
-
-sealed class MvBindingModeKind {
-    data object BindByValue : MvBindingModeKind()
-    class BindByReference(val mutability: Mutability) : MvBindingModeKind()
-}
-
-//val MvPatBinding.kind get() = MvBindingModeKind.BindByValue
 
 abstract class MvPatBindingMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
                                                   MvPatBinding {

@@ -2,8 +2,6 @@ package org.sui.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.sui.cli.settings.debugErrorOrFallback
-import org.sui.lang.core.BUILTIN_TYPE_IDENTIFIERS
-import org.sui.lang.core.PRIMITIVE_TYPE_IDENTIFIERS
 import org.sui.lang.MvElementTypes.COLON_COLON
 import org.sui.lang.core.psi.*
 import org.sui.lang.core.resolve.ref.*
@@ -16,43 +14,6 @@ tailrec fun MvPath.rootPath(): MvPath {
     val parent = parent
     return if (parent is MvPath) parent.rootPath() else this
 }
-
-fun MvPath.isPrimitiveType(): Boolean =
-    this.parent is MvPathType
-            && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS.union(BUILTIN_TYPE_IDENTIFIERS)
-
-//fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
-////    val qualifierPath = this.path
-////    val parentElement = this.parent
-//
-////    val qualNamespaces = when {
-////        // m::S, S::One
-////        // ^     ^
-////        parentElement is MvPath && qualifierPath == null -> setOf(MODULE, TYPE)
-////        // m::S::One
-////        // ^
-////        parentElement is MvPath && parentElement.parent is MvPath -> setOf(MODULE)
-////        // m::S::One
-////        //    ^
-////        parentElement is MvPath/* && qualifierPath != null*/ -> setOf(TYPE)
-////        else -> NONE
-////    }
-////    // m::S, S::One
-////    // ^     ^
-////    if (parentElement is MvPath && qualifierPath == null) return EnumSet.of(MODULE, TYPE)
-////
-////    // m::S::One
-////    // ^
-////    if (parentElement is MvPath && parentElement.parent is MvPath) return EnumSet.of(MODULE)
-////
-////    // m::S::One
-////    //    ^
-////    if (parentElement is MvPath/* && qualifierPath != null*/) return EnumSet.of(TYPE)
-//
-////    val rootPath = this.rootPath()
-////    return qualNamespaces + rootPathNamespaces(rootPath, isCompletion)
-//    return this.itemPathNamespaces(isCompletion)
-//}
 
 fun MvPath.allowedNamespaces(isCompletion: Boolean = false): Set<Namespace> {
     val qualifier = this.path
@@ -113,20 +74,7 @@ abstract class MvPathMixin(node: ASTNode): MvElementImpl(node), MvPath {
     override fun getReference(): MvPath2Reference? = MvPath2ReferenceImpl(this)
 }
 
-val MvPath.hasColonColon: Boolean get() = colonColon != null
-
 val MvPath.isColonColonNext: Boolean get() = nextNonWsSibling?.elementType == COLON_COLON
-
-/**
- * `vector[]` / `vector<T>[]` / `vector[expr1, expr2]` are represented as `MvIndexExpr`
- * whose first expression is `MvPathExpr(path = "vector")`.
- */
-fun MvPath.isVectorLiteralHeadSyntax(): Boolean {
-    if (referenceName != "vector") return false
-    val pathExpr = parent as? MvPathExpr ?: return false
-    val indexExpr = pathExpr.parent as? MvIndexExpr ?: return false
-    return indexExpr.exprList.firstOrNull() == pathExpr
-}
 
 val MvPath.useSpeck: MvUseSpeck? get() = this.rootPath().parent as? MvUseSpeck
 

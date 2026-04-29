@@ -18,11 +18,3 @@ class OnMoveTomlCreatedFileListener(
                 || event is VFilePropertyChangeEvent && event.newPath.endsWith(MvConstants.MANIFEST_FILE)
     }
 }
-
-fun VFileEvent.pathStartsWith(prefix: String): Boolean =
-    path.startsWith(prefix) ||
-            this is VFilePropertyChangeEvent && oldPath.startsWith(prefix)
-
-fun VFileEvent.pathEndsWith(suffix: String): Boolean =
-    path.endsWith(suffix) ||
-            this is VFilePropertyChangeEvent && oldPath.endsWith(suffix)

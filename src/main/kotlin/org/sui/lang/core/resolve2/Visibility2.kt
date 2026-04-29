@@ -6,7 +6,6 @@ import org.sui.lang.core.psi.ext.usageScope
 import org.sui.lang.core.psi.*
 import org.sui.lang.core.psi.NamedItemScope.MAIN
 import org.sui.lang.core.psi.ext.*
-import org.sui.lang.core.resolve.ModInfo
 import org.sui.lang.core.resolve.VisibilityFilter
 import org.sui.lang.core.resolve.VisibilityStatus.Invisible
 import org.sui.lang.core.resolve.VisibilityStatus.Visible
@@ -25,13 +24,10 @@ fun MvNamedElement.visInfo(adjustScope: NamedItemScope = MAIN): ItemVisibilityIn
     return ItemVisibilityInfo(this, adjustScope, visibility)
 }
 
-/** Creates filter which determines whether item with [this] visibility is visible from specific [ModInfo] */
+/** Creates filter which determines whether item with [this] visibility is visible from a path/method. */
 fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
     val (item, itemScopeAdjustment, visibility) = this
     return VisibilityFilter { methodOrPath, namespaces ->
-
-        // inside msl everything is visible
-        if (methodOrPath.isMsl()) return@VisibilityFilter Visible
 
         // if inside MvAttrItem like abort_code=
         val attrItem = methodOrPath.ancestorStrict<MvAttrItem>()
@@ -45,9 +41,6 @@ fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
             if (useSpeck != null) {
                 // inside import, all visibilities except for private work
                 if (visibility !is Private) return@VisibilityFilter Visible
-
-                // msl-only items are available from imports
-                if (item.isMslOnlyItem) return@VisibilityFilter Visible
 
                 // consts are importable in tests
                 if (pathUsageScope.isTest && namespaces.contains(NAME)) return@VisibilityFilter Visible

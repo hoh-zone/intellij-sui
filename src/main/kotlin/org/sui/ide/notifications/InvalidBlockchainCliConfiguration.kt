@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import org.sui.cli.settings.PerProjectSuiConfigurable
-import org.sui.cli.settings.sui.SuiExecType
 import org.sui.cli.settings.suiExecPath
 import org.sui.cli.settings.isValidExecutable
 import org.sui.cli.settings.moveSettings
@@ -35,7 +34,6 @@ class InvalidBlockchainCliConfiguration(project: Project) : MvEditorNotification
             if (suiCliFromPATH != null) {
                 createActionLabel("Set to \"$suiCliFromPATH\"") {
                     project.moveSettings.modify {
-                        it.suiExecType = SuiExecType.LOCAL
                         it.localSuiPath = suiCliFromPATH
                     }
                 }

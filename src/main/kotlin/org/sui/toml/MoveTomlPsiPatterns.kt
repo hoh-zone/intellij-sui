@@ -4,7 +4,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.patterns.VirtualFilePattern
 import com.intellij.psi.PsiElement
-import org.sui.cli.Consts
+import org.sui.cli.MvConstants
 import org.sui.lang.core.psiElement
 import org.sui.lang.core.withCond
 import org.toml.lang.psi.*
@@ -15,7 +15,7 @@ import org.toml.lang.psi.ext.name
 object MoveTomlPsiPatterns {
     private inline fun <reified I : PsiElement> moveTomlPsiElement(): PsiElementPattern.Capture<I> {
         return psiElement<I>().inVirtualFile(
-            VirtualFilePattern().withName(Consts.MANIFEST_FILE)
+            VirtualFilePattern().withName(MvConstants.MANIFEST_FILE)
         )
     }
 

@@ -2,10 +2,6 @@ package org.sui.lang.core.psi.ext
 
 import com.intellij.extapi.psi.StubBasedPsiElementBase
 import com.intellij.psi.NavigatablePsiElement
-import com.intellij.psi.PsiComment
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiWhiteSpace
-import org.sui.lang.MoveParserDefinition
 import org.sui.lang.core.psi.MvAttr
 import org.sui.lang.core.psi.MvAttrItem
 import org.sui.lang.core.psi.MvElement
@@ -13,26 +9,12 @@ import org.sui.lang.core.stubs.MvAttributeOwnerStub
 
 interface MvDocAndAttributeOwner : MvElement, NavigatablePsiElement {
     val attrList: List<MvAttr>
-
-    fun docComments(): Sequence<PsiElement> {
-        return childrenWithLeaves
-            // All these outer elements have been edge bound; if we reach something that isn't one
-            // of these, we have reached the actual parse children of this item.
-            .takeWhile { it is PsiComment || it is PsiWhiteSpace }
-            .filter { it is PsiComment && it.tokenType == MoveParserDefinition.EOL_DOC_COMMENT }
-    }
 }
 
 val MvDocAndAttributeOwner.hasTestOnlyAttr: Boolean
     get() {
         val stub = attributeStub
         return stub?.isTestOnly ?: queryAttributes.isTestOnly
-    }
-
-val MvDocAndAttributeOwner.hasVerifyOnlyAttr: Boolean
-    get() {
-        val stub = attributeStub
-        return stub?.isVerifyOnly ?: queryAttributes.isVerifyOnly
     }
 
 inline val MvDocAndAttributeOwner.attributeStub: MvAttributeOwnerStub?
@@ -60,7 +42,6 @@ class QueryAttributes(
     private val attributes: Sequence<MvAttr>
 ) {
     val isTestOnly: Boolean get() = hasAttrItem("test_only")
-    val isVerifyOnly: Boolean get() = hasAttrItem("verify_only")
 
     fun hasAttrItem(attributeName: String): Boolean = getAttrItem(attributeName) != null
 

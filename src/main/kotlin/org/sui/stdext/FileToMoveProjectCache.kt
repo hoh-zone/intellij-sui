@@ -21,13 +21,11 @@ sealed class CacheEntry {
 
 class FileToMoveProjectCache(
     parentDisposable: Disposable,
-//    private val myInitializer: Consumer<MoveProjectsMap>
 ) {
     private val entryMap: MutableMap<VirtualFile, CacheEntry> = ConcurrentHashMap()
 
     fun clear() {
         entryMap.clear()
-//        myInitializer.accept(this)
     }
 
     fun put(file: VirtualFile?, value: CacheEntry) {

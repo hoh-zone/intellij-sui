@@ -34,23 +34,4 @@ data class SuiCommandLine(
             this.arguments += "--skip-fetch-latest-git-deps"
         }
     }
-
-//    fun createRunConfiguration(
-//        moveProject: MoveProject,
-//        configurationName: String,
-//        save: Boolean
-//    ): RunnerAndConfigurationSettings {
-//        val project = moveProject.project
-//        val runConfiguration =
-//            AnyCommandConfigurationFactory.createTemplateRunConfiguration(
-//                project,
-//                configurationName,
-//                save = save
-//            )
-//        val anyCommandConfiguration = runConfiguration.configuration as AnyCommandConfiguration
-//        anyCommandConfiguration.command = this.joinArgs()
-//        anyCommandConfiguration.workingDirectory = this.workingDirectory
-//        anyCommandConfiguration.environmentVariables = this.environmentVariables
-//        return runConfiguration
-//    }
 }

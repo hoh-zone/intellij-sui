@@ -31,12 +31,6 @@ class MvPath2ReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(
     override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
         rawMultiResolve().toTypedArray()
 
-//    fun multiResolveIfVisible(): List<MvElement> =
-//        rawMultiResolve().mapNotNull {
-//            if (!it.isVisible) return@mapNotNull null
-//            it.element
-//        }
-
     fun rawMultiResolveIfVisible(): List<MvPathResolveResult<MvElement>> =
         rawMultiResolve().filter { it.isVisible }
 
@@ -59,20 +53,6 @@ class MvPath2ReferenceImpl(element: MvPath): MvPolyVariantReferenceBase<MvPath>(
     }
 }
 
-fun processPathResolveVariantsWithExpectedType(
-    ctx: ResolutionContext,
-    pathKind: PathKind,
-    expectedType: Ty?,
-    processor: MvResolveProcessor
-): Boolean {
-    val expectedTypeFilterer = filterEnumVariantsByExpectedType(expectedType, processor)
-    return processPathResolveVariants(
-        ctx,
-        pathKind,
-        processor = expectedTypeFilterer
-    )
-}
-
 fun filterEnumVariantsByExpectedType(expectedType: Ty?, processor: MvResolveProcessor): MvResolveProcessor {
     if (expectedType == null) return processor
 
@@ -85,22 +65,6 @@ fun filterEnumVariantsByExpectedType(expectedType: Ty?, processor: MvResolveProc
         element !is MvEnumVariant || element in allowedVariants
     }
 }
-
-//fun resolveAliases(processor: MvResolveProcessor): MvResolveProcessor =
-//    processor.wrapWithMapper { e: ScopeEntry ->
-//        val visEntry = e as? ScopeEntryWithVisibility ?: return@wrapWithMapper e
-//        val element = visEntry.element
-//        val unaliased = resolveAliases(element)
-//        visEntry.copy(element = unaliased)
-////        if (element is MvUseAlias) {
-////            val aliasedPath = element.parentUseSpeck.path
-////            val resolvedItem = aliasedPath.reference?.resolve()
-////            if (resolvedItem != null) {
-////                return@wrapWithMapper visEntry.copy(element = resolvedItem)
-////            }
-////        }
-////        e
-//    }
 
 fun resolveAliases(element: MvNamedElement): MvNamedElement {
     if (element is MvUseAlias) {
@@ -182,24 +146,8 @@ class ResolutionContext(val element: MvElement, val isCompletion: Boolean) {
     }
     val containingModule: MvModule? get() = lazyContainingModule.value
 
-    private var lazyUseSpeck: Lazy<MvUseSpeck?> = lazy(NONE) { path?.useSpeck }
-    val useSpeck: MvUseSpeck? get() = lazyUseSpeck.value
-    val isUseSpeck: Boolean get() = useSpeck != null
-
     val methodOrPath: MvMethodOrPath? get() = element as? MvMethodOrPath
     val path: MvPath? get() = element as? MvPath
-
-    val isSpecOnlyExpr: Boolean get() = false
-}
-
-fun resolvePathRaw(path: MvPath, expectedType: Ty? = null): List<ScopeEntry> {
-    val ctx = ResolutionContext(path, false)
-    val kind = path.pathKind()
-    val resolveVariants =
-        collectResolveVariantsAsScopeEntries(path.referenceName) {
-            processPathResolveVariantsWithExpectedType(ctx, kind, expectedType, it)
-        }
-    return resolveVariants
 }
 
 private fun resolvePath(
@@ -207,17 +155,7 @@ private fun resolvePath(
     path: MvPath,
 ): List<MvPathResolveResult<MvElement>> {
     val pathKind = path.pathKind()
-    val result =
-        // matches resolve variants against referenceName from path
-        collectMethodOrPathResolveVariants(path, ctx) {
-            // actually emits resolve variants
-            processPathResolveVariantsWithExpectedType(ctx, pathKind, expectedType = null, it)
-//            processPathResolveVariants(ctx, pathKind, it)
-        }
-    return result
-//    return when (result.size) {
-//        0 -> emptyList()
-//        1 -> listOf(result.single())
-//        else -> result
-//    }
+    return collectMethodOrPathResolveVariants(path, ctx) {
+        processPathResolveVariants(ctx, pathKind, processor = it)
+    }
 }

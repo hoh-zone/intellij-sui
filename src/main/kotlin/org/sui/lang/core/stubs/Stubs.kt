@@ -2,7 +2,6 @@ package org.sui.lang.core.stubs
 
 import com.intellij.psi.stubs.*
 import com.intellij.util.BitUtil
-import org.sui.cli.MoveProject
 import org.sui.lang.core.psi.*
 import org.sui.lang.core.psi.ext.*
 import org.sui.lang.core.psi.impl.*
@@ -24,32 +23,24 @@ interface MvAttributeOwnerStub {
 
     val isTestOnly: Boolean
 
-    val isVerifyOnly: Boolean
-
     companion object {
         val ATTRS_MASK: Int = makeBitMask(0)
         val TEST_ONLY_MASK: Int = makeBitMask(1)
-        val VERIFY_ONLY_MASK: Int = makeBitMask(2)
-        const val USED_BITS: Int = 3
+        const val USED_BITS: Int = 2
 
         fun extractFlags(query: QueryAttributes): Int {
             var hasAttrs = false
             var testOnly = false
-            var verifyOnly = false
             for (attrItem in query.attrItems) {
                 hasAttrs = true
                 if (attrItem.referenceName == "test_only") {
                     testOnly = true
-                }
-                if (attrItem.referenceName == "verify_only") {
-                    verifyOnly = true
                 }
             }
 
             var flags = 0
             flags = BitUtil.set(flags, ATTRS_MASK, hasAttrs)
             flags = BitUtil.set(flags, TEST_ONLY_MASK, testOnly)
-            flags = BitUtil.set(flags, VERIFY_ONLY_MASK, verifyOnly)
             return flags
         }
     }
@@ -66,9 +57,6 @@ abstract class MvAttributeOwnerStubBase<T: MvElement>(
 
     override val isTestOnly: Boolean
         get() = BitUtil.isSet(flags, MvAttributeOwnerStub.TEST_ONLY_MASK)
-
-    override val isVerifyOnly: Boolean
-        get() = BitUtil.isSet(flags, MvAttributeOwnerStub.VERIFY_ONLY_MASK)
 
     protected abstract val flags: Int
 }
@@ -118,36 +106,11 @@ class MvFunctionStub(
     override val name: String?,
     override val flags: Int,
     val visibility: VisKind?,
-    val address: StubAddress,
-    val moduleName: String?,
 ): MvAttributeOwnerStubBase<MvFunction>(parent, elementType), MvNamedStub {
 
     val isTest: Boolean get() = BitUtil.isSet(flags, TEST_MASK)
     val isEntry: Boolean get() = BitUtil.isSet(flags, IS_ENTRY_MASK)
     val isView: Boolean get() = BitUtil.isSet(flags, IS_VIEW_MASK)
-
-    val unresolvedQualName: String?
-        get() {
-            val addressText = when (address) {
-                is StubAddress.Value -> address.value
-                is StubAddress.Named -> address.name
-                else -> return null
-            }
-            val moduleName = this.moduleName ?: return null
-            val itemName = this.name ?: return null
-            return "$addressText::$moduleName::$itemName"
-        }
-
-    fun resolvedQualName(moveProject: MoveProject): String? {
-        val addressText = when (address) {
-            is StubAddress.Value -> address.value
-            is StubAddress.Named -> moveProject.getNamedAddressValue(address.name) ?: return null
-            else -> return null
-        }
-        val moduleName = this.moduleName ?: return null
-        val itemName = this.name ?: return null
-        return "$addressText::$moduleName::$itemName"
-    }
 
     object Type: MvStubElementType<MvFunctionStub, MvFunction>("FUNCTION") {
         override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?): MvFunctionStub {
@@ -159,17 +122,12 @@ class MvFunctionStub(
                 VisKind.entries.find { it.keyword == kw } ?: error("Invalid vis keyword $kw")
             }
 
-            val stubAddress = dataStream.deserializeStubAddress()
-            val moduleName = dataStream.readUTFFastAsNullable()
-
             return MvFunctionStub(
                 parentStub,
                 this,
                 name,
                 flags,
                 visibility,
-                stubAddress,
-                moduleName
             )
         }
 
@@ -178,8 +136,6 @@ class MvFunctionStub(
                 writeName(stub.name)
                 writeInt(stub.flags)
                 writeUTFFastAsNullable(stub.visibility?.keyword)
-                serializeStubAddress(stub.address)
-                writeUTFFastAsNullable(stub.moduleName)
             }
 
         override fun createPsi(stub: MvFunctionStub): MvFunction =
@@ -193,18 +149,12 @@ class MvFunctionStub(
             flags = BitUtil.set(flags, IS_ENTRY_MASK, psi.isEntry)
             flags = BitUtil.set(flags, IS_VIEW_MASK, psi.isView)
 
-            val moduleStub = parentStub as? MvModuleStub
-            val moduleAddress = moduleStub?.address ?: StubAddress.Unknown
-            val moduleName = moduleStub?.name
-
             return MvFunctionStub(
                 parentStub,
                 this,
                 psi.name,
                 flags,
                 visibility = psi.visibilityModifier?.stubVisKind,
-                address = moduleAddress,
-                moduleName = moduleName,
             )
         }
 

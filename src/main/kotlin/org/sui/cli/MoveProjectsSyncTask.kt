@@ -89,7 +89,7 @@ class MoveProjectsSyncTask(
             val refreshedProjects = doRun(indicator, syncProgress)
 
             val isUpdateFailed =
-                refreshedProjects.any { it.mergedStatus is UpdateStatus.UpdateFailed }
+                refreshedProjects.any { it.fetchDepsStatus is UpdateStatus.UpdateFailed }
             if (isUpdateFailed) {
                 syncProgress.fail()
             } else {
@@ -128,7 +128,7 @@ class MoveProjectsSyncTask(
         for (contentRoot in roots.asSequence()) {
             contentRoot.iterateFiles({ it.name == MvConstants.MANIFEST_FILE }) { moveTomlFile ->
                 indicator.checkCanceled()
-                val context = SyncContext(project, indicator, buildId = Any(), syncProgress = null)
+                val context = SyncContext(project, indicator, syncProgress = null)
                 loadProject(moveTomlFile, projects = moveProjects, context = context)
                 true
             }
@@ -159,7 +159,7 @@ class MoveProjectsSyncTask(
                     "Sync $projectDirName project",
                     createContext = { it },
                     action = { childProgress ->
-                        val context = SyncContext(project, indicator, syncProgress.id, childProgress)
+                        val context = SyncContext(project, indicator, childProgress)
                         loadProject(
                             moveTomlFile, projects = moveProjects, context = context
                         )
@@ -184,7 +184,6 @@ class MoveProjectsSyncTask(
                 val tomlFile = moveTomlFile.toTomlFile(project)!!
                 var rootMoveToml = MoveToml.fromTomlFile(tomlFile)
                 rootMoveToml = MoveToml.fromBuildInfo(tomlFile, rootMoveToml)
-//                val rootMoveToml = MoveToml.fromTomlFile(tomlFile, projectRoot)
                 val rootPackage = MovePackage.fromMoveToml(rootMoveToml)
                 val rootProject = MoveProject(project, rootPackage, emptyList())
                 rootProject to rootMoveToml
@@ -202,7 +201,6 @@ class MoveProjectsSyncTask(
                 runReadAction {
                     val rootPackage = moveProject.currentPackage
                     val deps = mutableListOf<Pair<MovePackage, RawAddressMap>>()
-                   // val visitedDepIds = mutableSetOf(DepId(rootPackage.contentRoot.path))
                     val visitedDepIds = mutableSetOf(DepId(rootPackage.contentRoot.path))
                     loadDependencies(
                         project,
@@ -256,7 +254,6 @@ class MoveProjectsSyncTask(
         )
         buildContentDescriptor.isActivateToolWindowWhenFailed = true
         buildContentDescriptor.isActivateToolWindowWhenAdded = false
-//        buildContentDescriptor.isNavigateToError = project.rustSettings.autoShowErrorsInEditor
         val refreshAction = ActionManager.getInstance().getAction("Sui.RefreshAllProjects")
         val descriptor = DefaultBuildDescriptor(Any(), "Sui", project.basePath!!, System.currentTimeMillis())
             .withContentDescriptor { buildContentDescriptor }
@@ -282,13 +279,9 @@ class MoveProjectsSyncTask(
 
     data class SyncContext(
         val project: Project,
-//        val toolchain: RsToolchainBase,
         val progress: ProgressIndicator,
-        val buildId: Any,
         val syncProgress: BuildProgress<BuildProgressDescriptor>?
     ) {
-
-        val id: Any get() = syncProgress?.id ?: buildId
 
         fun <T> runWithChildProgress(
             @NlsContexts.ProgressText title: String,
@@ -356,8 +349,6 @@ class MoveProjectsSyncTask(
                     ?.toVirtualFile()
                     ?.toTomlFile(project) ?: continue
                 val depMoveToml = MoveToml.fromTomlFile(depTomlFile)
-
-//                val depMoveToml = MoveToml.fromTomlFile(depTomlFile, depRoot)
 
                 // first try to parse MovePackage from dependency, no need for nested if parent is invalid
                 val depPackage = MovePackage.fromMoveToml(depMoveToml)

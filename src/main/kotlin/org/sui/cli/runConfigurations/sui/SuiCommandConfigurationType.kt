@@ -1,6 +1,5 @@
 package org.sui.cli.runConfigurations.sui
 
-import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.intellij.openapi.util.NotNullLazyValue
@@ -18,8 +17,6 @@ class SuiCommandConfigurationType :
     init {
         addFactory(SuiCommandConfigurationFactory(this))
     }
-
-    val factory: ConfigurationFactory get() = configurationFactories.single()
 
     @Suppress("CompanionObjectInExtension")
     companion object {

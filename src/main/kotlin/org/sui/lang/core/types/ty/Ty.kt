@@ -2,17 +2,10 @@ package org.sui.lang.core.types.ty
 
 import org.sui.lang.core.psi.MvTypeParametersOwner
 import org.sui.lang.core.types.infer.*
-import org.sui.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_ADT_VISITOR
-import org.sui.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_INFER_VISITOR
-import org.sui.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_TYPE_PARAMETER_VISITOR
-import org.sui.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_UNKNOWN_VISITOR
-import org.sui.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_INFER
 import org.sui.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_SUBST
 
 enum class Ability {
     DROP, COPY, STORE, KEY;
-
-    fun label(): String = this.name.lowercase()
 
     fun requires(): Ability {
         return when (this) {
@@ -32,15 +25,7 @@ enum class Ability {
     }
 }
 
-val TypeFoldable<*>.hasTyInfer get() = visitWith(HAS_TY_INFER_VISITOR)
-val TypeFoldable<*>.hasTyTypeParameters get() = visitWith(HAS_TY_TYPE_PARAMETER_VISITOR)
-val TypeFoldable<*>.hasTyAdt get() = visitWith(HAS_TY_ADT_VISITOR)
-val TypeFoldable<*>.hasTyUnknown get() = visitWith(HAS_TY_UNKNOWN_VISITOR)
-
-val TypeFoldable<*>.needsInfer get(): Boolean = visitWith(NEEDS_INFER)
 val TypeFoldable<*>.needsSubst get(): Boolean = visitWith(NEEDS_SUBST)
-
-fun Ty.knownOrNull(): Ty? = takeIf { it !is TyUnknown }
 
 abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
 
@@ -51,13 +36,6 @@ abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
     override fun visitWith(visitor: TypeVisitor): Boolean = visitor(this)
 
     override fun innerVisitWith(visitor: TypeVisitor): Boolean = false
-
-    /**
-     * Bindings between formal type parameters and actual type arguments.
-     */
-    open val typeParameterValues: Substitution get() = emptySubstitution
-
-    fun derefIfNeeded(): Ty = if (this is TyReference) this.referenced.derefIfNeeded() else this
 
     /**
      * User visible string representation of a type

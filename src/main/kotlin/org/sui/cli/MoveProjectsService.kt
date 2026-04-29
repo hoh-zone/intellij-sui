@@ -26,7 +26,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiInvalidElementAccessException
 import com.intellij.psi.util.parents
 import com.intellij.util.messages.Topic
-import org.jetbrains.annotations.TestOnly
 import org.sui.cli.externalSystem.MoveExternalSystemProjectAware
 import org.sui.cli.settings.MvProjectSettingsServiceBase.*
 import org.sui.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTINGS_TOPIC
@@ -46,7 +45,6 @@ import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
-import java.util.concurrent.TimeUnit
 
 val Project.moveProjectsService get() = service<MoveProjectsService>()
 
@@ -70,10 +68,6 @@ class MoveProjectsService(val project: Project): Disposable {
             doRefreshProjects(project, reason)
         }
     }
-
-    @TestOnly
-    fun scheduleProjectsRefreshSync(reason: String? = null): List<MoveProject> =
-        scheduleProjectsRefresh(reason).get(1, TimeUnit.MINUTES)
 
     private fun registerProjectAware(project: Project, disposable: Disposable) {
         // There is no sense to register `CargoExternalSystemProjectAware` for default project.
@@ -224,7 +218,6 @@ class MoveProjectsService(val project: Project): Disposable {
         }
         return projects.updateAsync(wrappedModifyProjects)
             .thenApply { projects ->
-//                refreshOnBuildDirChangeWatcher.setWatchedProjects(projects)
                 invokeAndWaitIfNeeded {
                     runWriteAction {
                         // remove file -> moveproject associations from cache

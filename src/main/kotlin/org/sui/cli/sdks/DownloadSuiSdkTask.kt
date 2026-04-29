@@ -4,7 +4,6 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.diagnostic.ControlFlowException
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
-// com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkDownloaderLogger
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.component1
 import com.intellij.openapi.util.component2
@@ -60,9 +59,8 @@ class DownloadSuiSdkTask(
             try {
                 tmpExtractionDir.mkdir()
 
-                val tarFile = File(tmpExtractionDir, tmpDownloadFile.nameWithoutExtension) // 假设输出目录已存在
+                val tarFile = File(tmpExtractionDir, tmpDownloadFile.nameWithoutExtension)
 
-                // 将 .tgz 文件解压成 .tar 文件
                 GZIPInputStream(FileInputStream(tmpDownloadFile)).use { gis ->
                     BufferedOutputStream(FileOutputStream(tarFile)).use { bos ->
                         gis.copyTo(bos)
@@ -93,10 +91,6 @@ class DownloadSuiSdkTask(
             onFinish(suiSdk)
 
         } catch (t: Throwable) {
-            //if we were cancelled in the middle or failed, let's clean up
-            //JdkDownloaderLogger.logDownload(false)
-
-            // Create and display a notification
             MvNotifications.pluginNotifications().createNotification(
                 "Sui SDK Download Failed",
                 "Failed to download and install Sui SDK v${suiSdk.version}. ${t.message}",

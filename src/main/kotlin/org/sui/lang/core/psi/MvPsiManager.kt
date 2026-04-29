@@ -5,7 +5,6 @@
 
 package org.sui.lang.core.psi
 
-import com.intellij.injected.editor.VirtualFileWindow
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbService
@@ -16,8 +15,6 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.SimpleModificationTracker
 import com.intellij.psi.*
-import com.intellij.psi.util.PsiModificationTracker
-import com.intellij.testFramework.LightVirtualFile
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.messages.Topic
 import org.sui.cli.MoveProjectsService
@@ -65,24 +62,8 @@ interface MvPsiManager {
     companion object {
         private val IGNORE_PSI_EVENTS: Key<Boolean> = Key.create("IGNORE_PSI_EVENTS")
 
-        fun <T> withIgnoredPsiEvents(psi: PsiFile, f: () -> T): T {
-            setIgnorePsiEvents(psi, true)
-            try {
-                return f()
-            } finally {
-                setIgnorePsiEvents(psi, false)
-            }
-        }
-
         fun isIgnorePsiEvents(psi: PsiFile): Boolean =
             psi.getUserData(IGNORE_PSI_EVENTS) == true
-
-        private fun setIgnorePsiEvents(psi: PsiFile, ignore: Boolean) {
-            val virtualFile = psi.virtualFile ?: return
-            check(virtualFile is LightVirtualFile)
-
-            psi.putUserData(IGNORE_PSI_EVENTS, if (ignore) true else null)
-        }
     }
 }
 
@@ -191,17 +172,7 @@ class MvPsiManagerImpl(val project: Project) : MvPsiManager, Disposable {
         val owner =
             if (DumbService.isDumb(project)) null else psi.findModificationTrackerOwner(!isChildrenChange)
 
-        // Whitespace/comment changes are meaningful for macros only
-        // (b/c they affect range mappings and body hashes)
-//        if (isWhitespaceOrComment) return
-
         val isStructureModification = owner == null || !owner.incModificationCount(psi)
-
-//        if (!isStructureModification && owner is RsMacroCall &&
-//            (!isMacroExpansionModeNew || !owner.isTopLevelExpansion)
-//        ) {
-//            return updateModificationCount(file, owner, isChildrenChange = false, isWhitespaceOrComment = false)
-//        }
 
         if (isStructureModification) {
             incRustStructureModificationCount(file, psi)
@@ -209,9 +180,6 @@ class MvPsiManagerImpl(val project: Project) : MvPsiManager, Disposable {
         project.messageBus.syncPublisher(SUI_MOVE_PSI_CHANGE_TOPIC)
             .movePsiChanged(file, psi, isStructureModification)
     }
-
-//    private val isMacroExpansionModeNew
-//        get() = project.macroExpansionManagerIfCreated?.macroExpansionMode is MacroExpansionMode.New
 
     override fun incStructureModificationCount() =
         incRustStructureModificationCount(null, null)
@@ -227,20 +195,3 @@ val Project.movePsiManager: MvPsiManager get() = service()
 /** @see MvPsiManager.moveStructureModificationTracker */
 val Project.moveStructureModificationTracker: ModificationTracker
     get() = movePsiManager.moveStructureModificationTracker
-
-/**
- * Returns [MvPsiManager.moveStructureModificationTracker] or [PsiModificationTracker.MODIFICATION_COUNT]
- * if `this` element is inside language injection
- */
-val MvElement.moveStructureOrAnyPsiModificationTracker: Any
-    get() {
-        val containingFile = containingFile
-        return when (containingFile.virtualFile) {
-            // The case of injected language. Injected PSI don't have it's own event system, so can only
-            // handle evens from outer PSI. For example, Rust language is injected to Kotlin's string
-            // literal. If a user change the literal, we can only be notified that the literal is changed.
-            // So we have to invalidate the cached value on any PSI change
-            is VirtualFileWindow -> PsiModificationTracker.MODIFICATION_COUNT
-            else -> containingFile.project.moveStructureModificationTracker
-        }
-    }

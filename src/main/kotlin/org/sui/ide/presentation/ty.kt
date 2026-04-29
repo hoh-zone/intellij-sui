@@ -4,18 +4,13 @@ import org.sui.lang.core.types.ty.*
 
 fun tyToString(ty: Ty) = render(ty, Int.MAX_VALUE)
 
-private fun render(
-    ty: Ty,
-    level: Int,
-    unknown: String = "<unknown>",
-    anonymous: String = "<anonymous>",
-    integer: String = "integer",
-    typeParam: (TyTypeParameter) -> String = { it.name ?: anonymous },
-    tyVar: (TyInfer.TyVar) -> String = { "?${it.origin?.name ?: "_"}" },
-    fq: Boolean = false
-): String {
+private const val UNKNOWN = "<unknown>"
+private const val ANONYMOUS = "<anonymous>"
+private const val INTEGER = "integer"
+
+private fun render(ty: Ty, level: Int): String {
     check(level >= 0)
-    if (ty is TyUnknown) return unknown
+    if (ty is TyUnknown) return UNKNOWN
     if (ty is TyPrimitive) {
         return when (ty) {
             is TyBool -> "bool"
@@ -24,7 +19,7 @@ private fun render(
             is TyUnit -> "()"
             is TyInteger -> {
                 if (ty.kind == TyInteger.DEFAULT_KIND) {
-                    integer
+                    INTEGER
                 } else {
                     ty.kind.toString()
                 }
@@ -35,7 +30,7 @@ private fun render(
 
     if (level == 0) return "_"
 
-    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeParam, tyVar, fq) }
+    val r = { subTy: Ty -> render(subTy, level - 1) }
 
     return when (ty) {
         is TyFunction -> {
@@ -51,17 +46,17 @@ private fun render(
             val prefix = if (ty.mutability.isMut) "&mut " else "&"
             "$prefix${r(ty.referenced)}"
         }
-        is TyTypeParameter -> typeParam(ty)
+        is TyTypeParameter -> ty.name ?: ANONYMOUS
         is TyAdt -> {
-            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
+            val name = ty.item.name ?: ANONYMOUS
             val args =
                 if (ty.typeArguments.isEmpty()) ""
                 else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
             name + args
         }
         is TyInfer -> when (ty) {
-            is TyInfer.TyVar -> tyVar(ty)
-            is TyInfer.IntVar -> integer
+            is TyInfer.TyVar -> "?${ty.origin?.name ?: "_"}"
+            is TyInfer.IntVar -> INTEGER
         }
         is TyLambda -> {
             val params = ty.paramTypes.joinToString(",", "|", "|", transform = r)

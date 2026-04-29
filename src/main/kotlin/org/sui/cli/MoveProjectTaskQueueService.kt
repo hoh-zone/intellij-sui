@@ -13,8 +13,6 @@ class MvProjectTaskQueueService(val project: Project): Disposable {
 
     fun run(task: Task.Backgroundable) = queue.run(task)
 
-    val isEmpty: Boolean get() = queue.isEmpty
-
     override fun dispose() {
         queue.dispose()
     }

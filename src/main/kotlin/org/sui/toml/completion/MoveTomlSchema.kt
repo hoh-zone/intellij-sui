@@ -17,10 +17,8 @@ class MoveTomlSchema private constructor(
     private val tables: List<TomlTableSchema>
 ) {
 
-    fun topLevelKeys(isArray: Boolean): Collection<String> =
-        tables.filter { it.isArray == isArray }.map { it.name }
-
-    fun tableHeaderKeys() = topLevelKeys(false)
+    fun tableHeaderKeys(): Collection<String> =
+        tables.filter { !it.isArray }.map { it.name }
 
     fun keysForTable(tableName: String): Collection<String> =
         tables.find { it.name == tableName }?.keys.orEmpty()

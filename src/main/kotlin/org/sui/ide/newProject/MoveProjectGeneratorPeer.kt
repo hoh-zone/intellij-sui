@@ -32,8 +32,7 @@ class MoveProjectGeneratorPeer(
 
         val localSuiPath =
             defaultProjectSettings.localSuiPath ?: getCliFromPATH("sui")?.toString()
-        chooseSuiCliPanel.data =
-            ChooseSuiCliPanel.Data(defaultProjectSettings.suiExecType, localSuiPath)
+        chooseSuiCliPanel.data = ChooseSuiCliPanel.Data(localSuiPath)
     }
 
     override fun buildUI(settingsStep: SettingsStep) {
@@ -49,16 +48,12 @@ class MoveProjectGeneratorPeer(
         if (localSuiPath != null) {
             this.chooseSuiCliPanel.updateSuiSdks(localSuiPath)
         }
-        return MoveProjectConfig(
-            suiExecType = this.chooseSuiCliPanel.data.suiExecType,
-            localSuiPath = localSuiPath,
-        )
+        return MoveProjectConfig(localSuiPath = localSuiPath)
     }
 
     override fun validate(): ValidationInfo? {
         val panelData = this.chooseSuiCliPanel.data
-        val suiExecPath =
-            SuiExecType.suiExecPath(panelData.suiExecType, panelData.localSuiPath)
+        val suiExecPath = SuiExecType.suiExecPath(panelData.localSuiPath)
         if (suiExecPath == null) {
             return ValidationInfo("Invalid path to Sui executable")
         }

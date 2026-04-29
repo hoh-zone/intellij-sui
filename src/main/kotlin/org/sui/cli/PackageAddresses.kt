@@ -1,6 +1,5 @@
 package org.sui.cli
 
-import org.sui.lang.core.types.AddressLit
 import org.sui.openapiext.singleSegmentOrNull
 import org.sui.openapiext.stringValue
 import org.toml.lang.psi.TomlKeySegment
@@ -19,8 +18,6 @@ data class AddressVal(
             return this.placeholderKeyValue?.singleSegmentOrNull()
                 ?: this.keyValue?.singleSegmentOrNull()
         }
-
-    val literal: AddressLit get() = AddressLit(value)
 }
 
 data class PlaceholderVal(
@@ -48,14 +45,6 @@ data class PackageAddresses(
             values[name] = AddressVal(value, pVal.keyValue, pVal.keyValue, pVal.packageName)
         }
         return values
-    }
-
-    fun get(name: String): AddressVal? {
-        if (name in this.values) return this.values[name]
-        return this.placeholders[name]
-            ?.let {
-                AddressVal(MvConstants.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
-            }
     }
 
     fun applySubstitution(subst: RawAddressMap, packageName: String) {

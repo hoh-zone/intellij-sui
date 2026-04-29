@@ -5,16 +5,12 @@ import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.stubs.IStubElementType
 import org.sui.ide.MoveIcons
-import org.sui.lang.core.psi.MvNamedFieldDecl
 import org.sui.lang.core.psi.MvStruct
 import org.sui.lang.core.stubs.MvStructStub
 import org.sui.lang.core.stubs.MvStubbedNamedElementImpl
 import org.sui.lang.core.types.ItemQualName
 import org.sui.lang.core.types.ty.Ability
 import javax.swing.Icon
-
-val MvStruct.fields: List<MvNamedFieldDecl>
-    get() = blockFields?.namedFieldDeclList.orEmpty()
 
 val MvStruct.requiredAbilitiesForTypeParam: Set<Ability>
     get() =

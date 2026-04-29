@@ -100,10 +100,6 @@ class MvResolveCache(project: Project) : Disposable {
         }
     }
 
-//    fun getCached(key: PsiElement, dep: ResolveCacheDependency): Any? {
-//        return getCacheFor(key, refineDependency(key, dep))[key]
-//    }
-
     private fun refineDependency(key: PsiElement, dep: ResolveCacheDependency): ResolveCacheDependency =
         when (key.containingFile?.virtualFile) {
             // If virtualFile is null then event system is not enabled for this PSI file (see
@@ -124,29 +120,17 @@ class MvResolveCache(project: Project) : Disposable {
                 val trackerOwner = element.findModificationTrackerOwner(strict = false)
                 return if (trackerOwner != null) {
                     CachedValuesManager.getCachedValue(trackerOwner, LOCAL_AND_RUST_STRUCTURE_CACHE_KEY) {
-                            CachedValueProvider.Result.create(
-                                createWeakMap(),
-                                trackerOwner.project.moveStructureModificationTracker,
-                                trackerOwner.modificationTracker
-                            )
-                        }
-
-//                    if (dep == ResolveCacheDependency.LOCAL) {
-//                        CachedValuesManager.getCachedValue(owner, LOCAL_CACHE_KEY) {
-//                            CachedValueProvider.Result.create(
-//                                createWeakMap(),
-//                                owner.modificationTracker
-//                            )
-//                        }
-//
-//                    } else {
-//                    }
+                        CachedValueProvider.Result.create(
+                            createWeakMap(),
+                            trackerOwner.project.moveStructureModificationTracker,
+                            trackerOwner.modificationTracker
+                        )
+                    }
                 } else {
                     moveStructureDependentCache
                 }
 
             }
-//            ResolveCacheDependency.RUST_STRUCTURE -> moveStructureDependentCache
             ResolveCacheDependency.ANY_PSI_CHANGE -> anyPsiChangeDependentCache
         }
     }
@@ -158,10 +142,6 @@ class MvResolveCache(project: Project) : Disposable {
         if (cached !== null && cached === result) return
         map[element] = result ?: NULL_RESULT as V
     }
-
-//    private fun onRustStructureChanged() {
-//        _moveStructureDependentCache.set(null)
-//    }
 
     private fun onMovePsiChanged(element: PsiElement) {
         // 1. The global resolve cache invalidates only on rust structure changes.
@@ -192,28 +172,15 @@ class MvResolveCache(project: Project) : Disposable {
 }
 
 enum class ResolveCacheDependency {
-//    /**
-//     * Depends on the nearest [MvModificationTrackerOwner] and falls back to
-//     * [MvPsiManager.moveStructureModificationTracker] if the tracker owner is not found.
-//     *
-//     * See [findModificationTrackerOwner]
-//     */
-//    LOCAL,
-
-//    /**
-//     * Depends on [MvPsiManager.moveStructureModificationTracker]
-//     */
-//    RUST_STRUCTURE,
-
     /**
-     * Depends on both [LOCAL] and [RUST_STRUCTURE]. It is not the same as "any PSI change", because,
-     * for example, local changes from other functions will not invalidate the value
+     * Depends on the nearest [MvModificationTrackerOwner] (falls back to the project structure tracker).
+     * Local changes from other functions do not invalidate the value.
      */
     LOCAL_AND_RUST_STRUCTURE,
 
     /**
      * Depends on [com.intellij.psi.util.PsiModificationTracker.MODIFICATION_COUNT]. I.e. depends on
-     * any PSI change, not only in rust files
+     * any PSI change, not only in Move files.
      */
     ANY_PSI_CHANGE,
 }
@@ -238,7 +205,6 @@ private fun <K : Any, V : Any> createWeakMap(): ConcurrentMap<K, V> {
 
 private val NULL_RESULT = Any()
 
-private val LOCAL_CACHE_KEY: Key<CachedValue<ConcurrentMap<PsiElement, Any>>> = Key.create("LOCAL_CACHE_KEY")
 private val LOCAL_AND_RUST_STRUCTURE_CACHE_KEY: Key<CachedValue<ConcurrentMap<PsiElement, Any>>> =
     Key.create("LOCAL_AND_RUST_STRUCTURE_CACHE_KEY")
 

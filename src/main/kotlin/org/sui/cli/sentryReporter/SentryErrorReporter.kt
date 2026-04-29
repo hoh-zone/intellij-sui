@@ -1,6 +1,5 @@
 package org.sui.cli.sentryReporter
 
-import com.intellij.diagnostic.IdeErrorsDialog
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationInfo
@@ -8,7 +7,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.ErrorReportSubmitter
 import com.intellij.openapi.diagnostic.IdeaLoggingEvent
 import com.intellij.openapi.diagnostic.SubmittedReportInfo
-import com.intellij.openapi.extensions.PluginDescriptor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
@@ -33,9 +31,6 @@ class SentryErrorReporter : ErrorReportSubmitter() {
         }
     }
 
-    override fun getPluginDescriptor(): PluginDescriptor {
-        return super.getPluginDescriptor()
-    }
     override fun getReportActionText(): String = "Report to Pontem Network"
 
     override fun submit(
@@ -81,21 +76,11 @@ class SentryErrorReporter : ErrorReportSubmitter() {
             pluginInfoContext["Platform"] = ApplicationInfo.getInstance().fullApplicationName
             pluginInfoContext["Plugin Version"] = plugin?.version ?: "unknown"
             sentryEvent.contexts["Plugin Info"] = pluginInfoContext
-//        try {
-//        } catch (e: NoSuchFieldError) {
-//            // intellij 2023.1 on windows 11 throws this, catch and report that one instead
-//            // TODO: remove later
-//            sentryEvent.contexts["Runtime Error Stacktrace"] = mapOf("Value" to e.getThrowableText())
-//        }
-//
 
             if (project != null) {
                 val settings = project.moveSettings.state.asMap().toMutableMap()
                 settings.remove("suiPath")
                 sentryEvent.contexts["Settings"] = settings
-                // TODO: serialization doesn't work for some reason
-//            sentryEvent.contexts["Projects"] =
-//                project.moveProjectsService.allProjects.map { MoveProjectContext.from(it) }.toList()
             }
             // IdeaLoggingEvent only provides text stacktrace
             sentryEvent.contexts["Stacktrace"] = mapOf("Value" to event.throwableText)
@@ -121,8 +106,6 @@ private fun onSuccess(project: Project?, callback: Consumer<in SubmittedReportIn
     val reportInfo = SubmittedReportInfo(SubmittedReportInfo.SubmissionStatus.NEW_ISSUE)
     callback.consume(reportInfo)
     ApplicationManager.getApplication().invokeLater {
-//        val title = DiagnosticBundle.message("error.report.submitted")
-//        val content = DiagnosticBundle.message("error.report.gratitude")
         NotificationGroupManager.getInstance().getNotificationGroup("Error Report")
             .createNotification("error.report.submitted", "error.report.gratitude", NotificationType.INFORMATION)
             .setImportant(false)

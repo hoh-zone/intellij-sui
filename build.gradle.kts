@@ -44,7 +44,28 @@ fun Project.gitTimestamp(): String {
 val shortPlatformVersion = prop("shortPlatformVersion")
 val useInstaller = prop("useInstaller").toBooleanStrict()
 val codeVersion = "2.0"
-val buildNumber = (extra.properties["buildNumber"] as? String)?.toIntOrNull() ?: 1
+
+// Auto-bump buildNumber on every `buildPlugin` invocation so the produced zip
+// always carries a fresh version (avoids IDE plugin install caching issues).
+val rawBuildNumber = (extra.properties["buildNumber"] as? String)?.toIntOrNull() ?: 1
+val isBuildingPlugin = gradle.startParameter.taskNames.any {
+    it == "buildPlugin" || it.endsWith(":buildPlugin")
+}
+val buildNumber = if (isBuildingPlugin) {
+    val next = rawBuildNumber + 1
+    val gradleProps = rootProject.file("gradle.properties")
+    gradleProps.writeText(
+        gradleProps.readText().replace(
+            Regex("(?m)^buildNumber=.*$"),
+            "buildNumber=$next"
+        )
+    )
+    logger.lifecycle("Bumped buildNumber: $rawBuildNumber -> $next")
+    next
+} else {
+    rawBuildNumber
+}
+
 var pluginVersion = "$codeVersion.$shortPlatformVersion.$buildNumber"
 if (publishingChannel != "default") {
     // timestamp of the commit with this eaps addition
@@ -66,7 +87,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "2.3.0"
-    id("org.jetbrains.intellij.platform") version "2.11.0"
+    id("org.jetbrains.intellij.platform") version "2.15.0"
     id("org.jetbrains.grammarkit") version "2023.3.0.1"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
@@ -209,6 +230,24 @@ allprojects {
             pathToParser.set("/org/sui/lang/MoveParser.java")
             pathToPsiRoot.set("/org/sui/lang/core/psi")
 //            purgeOldFiles.set(true)
+            // Workaround for grammar-kit-plugin 2023.3.0.1 incompatibility with IntelliJ Platform 261+
+            // (NoClassDefFoundError: KeyedExtensionCollector). Add platform libs explicitly.
+            // See: https://github.com/JetBrains/gradle-grammar-kit-plugin/issues/223
+            val requiredLibs261 = listOf(
+                "intellij.platform.core",
+                "intellij.platform.core.impl",
+                "intellij.platform.analysis",
+                "intellij.platform.analysis.impl",
+                "intellij.platform.projectModel",
+                "intellij.platform.lang",
+                "intellij.libraries.fastutil",
+                "intellij.libraries.kotlinx.coroutines.core",
+                "intellij.libraries.kotlinx.collections.immutable",
+            )
+            val platformLibs = intellijPlatform.platformPath.resolve("lib")
+            classpath += fileTree(platformLibs) {
+                include { it.file.nameWithoutExtension in requiredLibs261 }
+            }
         }
 
         withType<KotlinCompile> {

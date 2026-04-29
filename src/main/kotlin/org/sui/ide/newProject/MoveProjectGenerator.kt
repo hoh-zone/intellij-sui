@@ -21,7 +21,6 @@ import org.sui.openapiext.computeWithCancelableProgress
 import org.sui.stdext.unwrapOrThrow
 
 data class MoveProjectConfig(
-    val suiExecType: SuiExecType,
     val localSuiPath: String?,
 )
 
@@ -42,25 +41,21 @@ class MoveProjectGenerator : DirectoryProjectGeneratorBase<MoveProjectConfig>(),
     ) {
         val packageName = project.name
         val suiPath =
-            SuiExecType.suiExecPath(projectConfig.suiExecType, projectConfig.localSuiPath)
+            SuiExecType.suiExecPath(projectConfig.localSuiPath)
                 ?: error("validated before")
         val sui = Sui(suiPath, disposable)
         val manifestFile =
             project.computeWithCancelableProgress("Generating Sui project...") {
-                val manifestFile =
-                    sui.init(
-                        project,
-                        rootDirectory = baseDir,
-                        packageName = packageName
-                    )
-                        .unwrapOrThrow() // TODO throw? really??
-                manifestFile
+                sui.init(
+                    rootDirectory = baseDir,
+                    packageName = packageName
+                )
+                    .unwrapOrThrow()
             }
         // update settings (and refresh Sui projects too)
         project.moveSettings.modify {
-            it.suiExecType = projectConfig.suiExecType
             it.localSuiPath = projectConfig.localSuiPath
-                }
+        }
 
         ProjectInitializationSteps.createDefaultCompileConfigurationIfNotExists(project)
         // NOTE:

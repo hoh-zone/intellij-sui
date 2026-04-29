@@ -2,13 +2,9 @@ package org.sui.lang.core.psi
 
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.editor.colors.TextAttributesKey
-import org.sui.cli.settings.moveSettings
 import org.sui.ide.MoveIcons
-import org.sui.lang.MvElementTypes
 import org.sui.lang.core.psi.ext.*
-import org.sui.lang.core.stubs.MvModuleStub
 import org.sui.lang.core.types.infer.loweredType
-import org.sui.lang.core.types.ty.Ty
 import org.sui.lang.core.types.ty.TyFunction
 import org.sui.lang.core.types.ty.TyLambda
 import org.sui.lang.core.types.ty.TyUnknown
@@ -46,40 +42,14 @@ val MvFunctionLike.functionItemPresentation: PresentationData?
         )
     }
 
-val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
-
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
 
 val MvFunctionLike.parametersAsBindings: List<MvPatBinding> get() = this.parameters.map { it.patBinding }
 
 val MvFunctionLike.lambdaParamsAsBindings: List<MvPatBinding>
-    get() {
-        val msl = this.isMslOnlyItem
-        val parameters = this.parameters
-        return parameters
-            .filter { it.type?.loweredType(msl) is TyLambda }
-            .map { it.patBinding }
-    }
-
-val MvFunctionLike.anyBlock: AnyBlock?
-    get() = when (this) {
-        is MvFunction -> this.codeBlock
-        else -> null
-    }
-
-val MvFunctionLike.module: MvModule?
-    get() =
-        when (this) {
-            is MvFunction -> {
-                val moduleStub = greenStub?.parentStub as? MvModuleStub
-                if (moduleStub != null) {
-                    moduleStub.psi
-                } else {
-                    this.parent as? MvModule
-                }
-            }
-            else -> null
-        }
+    get() = this.parameters
+        .filter { it.type?.loweredType(false) is TyLambda }
+        .map { it.patBinding }
 
 val MvFunctionLike.signatureText: String
     get() {

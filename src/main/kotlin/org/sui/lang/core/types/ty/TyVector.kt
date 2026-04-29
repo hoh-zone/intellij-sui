@@ -21,9 +21,3 @@ open class TyVector(val item: Ty) : Ty(item.flags) {
 
     override fun hashCode(): Int = item.hashCode()
 }
-
-data class TyByteString(val msl: Boolean) :
-    TyVector(TyInteger(if (msl) TyInteger.Kind.num else TyInteger.Kind.u8))
-
-data class TyHexString(val msl: Boolean) :
-    TyVector(TyInteger(if (msl) TyInteger.Kind.num else TyInteger.Kind.u8))

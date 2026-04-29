@@ -4,14 +4,9 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.ResolveResult
 import org.sui.lang.core.psi.MvElement
 
-/**
- * Used as a resolve result in [org.rust.lang.core.resolve.ref.RsPathReferenceImpl]
- */
 data class MvPathResolveResult<T : MvElement>(
     val element: T,
-//    val resolvedSubst: Substitution = emptySubstitution,
     val isVisible: Boolean,
-//    val namespaces: Set<Namespace> = emptySet(),
 ) : ResolveResult {
     override fun getElement(): PsiElement = element
 

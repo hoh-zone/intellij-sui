@@ -17,11 +17,4 @@ class SuiTestRunState(
             SuiTestConsoleBuilder(environment.runProfile as SuiCommandConfiguration, environment.executor)
         createFilters().forEach { consoleBuilder.addFilter(it) }
     }
-
-//    override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
-//        val processHandler = startProcess()
-//        val console = createConsole(executor)
-//        console?.attachToProcess(processHandler)
-//        return DefaultExecutionResult(console, processHandler).apply { setRestartActions(ToggleAutoTestAction()) }
-//    }
 }

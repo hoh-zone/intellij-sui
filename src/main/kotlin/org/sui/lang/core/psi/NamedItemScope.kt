@@ -4,8 +4,7 @@ import org.sui.lang.core.psi.ext.*
 
 enum class NamedItemScope {
     MAIN,
-    TEST,
-    VERIFY;
+    TEST;
 
     val isTest get() = this == TEST
 
@@ -22,22 +21,19 @@ fun MvDocAndAttributeOwner.itemScopeFromAttributes(): NamedItemScope? =
         is MvFunction ->
             when {
                 this.hasTestOnlyAttr || this.hasTestAttr -> NamedItemScope.TEST
-                this.hasVerifyOnlyAttr -> NamedItemScope.VERIFY
                 else ->
-                    this.module?.itemScopeFromAttributes() ?: NamedItemScope.MAIN
+                    this.containingModule?.itemScopeFromAttributes() ?: NamedItemScope.MAIN
             }
 
         is MvStruct ->
             when {
                 this.hasTestOnlyAttr -> NamedItemScope.TEST
-                this.hasVerifyOnlyAttr -> NamedItemScope.VERIFY
                 else -> this.module.itemScopeFromAttributes() ?: NamedItemScope.MAIN
             }
 
         else ->
             when {
                 this.hasTestOnlyAttr -> NamedItemScope.TEST
-                this.hasVerifyOnlyAttr -> NamedItemScope.VERIFY
                 else -> null
             }
     }

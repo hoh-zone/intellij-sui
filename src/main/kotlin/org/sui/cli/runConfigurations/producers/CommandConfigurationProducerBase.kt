@@ -7,14 +7,9 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import org.sui.cli.runConfigurations.CommandConfigurationBase
-import org.sui.cli.settings.moveSettings
 
 abstract class CommandConfigurationProducerBase :
     LazyRunConfigurationProducer<CommandConfigurationBase>() {
-
-
-    fun configFromLocation(location: PsiElement, climbUp: Boolean = true): SuiCommandLineFromContext? =
-        fromLocation(location, climbUp)
 
     abstract fun fromLocation(location: PsiElement, climbUp: Boolean = true): SuiCommandLineFromContext?
 
@@ -23,7 +18,7 @@ abstract class CommandConfigurationProducerBase :
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
-        val cmdConf = configFromLocation(sourceElement.get()) ?: return false
+        val cmdConf = fromLocation(sourceElement.get()) ?: return false
         templateConfiguration.name = cmdConf.configurationName
 
         val commandLine = cmdConf.commandLine
@@ -33,7 +28,6 @@ abstract class CommandConfigurationProducerBase :
         val environment = commandLine.environmentVariables.envs
         templateConfiguration.environmentVariables = EnvironmentVariablesData.create(environment, true)
         return true
-
     }
 
     override fun isConfigurationFromContext(
@@ -41,7 +35,7 @@ abstract class CommandConfigurationProducerBase :
         context: ConfigurationContext
     ): Boolean {
         val location = context.psiLocation ?: return false
-        val cmdConf = configFromLocation(location) ?: return false
+        val cmdConf = fromLocation(location) ?: return false
         return configuration.name == cmdConf.configurationName
                 && configuration.command == cmdConf.commandLine.joinArgs()
                 && configuration.workingDirectory == cmdConf.commandLine.workingDirectory

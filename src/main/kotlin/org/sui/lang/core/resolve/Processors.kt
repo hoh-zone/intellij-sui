@@ -30,8 +30,6 @@ interface ScopeEntry {
 @Suppress("UNCHECKED_CAST")
 private fun <T: ScopeEntry> T.copyWithNs(namespaces: Set<Namespace>): T = doCopyWithNs(namespaces) as T
 
-typealias MvProcessor<T> = (T) -> Boolean
-
 interface MvResolveProcessorBase<in T: ScopeEntry> {
     /**
      * Return `true` to stop further processing,
@@ -51,26 +49,6 @@ interface MvResolveProcessorBase<in T: ScopeEntry> {
         return names == null || name in names
     }
 }
-
-//interface MvResolveProcessor {
-//    /**
-//     * Return `true` to stop further processing,
-//     * return `false` to continue search
-//     */
-//    fun process(entry: SimpleScopeEntry): Boolean
-//
-//    /**
-//     * Indicates that processor is interested only in [SimpleScopeEntry]s with specified [names].
-//     * Improves performance for Resolve2.
-//     * `null` in completion
-//     */
-//    val names: Set<String>?
-//
-//    fun acceptsName(name: String): Boolean {
-//        val names = names
-//        return names == null || name in names
-//    }
-//}
 
 typealias MvResolveProcessor = MvResolveProcessorBase<ScopeEntry>
 
@@ -152,10 +130,7 @@ private class ResolveVariantsCollector(
 
     override fun process(entry: ScopeEntry): Boolean {
         if (entry.name == referenceName) {
-            val element = entry.element
-//            if (element !is RsDocAndAttributeOwner || element.existsAfterExpansionSelf) {
-            result += element
-//            }
+            result += entry.element
         }
         return false
     }
@@ -179,10 +154,7 @@ private class ResolveVariantsAsScopeEntriesCollector<T: ScopeEntry>(
 
     override fun process(entry: T): Boolean {
         if (entry.name == referenceName) {
-//            val element = entry.element
-//            if (element !is RsDocAndAttributeOwner || element.existsAfterExpansionSelf) {
             result += entry
-//            }
         }
         return false
     }
@@ -230,16 +202,8 @@ data class SimpleScopeEntry(
     override val name: String,
     override val element: MvNamedElement,
     override val namespaces: Set<Namespace>,
-//    override val subst: Substitution = emptySubstitution
 ): ScopeEntry {
     override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
-}
-
-data class ModInfo(
-//    val movePackage: MovePackage?,
-    val module: MvModule?,
-//    val isScript: Boolean,
-) {
 }
 
 fun interface VisibilityFilter {
@@ -256,9 +220,6 @@ fun ScopeEntry.getVisibilityStatusFrom(methodOrPath: MvMethodOrPath): Visibility
         Visible
     }
 
-
-fun ScopeEntry.isVisibleFrom(context: MvMethodOrPath): Boolean = getVisibilityStatusFrom(context) == Visible
-
 enum class VisibilityStatus {
     Visible,
     Invisible,
@@ -270,10 +231,6 @@ data class ScopeEntryWithVisibility(
     override val namespaces: Set<Namespace>,
 
     val adjustedItemScope: NamedItemScope = MAIN,
-
-    /** Given a [MvElement] (usually [MvPath]) checks if this item is visible in `containingMod` of that element */
-//    val visibilityFilter: VisibilityFilter? = null,
-//    override val subst: Substitution = emptySubstitution,
 ): ScopeEntry {
     override fun doCopyWithNs(namespaces: Set<Namespace>): ScopeEntry = copy(namespaces = namespaces)
 }
@@ -326,15 +283,3 @@ fun MvResolveProcessor.processAll(
 ): Boolean {
     return elements.any { process(ns, it) }
 }
-
-fun MvResolveProcessor.processAll(elements: List<ScopeEntry>): Boolean = elements.any { process(it) }
-
-fun MvResolveProcessor.processAll(
-    ns: Set<Namespace>,
-    vararg collections: Iterable<MvNamedElement>,
-): Boolean {
-    return sequenceOf(*collections).flatten().any { process(ns, it) }
-}
-
-
-

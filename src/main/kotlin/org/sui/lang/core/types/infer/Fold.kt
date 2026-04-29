@@ -6,8 +6,6 @@
 package org.sui.lang.core.types.infer
 
 import org.sui.lang.core.types.ty.Ty
-import org.sui.lang.core.types.ty.TyInfer
-import org.sui.lang.core.types.ty.TyTypeParameter
 import org.sui.lang.core.types.ty.TyUnknown
 
 abstract class TypeFolder {
@@ -18,15 +16,13 @@ abstract class TypeFolder {
         // workaround for recursive structs, folding gives up at some point
         if (depth > MAX_RECURSION_DEPTH) return TyUnknown
 
-//        return fold(ty)
         val cachedTy = cache[ty]
         if (cachedTy != null) {
             return cachedTy
-        } else {
-            val foldedTy = fold(ty)
-            cache[ty] = foldedTy
-            return foldedTy
         }
+        val foldedTy = fold(ty)
+        cache[ty] = foldedTy
+        return foldedTy
     }
 
     abstract fun fold(ty: Ty): Ty
@@ -36,7 +32,6 @@ abstract class TypeFolder {
     }
 }
 
-//typealias TypeFolder = (Ty) -> Ty
 typealias TypeVisitor = (Ty) -> Boolean
 
 /**

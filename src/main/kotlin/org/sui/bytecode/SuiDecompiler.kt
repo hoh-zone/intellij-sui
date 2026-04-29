@@ -12,17 +12,11 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import org.sui.cli.runConfigurations.sui.Sui
 import org.sui.openapiext.pathAsPath
-import org.sui.openapiext.rootPath
 import org.sui.openapiext.rootPluginDisposable
 import org.sui.stdext.MvResult
 import org.sui.stdext.unwrapOrElse
 import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.relativeTo
 
-// todo: this is disabled for now, it's a process which requires ReadAction, and that's why
-//  it needs to be run in the indexing phase
 class SuiBytecodeDecompiler : BinaryFileDecompiler {
     override fun decompile(file: VirtualFile): CharSequence {
         val fileText = file.readText()
@@ -33,13 +27,6 @@ class SuiBytecodeDecompiler : BinaryFileDecompiler {
             val bytes = file.readBytes()
             return LoadTextUtil.getTextByBinaryPresentation(bytes, file)
         }
-//        val project =
-//            ProjectLocator.getInstance().getProjectsForFile(file).firstOrNull { it?.isSuiConfigured == true }
-//                ?: ProjectManager.getInstance().defaultProject.takeIf { it.isSuiConfigured }
-//                ?: return file.readText()
-//        val targetFileDir = getDecompilerTargetFileDirOnTemp(project, file) ?: return file.readText()
-//        val targetFile = decompileFile(project, file, targetFileDir) ?: return file.readText()
-//        return LoadTextUtil.loadText(targetFile)
     }
 
     fun decompileFileToTheSameDir(sui: Sui, file: VirtualFile): MvResult<VirtualFile, String> {
@@ -50,42 +37,9 @@ class SuiBytecodeDecompiler : BinaryFileDecompiler {
         val decompiledFilePath = file.parent.pathAsPath.resolve(sourceFileName(file))
         val decompiledFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(decompiledFilePath)
             ?: run {
-                // something went wrong, no output file
                 return MvResult.Err("Expected decompiled file $decompiledFilePath does not exist")
             }
         return MvResult.Ok(decompiledFile)
-    }
-
-    fun decompileFile(sui: Sui, file: VirtualFile, targetFileDir: Path): MvResult<VirtualFile, String> {
-        if (!targetFileDir.exists()) {
-            targetFileDir.toFile().mkdirs()
-        }
-
-        sui.decompileFile(file.path, outputDir = targetFileDir.toString())
-            .unwrapOrElse {
-                return MvResult.Err("`sui move decompile` failed")
-            }
-        val decompiledName = sourceFileName(file)
-        val decompiledFile =
-            VirtualFileManager.getInstance().findFileByNioPath(targetFileDir.resolve(decompiledName)) ?: run {
-                // something went wrong, no output file
-                return MvResult.Err("Cannot find decompiled file in the target directory")
-            }
-
-        val decompiledNioFile = decompiledFile.toNioPathOrNull()?.toFile()
-            ?: return MvResult.Err("Cannot convert VirtualFile to File")
-        FileUtil.rename(decompiledNioFile, hashedSourceFileName(file))
-
-        return MvResult.Ok(decompiledFile)
-    }
-
-    fun getDecompilerTargetFileDirOnTemp(project: Project, file: VirtualFile): Path? {
-        val rootDecompilerDir = getArtifactsDir()
-        val projectDecompilerDir = rootDecompilerDir.resolve(project.name)
-        val root = project.rootPath ?: return null
-        val relativeFilePath = file.parent.pathAsPath.relativeTo(root)
-        val targetFileDir = projectDecompilerDir.toPath().resolve(relativeFilePath)
-        return targetFileDir
     }
 
     fun getArtifactsDir(): File {
@@ -95,11 +49,6 @@ class SuiBytecodeDecompiler : BinaryFileDecompiler {
     fun sourceFileName(file: VirtualFile): String {
         val fileName = file.name
         return "$fileName.move"
-    }
-
-    fun hashedSourceFileName(file: VirtualFile): String {
-        val fileName = file.name
-        return "$fileName#decompiled.move"
     }
 }
 

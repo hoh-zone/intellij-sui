@@ -5,22 +5,13 @@
 
 package org.sui.openapiext
 
-import com.fasterxml.jackson.core.JacksonException
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.process.ProcessOutput
 import org.sui.stdext.MvResult
 
 typealias MvProcessResult<T> = MvResult<T, MvProcessExecutionException>
 
-sealed class MvProcessExecutionOrDeserializationException : RuntimeException {
-    constructor(cause: Throwable) : super(cause)
-    constructor(message: String) : super(message)
-}
-
-class MvDeserializationException(cause: JacksonException) :
-    MvProcessExecutionOrDeserializationException(cause)
-
-sealed class MvProcessExecutionException : MvProcessExecutionOrDeserializationException {
+sealed class MvProcessExecutionException : RuntimeException {
     constructor(message: String) : super(message)
     constructor(cause: Throwable) : super(cause)
 
@@ -57,14 +48,3 @@ sealed class MvProcessExecutionException : MvProcessExecutionOrDeserializationEx
         """.trimMargin()
     }
 }
-
-fun MvProcessResult<ProcessOutput>.ignoreExitCode(): MvResult<ProcessOutput, MvProcessExecutionException.Start> =
-    when (this) {
-        is MvResult.Ok -> MvResult.Ok(ok)
-        is MvResult.Err -> when (err) {
-            is MvProcessExecutionException.Start -> MvResult.Err(err)
-            is MvProcessExecutionException.Canceled -> MvResult.Ok(err.output)
-            is MvProcessExecutionException.Timeout -> MvResult.Ok(err.output)
-            is MvProcessExecutionException.ProcessAborted -> MvResult.Ok(err.output)
-        }
-    }

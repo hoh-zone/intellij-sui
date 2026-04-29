@@ -6,5 +6,4 @@ import org.sui.lang.core.resolve.ref.MvMandatoryReferenceElement
 
 interface MvMethodOrField : MvMandatoryReferenceElement
 
-val MvMethodOrField.dotExpr: MvDotExpr get() = parent as MvDotExpr
-val MvMethodOrField.receiverExpr: MvExpr get() = dotExpr.expr
+val MvMethodOrField.receiverExpr: MvExpr get() = (parent as MvDotExpr).expr

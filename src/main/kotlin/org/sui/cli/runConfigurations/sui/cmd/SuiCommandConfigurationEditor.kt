@@ -33,7 +33,6 @@ class SuiCommandConfigurationEditor : SettingsEditor<SuiCommandConfiguration>() 
         return panel {
             row("&Command:") {
                 fullWidthCell(commandTextField)
-//                    .columns(COLUMNS_LARGE)
                     .resizableColumn()
             }
             row(envVarsField.label) {

@@ -8,17 +8,13 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.execution.ParametersListUtil
-import org.sui.cli.Consts
-import org.sui.cli.MoveProject
+import org.sui.cli.MvConstants
 import org.sui.cli.runConfigurations.SuiCommandLine
 import org.sui.cli.settings.moveSettings
 import org.sui.openapiext.*
 import org.sui.openapiext.common.isUnitTestMode
-import org.sui.stdext.MvResult
 import org.sui.stdext.MvResult.Err
 import org.sui.stdext.MvResult.Ok
-import org.sui.stdext.buildList
 import org.sui.stdext.toPath
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -32,7 +28,6 @@ data class Sui(val cliLocation: Path, val parentDisposable: Disposable?) : Dispo
     }
 
     fun init(
-        project: Project,
         rootDirectory: VirtualFile,
         packageName: String
     ): MvProcessResult<VirtualFile> {
@@ -57,7 +52,7 @@ data class Sui(val cliLocation: Path, val parentDisposable: Disposable?) : Dispo
         fullyRefreshDirectory(rootDirectory)
 
         val manifest =
-            checkNotNull(rootDirectory.findChild(Consts.MANIFEST_FILE)) { "Can't find the manifest file" }
+            checkNotNull(rootDirectory.findChild(MvConstants.MANIFEST_FILE)) { "Can't find the manifest file" }
 
         return Ok(manifest)
     }
@@ -77,50 +72,10 @@ data class Sui(val cliLocation: Path, val parentDisposable: Disposable?) : Dispo
                     ),
                     workingDirectory = projectDir
                 )
-            // TODO: as Sui does not yet support fetching dependencies without compiling, ignore errors here,
-            // TODO: still better than no call at all
+            // Sui does not yet support fetching dependencies without compiling, so errors are ignored here.
             executeCommandLine(commandLine, listener = processListener)
-//                .unwrapOrElse { return Err(it) }
         }
         return Ok(Unit)
-    }
-
-    fun checkProject(args: SuiCompileArgs): MvResult<ProcessOutput, MvProcessExecutionException.Start> {
-//            val useClippy = args.linter == ExternalLinter.CLIPPY
-//                    && !checkNeedInstallClippy(project, args.cargoProjectDirectory)
-//            val checkCommand = if (useClippy) "clippy" else "check"
-
-        val extraArguments = ParametersListUtil.parse(args.extraArguments)
-        val commandLine =
-            SuiCommandLine(
-                "move build",
-                buildList {
-//                        add("--message-format=json")
-                    if ("--skip-fetch-latest-git-deps" !in extraArguments) {
-                        add("--skip-fetch-latest-git-deps")
-                    }
-//                    if (args.addCompilerV2Flags) {
-//                        if ("--compiler-version" !in extraArguments) {
-//                            add("--compiler-version")
-//                            add("v2")
-//                        }
-//                        if ("--language-version" !in extraArguments) {
-//                            add("--language-version")
-//                            add("2.0")
-//                        }
-//                    }
-                    addAll(ParametersListUtil.parse(args.extraArguments))
-                },
-                args.moveProjectDirectory,
-                environmentVariables = args.envs.let {
-                    val environmentMap = it.toMutableMap()
-                    if (args.addCompilerV2Flags && Consts.MOVE_COMPILER_V2_ENV !in environmentMap) {
-                        environmentMap[Consts.MOVE_COMPILER_V2_ENV] = "true"
-                    }
-                    EnvironmentVariablesData.create(environmentMap, true)
-                }
-            )
-        return executeCommandLine(commandLine).ignoreExitCode()
     }
 
     fun downloadPackage(
@@ -214,29 +169,3 @@ data class Sui(val cliLocation: Path, val parentDisposable: Disposable?) : Dispo
 
     override fun dispose() {}
 }
-
-data class SuiCompileArgs(
-    val moveProjectDirectory: Path,
-    val extraArguments: String,
-    val envs: Map<String, String>,
-    val addCompilerV2Flags: Boolean,
-    val skipLatestGitDeps: Boolean,
-) {
-    companion object {
-        fun forMoveProject(moveProject: MoveProject): SuiCompileArgs {
-            val moveSettings = moveProject.project.moveSettings
-
-            val workingDirectory = moveProject.workingDirectory
-
-            return SuiCompileArgs(
-                workingDirectory,
-                extraArguments = "",
-                envs = emptyMap(),
-                addCompilerV2Flags = moveSettings.addCompilerV2CLIFlags,
-                skipLatestGitDeps = moveSettings.skipFetchLatestGitDeps
-            )
-        }
-    }
-}
-
-val MoveProject.workingDirectory: Path get() = this.currentPackage.contentRoot.pathAsPath

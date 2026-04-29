@@ -13,12 +13,9 @@ import javax.swing.Icon
 class MoveLangLibrary(
     private val name: String,
     private val sourceRoots: Set<VirtualFile>,
-    private val excludedRoots: Set<VirtualFile>,
     private val icon: Icon,
-    private val version: String?
 ) : SyntheticLibrary(), ItemPresentation {
     override fun getSourceRoots(): Collection<VirtualFile> = sourceRoots
-    override fun getExcludedRoots(): Set<VirtualFile> = excludedRoots
 
     override fun equals(other: Any?): Boolean = other is MoveLangLibrary && other.sourceRoots == sourceRoots
     override fun hashCode(): Int = sourceRoots.hashCode()
@@ -27,7 +24,7 @@ class MoveLangLibrary(
 
     override fun getIcon(unused: Boolean): Icon = icon
 
-    override fun getPresentableText(): String = if (version != null) "$name $version" else name
+    override fun getPresentableText(): String = name
 }
 
 class BuildLibraryRootsProvider : AdditionalLibraryRootsProvider() {
@@ -65,7 +62,7 @@ private val MoveProject.ideaLibraries: Collection<SyntheticLibrary>
                 val sourceRoots = it.layoutPaths().mapNotNull { p -> p.toVirtualFile() }.toMutableSet()
                 val manifest = it.contentRoot.findChild(MvConstants.MANIFEST_FILE) ?: return@mapNotNull null
                 sourceRoots.add(manifest)
-                MoveLangLibrary(it.packageName, sourceRoots, emptySet(), MoveIcons.SUI_LOGO, null)
+                MoveLangLibrary(it.packageName, sourceRoots, MoveIcons.SUI_LOGO)
             }
 
     }
