@@ -12,7 +12,7 @@ intelliJPlatform = "2.11.0"
 kotlin = "2.3.0"
 grammarkit = "2023.3.0.1"
 download = "5.6.0"
-kover = "0.9.5"
+kover = "0.9.8"
 qodana = "2025.3.1"
 
 [libraries]
