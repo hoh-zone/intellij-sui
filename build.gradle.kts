@@ -91,7 +91,7 @@ plugins {
     id("org.jetbrains.grammarkit") version "2023.3.0.1"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
-    id("de.undercouch.download") version "5.6.0"
+    id("de.undercouch.download") version "5.7.0"
 }
 
 allprojects {
