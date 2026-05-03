@@ -14,6 +14,7 @@ import org.sui.lang.core.psi.MvEnum
 import org.sui.lang.core.psi.MvEnumVariant
 import org.sui.lang.core.psi.MvFunction
 import org.sui.lang.core.psi.MvFunctionParameter
+import org.sui.lang.core.psi.MvLetStmt
 import org.sui.lang.core.psi.MvModule
 import org.sui.lang.core.psi.MvNamedFieldDecl
 import org.sui.lang.core.psi.MvPathExpr
@@ -32,9 +33,34 @@ class MvSemanticHighlightingAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         annotateContextualKeywordToken(element, holder)
 
+        // Ability leaves: `copy` is token COPY; `store`/`key`/`drop` are IDENTIFIER.
+        // Use explicit Java getters on MvAbility — Kotlin `element.copy` can resolve away from `getCopy()`.
+        if (element.parent is MvAbility &&
+            (element.node.elementType == MvElementTypes.IDENTIFIER || element.node.elementType == MvElementTypes.COPY) &&
+            element.text in ABILITIES
+        ) {
+            annotateNameElement(element, holder, MvSyntaxHighlighter.ABILITY)
+        }
+
+        // Primitive / builtin type names inside type paths (`x: u8`, `vector<bool>`, `Option<u64>`).
+        // Leaf IDENTIFIERs under nested `MvPath` are not always covered by the `MvPathType` branch alone.
+        if (element.node.elementType == MvElementTypes.IDENTIFIER &&
+            element.parent is MvPath &&
+            element.ancestorStrict<MvPathType>() != null
+        ) {
+            when (element.text) {
+                in PRIMITIVE_TYPES ->
+                    annotateNameElement(element, holder, MvSyntaxHighlighter.PRIMITIVE_TYPE)
+                "vector" ->
+                    annotateNameElement(element, holder, MvSyntaxHighlighter.VECTOR_TYPE)
+                in BUILTIN_TYPE_NAMES ->
+                    annotateNameElement(element, holder, MvSyntaxHighlighter.PRIMITIVE_TYPE)
+            }
+        }
+
         when (element) {
             is MvAbility -> {
-                val abilityElement = element.identifier ?: element.copy
+                val abilityElement = element.getIdentifier() ?: element.getCopy()
                 if (abilityElement != null && abilityElement.text in ABILITIES) {
                     holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
                         .range(abilityElement)
@@ -43,10 +69,13 @@ class MvSemanticHighlightingAnnotator : Annotator {
                 }
             }
             is MvFunction -> annotateNameElement(element.nameElement, holder, MvSyntaxHighlighter.FUNCTION_DECLARATION)
-            is MvTypeParameter -> annotateNameElement(element.nameElement, holder, MvSyntaxHighlighter.TYPE_DECLARATION)
+            is MvTypeParameter -> annotateNameElement(element.nameElement, holder, MvSyntaxHighlighter.TYPE_PARAMETER_NAME)
             is MvFunctionParameter -> {
                 val binding = element.patBinding
-                annotateNameElement(binding.nameIdentifier, holder, MvSyntaxHighlighter.PARAMETER)
+                val attr =
+                    if (binding.getMut() != null) MvSyntaxHighlighter.MUTABLE_PARAMETER
+                    else MvSyntaxHighlighter.PARAMETER
+                annotateNameElement(binding.nameIdentifier, holder, attr)
             }
             is MvNamedFieldDecl -> annotateNameElement(element.nameIdentifier, holder, MvSyntaxHighlighter.FIELD)
             is MvStructLitField -> annotateNameElement(element.identifier, holder, MvSyntaxHighlighter.FIELD)
@@ -54,12 +83,17 @@ class MvSemanticHighlightingAnnotator : Annotator {
             is MvPatBinding -> {
                 val owner = element.ancestorStrict<MvFunctionParameter>()
                 if (owner == null) {
-                    annotateNameElement(element.nameIdentifier, holder, MvSyntaxHighlighter.VARIABLE)
+                    val attr =
+                        if (element.isMutableLocalBinding()) MvSyntaxHighlighter.MUTABLE_LOCAL
+                        else MvSyntaxHighlighter.VARIABLE
+                    annotateNameElement(element.nameIdentifier, holder, attr)
                 }
             }
-            is MvModule, is MvStruct, is MvEnum, is MvEnumVariant ->
-                annotateNameElement((element as? org.sui.lang.core.psi.MvNamedElement)?.nameElement, holder, MvSyntaxHighlighter.TYPE_DECLARATION)
-            is MvConst -> annotateNameElement(element.nameElement, holder, MvSyntaxHighlighter.CONST_NAME)
+            is MvModule ->
+                annotateNameElement((element as org.sui.lang.core.psi.MvNamedElement).nameElement, holder, MvSyntaxHighlighter.MODULE_NAME)
+            is MvStruct, is MvEnum, is MvEnumVariant ->
+                annotateNameElement((element as org.sui.lang.core.psi.MvNamedElement).nameElement, holder, MvSyntaxHighlighter.TYPE_DECLARATION)
+            is MvConst -> annotateNameElement(element.nameElement, holder, MvSyntaxHighlighter.CONST_DECLARATION)
             is MvCallExpr -> annotateNameElement(element.path?.referenceNameElement, holder, MvSyntaxHighlighter.FUNCTION_CALL)
             is MvPathExpr -> {
                 val path = element.path ?: return
@@ -69,7 +103,7 @@ class MvSemanticHighlightingAnnotator : Annotator {
                     return
                 }
                 if (target == null && path.referenceName == "self") {
-                    annotateNameElement(path.referenceNameElement, holder, MvSyntaxHighlighter.PARAMETER)
+                    annotateNameElement(path.referenceNameElement, holder, MvSyntaxHighlighter.SELF_PARAMETER)
                     return
                 }
                 if (target == null && path.referenceName in BUILTIN_TYPED_FUNCTIONS) {
@@ -85,14 +119,20 @@ class MvSemanticHighlightingAnnotator : Annotator {
                 when (target) {
                     is MvPatBinding -> {
                         val param = target.ancestorStrict<MvFunctionParameter>()
-                        val attr = if (param?.isSelfParam == true || param != null
-                        ) MvSyntaxHighlighter.PARAMETER else MvSyntaxHighlighter.VARIABLE
+                        val attr = when {
+                            param?.isSelfParam == true -> MvSyntaxHighlighter.SELF_PARAMETER
+                            param != null && target.getMut() != null -> MvSyntaxHighlighter.MUTABLE_PARAMETER
+                            param != null -> MvSyntaxHighlighter.PARAMETER
+                            target.isMutableLocalBinding() -> MvSyntaxHighlighter.MUTABLE_LOCAL
+                            else -> MvSyntaxHighlighter.VARIABLE
+                        }
                         annotateNameElement(path.referenceNameElement, holder, attr)
                     }
                     is MvFunction -> annotateNameElement(path.referenceNameElement, holder, MvSyntaxHighlighter.FUNCTION_CALL)
-                    is MvConst -> annotateNameElement(path.referenceNameElement, holder, MvSyntaxHighlighter.CONST_NAME)
-                    is MvStruct, is MvEnum, is MvEnumVariant -> annotateNameElement(path.referenceNameElement, holder, MvSyntaxHighlighter.TYPE_DECLARATION)
-                    is MvTypeParameter -> annotateNameElement(path.referenceNameElement, holder, MvSyntaxHighlighter.TYPE_DECLARATION)
+                    is MvConst -> annotateNameElement(path.referenceNameElement, holder, MvSyntaxHighlighter.CONST_REFERENCE)
+                    is MvStruct, is MvEnum -> annotateNameElement(path.referenceNameElement, holder, MvSyntaxHighlighter.TYPE_DECLARATION)
+                    is MvEnumVariant -> annotateNameElement(path.referenceNameElement, holder, MvSyntaxHighlighter.ENUM_VARIANT)
+                    is MvTypeParameter -> annotateNameElement(path.referenceNameElement, holder, MvSyntaxHighlighter.TYPE_PARAMETER_NAME)
                 }
             }
             is MvPathType -> {
@@ -102,7 +142,7 @@ class MvSemanticHighlightingAnnotator : Annotator {
                 val attrKey = when {
                     typeName in PRIMITIVE_TYPES -> MvSyntaxHighlighter.PRIMITIVE_TYPE
                     typeName == "vector" -> MvSyntaxHighlighter.VECTOR_TYPE
-                    resolved is MvTypeParameter -> MvSyntaxHighlighter.TYPE_DECLARATION
+                    resolved is MvTypeParameter -> MvSyntaxHighlighter.TYPE_PARAMETER_NAME
                     else -> MvSyntaxHighlighter.TYPE_DECLARATION
                 }
 
@@ -121,7 +161,7 @@ class MvSemanticHighlightingAnnotator : Annotator {
                         element.text == "vector" -> annotateNameElement(element, holder, MvSyntaxHighlighter.VECTOR_TYPE)
                         element.text == "Self" -> annotateNameElement(element, holder, MvSyntaxHighlighter.TYPE_DECLARATION)
                         element.text == "self" && element.parent is MvPath ->
-                            annotateNameElement(element, holder, MvSyntaxHighlighter.PARAMETER)
+                            annotateNameElement(element, holder, MvSyntaxHighlighter.SELF_PARAMETER)
                         element.text in BUILTIN_TYPED_FUNCTIONS && (element.parent is org.sui.lang.core.psi.MvPath || element.parent is MvCallExpr) ->
                             annotateNameElement(element, holder, MvSyntaxHighlighter.FUNCTION_CALL)
                         element.parent is MvPath && element.parent.parent is MvCallExpr ->
@@ -187,5 +227,24 @@ class MvSemanticHighlightingAnnotator : Annotator {
             || parent is MvAbilitiesList
             || ancestorStrict<MvTypeParamBound>() != null
             || ancestorStrict<MvAbilitiesList>() != null
+    }
+
+    /**
+     * Rust-style “mutable binding”: `mut` on the pattern, or `let mut …` on the enclosing let
+     * (so `let mut (a, b)` paints both locals as mutable).
+     */
+    private fun MvPatBinding.isMutableLocalBinding(): Boolean {
+        if (getMut() != null) return true
+        val let = ancestorStrict<MvLetStmt>() ?: return false
+        return let.hasLetMutKeyword()
+    }
+
+    private fun MvLetStmt.hasLetMutKeyword(): Boolean {
+        var c: PsiElement? = firstChild
+        while (c != null) {
+            if (c.node.elementType == MvElementTypes.MUT) return true
+            c = c.nextSibling
+        }
+        return false
     }
 }

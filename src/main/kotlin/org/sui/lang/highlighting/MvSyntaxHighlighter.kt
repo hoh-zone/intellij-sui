@@ -68,30 +68,63 @@ class MvSyntaxHighlighter : SyntaxHighlighterBase() {
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.PARAMETER", DefaultLanguageHighlighterColors.PARAMETER)
         val VARIABLE: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.VARIABLE", DefaultLanguageHighlighterColors.LOCAL_VARIABLE)
+        /** `let mut x` / `let mut (a, b)` — same idea as RustRover “Reassigned local variable”. */
+        val MUTABLE_LOCAL: TextAttributesKey =
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.MUTABLE_LOCAL", DefaultLanguageHighlighterColors.REASSIGNED_LOCAL_VARIABLE)
+        /** `fun f(mut x: T)` — same idea as Rust “Reassigned parameter”. */
+        val MUTABLE_PARAMETER: TextAttributesKey =
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.MUTABLE_PARAMETER", DefaultLanguageHighlighterColors.REASSIGNED_PARAMETER)
         val FIELD: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.FIELD", DefaultLanguageHighlighterColors.INSTANCE_FIELD)
         val TYPE_DECLARATION: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.TYPE_DECLARATION", DefaultLanguageHighlighterColors.CLASS_NAME)
+        /**
+         * Generic parameters (`fun f<T>()`, `struct S<T>`).
+         * Rust-style “type parameter” coloring: `DefaultLanguageHighlighterColors.INTERFACE_NAME` is used
+         * as the closest Language Defaults analogue (no dedicated type-parameter key on this platform).
+         */
+        val TYPE_PARAMETER_NAME: TextAttributesKey =
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.TYPE_PARAMETER_NAME", DefaultLanguageHighlighterColors.INTERFACE_NAME)
+        /**
+         * `module foo` name. Rust-style module / path: `CLASS_REFERENCE` rather than ADT `CLASS_NAME`.
+         */
+        val MODULE_NAME: TextAttributesKey =
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.MODULE_NAME", DefaultLanguageHighlighterColors.CLASS_REFERENCE)
+        /** `self` — defaults same as `PARAMETER`; kept separate for custom schemes (Rust-style self). */
+        val SELF_PARAMETER: TextAttributesKey =
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.SELF_PARAMETER", DefaultLanguageHighlighterColors.PARAMETER)
+        /** Enum variant used as a value (`Option::None`, `Some`) — Rust-style constant-like variant. */
+        val ENUM_VARIANT: TextAttributesKey =
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.ENUM_VARIANT", DefaultLanguageHighlighterColors.CONSTANT)
         val TYPE_ASCRIPTION_COLON: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.TYPE_ASCRIPTION_COLON", DefaultLanguageHighlighterColors.OPERATION_SIGN)
+        /** `const FOO` — definition site (distinct from `let` locals in default themes). */
+        val CONST_DECLARATION: TextAttributesKey =
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.CONST_DECLARATION", DefaultLanguageHighlighterColors.CONSTANT)
+        /** Use of a constant (`BAR` where it resolves to `const BAR`). */
+        val CONST_REFERENCE: TextAttributesKey =
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.CONST_REFERENCE", DefaultLanguageHighlighterColors.CONSTANT)
+        /** Legacy id; new schemes should use [CONST_DECLARATION] / [CONST_REFERENCE]. Inherits [CONST_REFERENCE] defaults. */
         val CONST_NAME: TextAttributesKey =
-            TextAttributesKey.createTextAttributesKey("SUI_MOVE.CONST_NAME", DefaultLanguageHighlighterColors.CONSTANT)
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.CONST_NAME", CONST_REFERENCE)
         val COMMENT: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
         val DOC_COMMENT: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.DOC_COMMENT", DefaultLanguageHighlighterColors.DOC_COMMENT)
         val STRING: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.STRING", DefaultLanguageHighlighterColors.STRING)
+        /** `true` / `false` — Rust-style primitive literal (not control-flow keyword). */
         val BOOLEAN: TextAttributesKey =
-            TextAttributesKey.createTextAttributesKey("SUI_MOVE.BOOLEAN", DefaultLanguageHighlighterColors.KEYWORD)
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.BOOLEAN", DefaultLanguageHighlighterColors.CONSTANT)
         val NUMBER: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.NUMBER", DefaultLanguageHighlighterColors.NUMBER)
         val ADDRESS: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.ADDRESS", DefaultLanguageHighlighterColors.NUMBER)
         val ESCAPED_IDENTIFIER: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.ESCAPED_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER)
+        /** Macro / pattern call sites — no `MACRO_CALL` on this platform; `STATIC_METHOD` is closer than `PARAMETER`. */
         val MACRO: TextAttributesKey =
-            TextAttributesKey.createTextAttributesKey("SUI_MOVE.MACRO", DefaultLanguageHighlighterColors.PARAMETER)
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.MACRO", DefaultLanguageHighlighterColors.STATIC_METHOD)
         val ANNOTATION: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.ANNOTATION", DefaultLanguageHighlighterColors.METADATA)
         val OPERATION_SIGN: TextAttributesKey =
@@ -118,7 +151,8 @@ class MvSyntaxHighlighter : SyntaxHighlighterBase() {
             MvElementTypes.ENTRY,
             MvElementTypes.NATIVE,
             MvElementTypes.PUBLIC,
-            MvElementTypes.INLINE
+            MvElementTypes.INLINE,
+            MvElementTypes.LET
         )
 
         private val CONTROL_KEYWORDS = TokenSet.create(
@@ -131,8 +165,7 @@ class MvSyntaxHighlighter : SyntaxHighlighterBase() {
             MvElementTypes.BREAK,
             MvElementTypes.CONTINUE,
             MvElementTypes.RETURN,
-            MvElementTypes.ABORT,
-            MvElementTypes.LET
+            MvElementTypes.ABORT
         )
 
         private val NUMBER_LITERALS = TokenSet.create(

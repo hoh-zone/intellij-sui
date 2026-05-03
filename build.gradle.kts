@@ -3,7 +3,7 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.ByteArrayOutputStream
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2
 import java.util.*
 
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
@@ -79,19 +79,19 @@ val pluginName = "intellij-sui-move"
 val pluginJarName = "intellij-sui-move-$pluginVersion"
 val javaVersion = JavaVersion.VERSION_21
 
-val kotlinReflectVersion = "2.3.0"
+val kotlinReflectVersion = "2.3.21"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "2.3.0"
-    id("org.jetbrains.intellij.platform") version "2.15.0"
-    id("org.jetbrains.grammarkit") version "2023.3.0.1"
-    id("net.saliman.properties") version "1.5.2"
+    kotlin("jvm") version "2.3.21"
+    id("org.jetbrains.intellij.platform") version "2.16.0"
+    id("org.jetbrains.grammarkit") version "2023.3.0.3"
+    id("net.saliman.properties") version "1.6.0"
     id("org.gradle.idea")
-    id("de.undercouch.download") version "5.6.0"
+    id("de.undercouch.download") version "5.7.0"
 }
 
 allprojects {
@@ -114,11 +114,11 @@ allprojects {
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
 
-        implementation("io.sentry:sentry:8.31.0") {
+        implementation("io.sentry:sentry:8.37.1") {
             exclude("org.slf4j")
         }
         implementation("org.apache.commons:commons-text:1.15.0")
-        implementation("com.github.ajalt.clikt:clikt:5.0.3")
+        implementation("com.github.ajalt.clikt:clikt:5.1.0")
         testImplementation("junit:junit:4.13.2")
         testImplementation("org.opentest4j:opentest4j:1.3.0")
 
@@ -208,8 +208,8 @@ allprojects {
     tasks {
         compileKotlin {
             compilerOptions {
-                languageVersion.set(KOTLIN_2_1)
-                apiVersion.set(KOTLIN_2_1)
+                languageVersion.set(KOTLIN_2_2)
+                apiVersion.set(KOTLIN_2_2)
                 freeCompilerArgs.add("-Xjvm-default=all")
             }
         }

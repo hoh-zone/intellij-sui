@@ -2,18 +2,18 @@
 # libraries
 junit = "4.13.2"
 opentest4j = "1.3.0"
-sentry = "8.31.0"
+sentry = "8.37.1"
 commonsText = "1.15.0"
-clikt = "5.0.3"
+clikt = "5.1.0"
 
 # plugins
 changelog = "2.5.0"
-intelliJPlatform = "2.11.0"
-kotlin = "2.3.0"
-grammarkit = "2023.3.0.1"
-download = "5.6.0"
-kover = "0.9.5"
-qodana = "2025.3.1"
+intelliJPlatform = "2.16.0"
+kotlin = "2.3.21"
+grammarkit = "2023.3.0.3"
+download = "5.7.0"
+kover = "0.9.8"
+qodana = "2026.1.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }

@@ -17,7 +17,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicator
@@ -180,7 +180,7 @@ class MoveProjectsSyncTask(
     ) {
         val projectRoot = moveTomlFile.parent?.toNioPathOrNull() ?: error("cannot be invalid path")
         var (moveProject, rootMoveToml) =
-            runReadAction {
+            ReadAction.compute<Pair<MoveProject, MoveToml>, RuntimeException> {
                 val tomlFile = moveTomlFile.toTomlFile(project)!!
                 var rootMoveToml = MoveToml.fromTomlFile(tomlFile)
                 rootMoveToml = MoveToml.fromBuildInfo(tomlFile, rootMoveToml)
@@ -198,7 +198,7 @@ class MoveProjectsSyncTask(
         val deps =
             (context.runWithChildProgress("Loading dependencies") { childContext ->
                 // Blocks till completed or cancelled by the toml / file change
-                runReadAction {
+                ReadAction.compute<TaskResult<MutableList<Pair<MovePackage, RawAddressMap>>>, RuntimeException> {
                     val rootPackage = moveProject.currentPackage
                     val deps = mutableListOf<Pair<MovePackage, RawAddressMap>>()
                     val visitedDepIds = mutableSetOf(DepId(rootPackage.contentRoot.path))

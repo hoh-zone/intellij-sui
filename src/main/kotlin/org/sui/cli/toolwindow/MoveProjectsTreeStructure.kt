@@ -1,7 +1,7 @@
 package org.sui.cli.toolwindow
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.ReadAction
 import com.intellij.ui.tree.AsyncTreeModel
 import com.intellij.ui.tree.StructureTreeModel
 import com.intellij.ui.treeStructure.CachingSimpleNode
@@ -115,7 +115,8 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = runReadAction { module.qualName?.editorText() ?: "null" }
+            override fun getName(): String =
+                ReadAction.compute<String, RuntimeException> { module.qualName?.editorText() ?: "null" }
         }
 
         class Entrypoints(val functions: List<MvFunction>, parent: SimpleNode) : MoveSimpleNode(parent) {
@@ -132,7 +133,8 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = runReadAction { function.qualName?.editorText() ?: "null" }
+            override fun getName(): String =
+                ReadAction.compute<String, RuntimeException> { function.qualName?.editorText() ?: "null" }
         }
 
         class Views(val functions: List<MvFunction>, parent: SimpleNode) : MoveSimpleNode(parent) {
@@ -149,7 +151,8 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = runReadAction { function.qualName?.editorText() ?: "null" }
+            override fun getName(): String =
+                ReadAction.compute<String, RuntimeException> { function.qualName?.editorText() ?: "null" }
         }
     }
 }

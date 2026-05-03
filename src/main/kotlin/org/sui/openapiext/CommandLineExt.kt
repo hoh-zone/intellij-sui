@@ -11,7 +11,7 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.notification.NotificationType.INFORMATION
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -67,7 +67,7 @@ fun GeneralCommandLine.execute(
     }
 
     val ownerIsAlreadyDisposed =
-        runReadAction {
+        ReadAction.compute<Boolean, RuntimeException> {
             // check that owner is disposed, kill process then
             try {
                 Disposer.register(owner, processKiller)
