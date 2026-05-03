@@ -130,8 +130,8 @@ class MvSemanticHighlightingAnnotator : Annotator {
                             annotateNameElement(element, holder, MvSyntaxHighlighter.DECLARATION_KEYWORD)
                         element.text in CONTROL_CONTEXTUAL_KEYWORDS ->
                             annotateNameElement(element, holder, MvSyntaxHighlighter.CONTROL_KEYWORD)
-                        element.text in GENERIC_CONTEXTUAL_KEYWORDS ->
-                            annotateNameElement(element, holder, MvSyntaxHighlighter.KEYWORD)
+                        element.text == "has" && element.ancestorStrict<MvAbilitiesList>() != null ->
+                            annotateNameElement(element, holder, MvSyntaxHighlighter.ABILITIES_HAS_KEYWORD)
                         element.text in BASE_KEYWORDS ->
                             annotateNameElement(element, holder, MvSyntaxHighlighter.KEYWORD)
                     }
@@ -154,8 +154,8 @@ class MvSemanticHighlightingAnnotator : Annotator {
         )
         private val DECLARATION_CONTEXTUAL_KEYWORDS = setOf("friend", "entry", "inline", "enum", "package")
         private val CONTROL_CONTEXTUAL_KEYWORDS = setOf("match", "for", "in")
-        private val GENERIC_CONTEXTUAL_KEYWORDS = setOf("has")
         private val DECLARATION_TOKENS = TokenSet.create(
+            MvElementTypes.ADDRESS,
             MvElementTypes.FRIEND, MvElementTypes.ENTRY, MvElementTypes.INLINE,
             MvElementTypes.ENUM_KW, MvElementTypes.PACKAGE
         )
@@ -178,7 +178,7 @@ class MvSemanticHighlightingAnnotator : Annotator {
         when {
             tokenType in DECLARATION_TOKENS -> annotateNameElement(element, holder, MvSyntaxHighlighter.DECLARATION_KEYWORD)
             tokenType in CONTROL_TOKENS -> annotateNameElement(element, holder, MvSyntaxHighlighter.CONTROL_KEYWORD)
-            tokenType in GENERIC_TOKENS -> annotateNameElement(element, holder, MvSyntaxHighlighter.KEYWORD)
+            tokenType in GENERIC_TOKENS -> annotateNameElement(element, holder, MvSyntaxHighlighter.ABILITIES_HAS_KEYWORD)
         }
     }
 

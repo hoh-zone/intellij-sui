@@ -21,6 +21,7 @@ class MvSyntaxHighlighter : SyntaxHighlighterBase() {
         val key = when {
             tokenType in DECLARATION_KEYWORDS -> DECLARATION_KEYWORD
             tokenType in CONTROL_KEYWORDS -> CONTROL_KEYWORD
+            tokenType == MvElementTypes.HAS -> ABILITIES_HAS_KEYWORD
             tokenType in MOVE_KEYWORDS -> KEYWORD
             tokenType == MoveParserDefinition.EOL_DOC_COMMENT -> DOC_COMMENT
             tokenType in MOVE_COMMENTS -> COMMENT
@@ -52,6 +53,9 @@ class MvSyntaxHighlighter : SyntaxHighlighterBase() {
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.CONTROL_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
         val ABILITY: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.ABILITY", DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL)
+        /** `has` before `copy, drop, store` in `struct S has ...` / `enum E has ...` — distinct from generic keywords and ability names. */
+        val ABILITIES_HAS_KEYWORD: TextAttributesKey =
+            TextAttributesKey.createTextAttributesKey("SUI_MOVE.ABILITIES_HAS_KEYWORD", DefaultLanguageHighlighterColors.MARKUP_TAG)
         val PRIMITIVE_TYPE: TextAttributesKey =
             TextAttributesKey.createTextAttributesKey("SUI_MOVE.PRIMITIVE_TYPE", DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL)
         val VECTOR_TYPE: TextAttributesKey =

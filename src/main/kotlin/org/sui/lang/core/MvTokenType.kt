@@ -13,9 +13,9 @@ class MvTokenType(debugName: String) : IElementType(debugName, MoveLanguage)
 fun tokenSetOf(vararg tokens: IElementType) = TokenSet.create(*tokens)
 
 val MOVE_KEYWORDS = tokenSetOf(
-    LET, MUT, ABORT, BREAK, CONTINUE, IF, ELSE, LOOP, RETURN, AS, WHILE, FOR,
+    LET, MUT, COPY, ABORT, BREAK, CONTINUE, IF, ELSE, LOOP, RETURN, AS, WHILE, FOR,
     ADDRESS, MODULE_KW, PUBLIC, FUN, STRUCT_KW, USE, HAS, PHANTOM,
-    MOVE, CONST_KW, NATIVE, FRIEND, ENTRY, INLINE,
+    MOVE, CONST_KW, NATIVE, FRIEND, ENTRY, INLINE, MACRO_KW,
     IN, ENUM_KW, MATCH_KW
 )
 val CONTEXTUAL_KEYWORDS = tokenSetOf(MATCH_KW)
