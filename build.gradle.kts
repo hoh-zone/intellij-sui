@@ -114,7 +114,7 @@ allprojects {
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
 
-        implementation("io.sentry:sentry:8.37.1") {
+        implementation("io.sentry:sentry:8.40.0") {
             exclude("org.slf4j")
         }
         implementation("org.apache.commons:commons-text:1.15.0")
