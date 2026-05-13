@@ -2,7 +2,7 @@
 # libraries
 junit = "4.13.2"
 opentest4j = "1.3.0"
-sentry = "8.40.0"
+sentry = "8.41.0"
 commonsText = "1.15.0"
 clikt = "5.1.0"
 
